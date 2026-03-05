@@ -4,36 +4,28 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ## Available skills
 
-| Skill | Description | Status |
-|---|---|---|
-| `github-release-note` | Generates release notes from a git tag range | Implemented |
-| `web-vulnerabilities` | Reference of common web vulnerabilities | Implemented |
-| `github-commit` | — | Placeholder |
-| `github-pr-review` | — | Placeholder |
+| Skill | Description |
+|---|---|
+| `github-release-note` | Generates release notes from a git tag range |
+| `github-commit` | Generates commit messages following Conventional Commits |
+| `github-pr-review` | Performs structured code review of Pull Requests |
+| `web-vulnerabilities` | Reference of 100 common web vulnerabilities |
 
 ## Installation on Claude Code CLI
 
-### Option 1 — Copy manually
+### Install script (recommended)
 
-Clone the repository and copy the skills to the global directory:
-
-```bash
-git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
-cp -r ValarMindSkills/skills/* ~/.claude/skills/
-```
-
-### Option 2 — Symlinks (recommended)
-
-Create symbolic links so that skills are automatically updated with `git pull`:
+The repository includes a script that creates symlinks from `~/.claude/commands/` to each skill. Changes in the repo are reflected immediately — no need to re-run after editing a skill.
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
-ln -s "$(pwd)/ValarMindSkills/skills/"* ~/.claude/skills/
+cd ValarMindSkills
+bash scripts/install-claude.sh
 ```
 
-### Option 3 — Plugin
+### Plugin
 
-Use as a Claude Code plugin by pointing to the repository directory:
+Alternatively, use as a Claude Code plugin:
 
 ```bash
 claude plugins add /path/to/ValarMindSkills
@@ -41,26 +33,30 @@ claude plugins add /path/to/ValarMindSkills
 
 ## Installation on Antigravity IDE
 
-### Option 1 — Copy manually
+> **Note:** Antigravity does not load symlinks. Skills must be copied as real files.
 
-Copy the skills to the Antigravity global directory or to the project directory:
+### Install script (recommended)
+
+The repository includes a script that copies the skills to the global Antigravity directory:
 
 ```bash
-# Global (available across all projects)
-cp -r ValarMindSkills/skills/* ~/.gemini/antigravity/skills/
-
-# Per project (available only in the current project)
-cp -r ValarMindSkills/skills/* .agent/skills/
+git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
+cd ValarMindSkills
+bash scripts/install-antigravity.sh
 ```
 
-### Option 2 — Symlinks
+After running the script, reload the VS Code window so the autocomplete picks up the new skills:
+- `Cmd + Shift + P` > `Reload Window`
+
+Re-run `bash scripts/install-antigravity.sh` whenever you pull new changes or add/edit skills.
+
+### Per-project installation (optional)
+
+To limit skills to a specific project, copy them into the project root:
 
 ```bash
-# Global
-ln -s "$(pwd)/ValarMindSkills/skills/"* ~/.gemini/antigravity/skills/
-
-# Per project
-ln -s "$(pwd)/ValarMindSkills/skills/"* .agent/skills/
+mkdir -p .agent/skills
+cp -r ValarMindSkills/skills/* .agent/skills/
 ```
 
 ## Project structure
@@ -69,6 +65,9 @@ ln -s "$(pwd)/ValarMindSkills/skills/"* .agent/skills/
 skills/
   <slug>/
     SKILL.md    <- skill definition (YAML frontmatter + Markdown instructions)
+scripts/
+  install-claude.sh       <- installs skills in Claude Code CLI via symlinks
+  install-antigravity.sh  <- copies skills to Antigravity global directory
 ```
 
 Each directory under `skills/` represents a skill. The directory slug is the identifier used as a slash command.
