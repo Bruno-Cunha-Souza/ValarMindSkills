@@ -6,6 +6,10 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 | Skill | Description |
 |---|---|
+| `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
+| `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
+| `code-review` | Elite code review expert specializing in modern AI-powered code |
+| `context-optimization` | Apply compaction, masking, and caching strategies |
 | `github-release-note` | Generates release notes from a git tag range |
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
