@@ -113,7 +113,7 @@ Build the message following this format:
 - Include `BREAKING CHANGE:` in the footer when the change breaks backward compatibility
 - Reference issues/PRs in the footer when mentioned by the user
 - Never commit without explicit user approval
-- Add the footer `Co-Authored-By: Claude <noreply@anthropic.com>` to the commit
+- Never include the AI agent: Claude, Codex, etc. in the commit message
 
 ## Output format
 
