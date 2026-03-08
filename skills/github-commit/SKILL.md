@@ -95,7 +95,6 @@ Build the message following this format:
 **Footer** rules (when applicable):
 - `BREAKING CHANGE: <description>` for backward-incompatible changes
 - `Refs: #<number>` to reference issues or PRs
-- `Co-authored-by: Name <email>` for co-authorship
 
 ### Step 8 — Present and confirm
 
@@ -114,6 +113,7 @@ Build the message following this format:
 - Reference issues/PRs in the footer when mentioned by the user
 - Never commit without explicit user approval
 - Never include the AI agent: Claude, Codex, etc. in the commit message
+- Never include co authorship in the commit message
 
 ## Output format
 
