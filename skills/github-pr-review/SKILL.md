@@ -13,7 +13,7 @@ Perform a structured, comprehensive code review of a GitHub Pull Request, analyz
 ## Inputs you must collect before starting
 
 | Input | Required | How to obtain |
-|-------|----------|---------------|
+| :--- | :--- | :--- |
 | PR identifier | Yes | Number, URL, or branch name — ask the user |
 | Repository | Yes | Infer from current directory or ask the user |
 | Review depth | No | `quick` (high-level) or `deep` (line-by-line) — default: `deep` |
@@ -51,6 +51,7 @@ If the PR has more than 1000 changed lines, inform the user and suggest focusing
 Analyze the diff across 4 dimensions:
 
 #### Logic & Correctness
+
 - Are business requirements met?
 - Are edge cases handled (null, empty, boundaries, concurrency)?
 - Are error flows correct?
@@ -58,6 +59,7 @@ Analyze the diff across 4 dimensions:
 - Are data types consistent?
 
 #### Security
+
 - Are inputs validated and sanitized?
 - Is there injection risk (SQL, XSS, command)?
 - Are authentication and authorization checks in place?
@@ -65,6 +67,7 @@ Analyze the diff across 4 dimensions:
 - Alignment with OWASP Top 10?
 
 #### Performance
+
 - Are there N+1 queries or inefficient database access?
 - Are unbounded collections being iterated?
 - Are there unnecessary allocations in loops?
@@ -72,6 +75,7 @@ Analyze the diff across 4 dimensions:
 - Are there blocking calls where async would be more appropriate?
 
 #### Maintainability
+
 - Are variable, function, and class names clear?
 - Do functions have a single responsibility and reasonable size?
 - Is coupling between modules low?
@@ -81,7 +85,7 @@ Analyze the diff across 4 dimensions:
 ### Step 5 — Categorize findings by severity
 
 | Severity | Criteria |
-|----------|----------|
+| :--- | :--- |
 | **Critical** | Bug that causes crashes, data loss, exploitable security vulnerability, or breaks existing functionality |
 | **Major** | Bug in a likely scenario, significant performance issue, violation of important project standards |
 | **Minor** | Recommended code improvement, style inconsistency impacting readability, incomplete error handling |
@@ -126,6 +130,6 @@ Structured review following the template in [`EXAMPLE.md`](./EXAMPLE.md), with a
 ## Example request
 
 - "Review PR #42"
-- "Analyze this pull request: https://github.com/org/repo/pull/123"
+- "Analyze this pull request: <https://github.com/org/repo/pull/123>"
 - "Do a quick review of the payment feature PR"
 - "Review the latest PR on this repo"

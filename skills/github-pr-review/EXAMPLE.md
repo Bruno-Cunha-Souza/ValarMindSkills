@@ -14,7 +14,7 @@
 
 This PR implements rate limiting on public API endpoints using a token bucket-based middleware with Redis storage. The overall approach is solid and well-structured, but there is a critical issue in the fallback configuration when Redis is unavailable — the middleware silently disables rate limiting, leaving the API unprotected. There are also recommended improvements for header handling and test coverage.
 
-**Verdict: Request Changes**
+> **Verdict:** Request Changes
 
 ---
 
@@ -23,6 +23,7 @@ This PR implements rate limiting on public API endpoints using a token bucket-ba
 ### Critical
 
 #### 1. Rate limiting silently disabled when Redis goes down
+
 `src/middleware/rateLimiter.ts:45`
 
 The catch block in the Redis connection fallback returns `next()` without any rate limiting. If Redis becomes unavailable, all endpoints are left unprotected.
@@ -49,6 +50,7 @@ catch (error) {
 ### Major
 
 #### 2. `Retry-After` header returns value in milliseconds instead of seconds
+
 `src/middleware/rateLimiter.ts:72`
 
 RFC 7231 specifies that the `Retry-After` header must contain the value in seconds. The current code passes the Redis TTL value directly, which is in milliseconds.
@@ -62,6 +64,7 @@ res.set('Retry-After', String(Math.ceil(ttl / 1000)));
 ```
 
 #### 3. Rate limit key does not account for authentication
+
 `src/middleware/rateLimiter.ts:28`
 
 The key uses only the request IP. Authenticated users behind a corporate proxy would share the same limit. Consider including the user ID in the key when authenticated.
@@ -78,11 +81,13 @@ const key = req.user?.id
 ### Minor
 
 #### 4. Hardcoded configuration constants
+
 `src/middleware/rateLimiter.ts:8-10`
 
 The rate limit values (100 requests, 60s window) are hardcoded. Moving them to environment variables or config would allow adjustments without redeploying.
 
 #### 5. Test does not cover Redis unavailable scenario
+
 `tests/middleware/rateLimiter.test.ts`
 
 Tests cover the normal flow and the rate limit exceeded scenario, but do not test behavior when Redis is offline. Given critical finding #1, this scenario needs coverage.
@@ -92,11 +97,13 @@ Tests cover the normal flow and the rate limit exceeded scenario, but do not tes
 ### Nitpick
 
 #### 6. Middleware name could be more specific
+
 `src/middleware/rateLimiter.ts:15`
 
 `rateLimiter` is generic. Since it is applied only to public endpoints, `publicApiRateLimiter` would better communicate the intent.
 
 #### 7. Outdated comment
+
 `src/middleware/rateLimiter.ts:3`
 
 The comment says "// TODO: implement rate limiting" but the implementation is already done in this PR.
@@ -106,7 +113,7 @@ The comment says "// TODO: implement rate limiting" but the implementation is al
 ## Summary by Severity
 
 | Severity | Count |
-|----------|-------|
+| :--- | :--- |
 | Critical | 1 |
 | Major | 2 |
 | Minor | 2 |

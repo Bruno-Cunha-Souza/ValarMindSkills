@@ -13,7 +13,7 @@ Analyze staged changes in the git repository and generate a commit message follo
 ## Inputs you must collect before starting
 
 | Input | Required | How to obtain |
-|-------|----------|---------------|
+| :--- | :--- | :--- |
 | Staged changes | Yes | `git diff --staged` |
 | Project conventions | No | Check commitlint config, CLAUDE.md, CONTRIBUTING.md |
 | Type, scope, or intent | No | Ask the user if not clear from the diff |
@@ -52,7 +52,7 @@ Read the full diff and identify:
 Choose the most appropriate type:
 
 | Type | When to use |
-|------|-------------|
+| :--- | :--- |
 | `feat` | New feature for the user |
 | `fix` | Bug fix |
 | `refactor` | Code restructuring without changing behavior |
@@ -72,7 +72,8 @@ Identify the scope from the area of the codebase affected. Examples: `auth`, `ap
 
 Build the message following this format:
 
-```
+```bash
+
 <type>(<scope>): <description>
 
 <optional body>
@@ -81,18 +82,21 @@ Build the message following this format:
 ```
 
 **Description** (subject line) rules:
+
 - Maximum 72 characters
 - Imperative mood ("add", not "added" or "adds")
 - Lowercase first letter
 - No period at the end
 
 **Body** rules (when needed):
+
 - Separated from the description by a blank line
 - Wrap at 72 characters
 - Explain the "why" of the change, not the "what"
 - Use when the description alone is not sufficient
 
 **Footer** rules (when applicable):
+
 - `BREAKING CHANGE: <description>` for backward-incompatible changes
 - `Refs: #<number>` to reference issues or PRs
 

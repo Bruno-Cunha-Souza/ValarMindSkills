@@ -61,7 +61,7 @@ This release introduces **passkey authentication (WebAuthn)**, reduces search re
 ## Dependencies
 
 | Package | Previous | Current | Type |
-|---|---|---|---|
+| :--- | :--- | :--- | :--- |
 | `fastify` | 4.26.1 | 5.2.0 | production |
 | `@simplewebauthn/server` | — | 11.0.0 | production |
 | `zod` | 3.22.4 | 3.24.2 | production |
@@ -84,4 +84,4 @@ This release introduces **passkey authentication (WebAuthn)**, reduces search re
 
 ---
 
-https://github.com/acme/nexus-api/compare/v2.3.1...v2.4.0
+<https://github.com/acme/nexus-api/compare/v2.3.1...v2.4.0>

@@ -2,13 +2,13 @@
 
 ## 1. Simple fix (one-liner)
 
-```
+```bash
 fix(auth): prevent session expiration on token refresh
 ```
 
 ## 2. Feature with scope and body
 
-```
+```bash
 feat(api): add batch endpoint for user invitations
 
 Allow clients to send up to 50 invitations in a single
@@ -18,7 +18,7 @@ onboarding flows.
 
 ## 3. Breaking change with body and footer
 
-```
+```bash
 feat(auth)!: replace session-based auth with JWT tokens
 
 Migrate authentication from server-side sessions to
@@ -39,7 +39,7 @@ Refs: #245, #312
 
 ## 4. Multi-file refactor
 
-```
+```bash
 refactor(db): extract query builders into dedicated modules
 
 Move inline SQL query construction from repository classes
@@ -50,19 +50,19 @@ query logic for easier testing.
 
 ## 5. Documentation
 
-```
+```bash
 docs: add API authentication guide to README
 ```
 
 ## 6. Chore without scope
 
-```
+```bash
 chore: upgrade eslint to v9 and update config format
 ```
 
 ## 7. Performance improvement
 
-```
+```bash
 perf(worker): add caching for product catalog queries
 
 Implement Redis caching for product catalog queries, reducing
