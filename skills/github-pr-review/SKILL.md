@@ -1,7 +1,7 @@
 ---
 name: github-pr-review
 description: Use this skill when I ask to review a pull request, analyze a PR, check PR code quality, or give feedback on a GitHub PR.
-source: ValarMind Skills
+source: ValarMindSkills
 ---
 
 # Pull Request Code Review
