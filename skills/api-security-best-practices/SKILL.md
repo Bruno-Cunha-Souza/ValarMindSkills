@@ -24,7 +24,7 @@ Use this skill when:
 These principles are language and framework agnostic:
 
 | Principle | Meaning |
-|---|---|
+| --- | --- |
 | **Defence in Depth** | Multiple independent security layers — one failure should not compromise the system |
 | **Least Privilege** | Every component and user gets only the minimum access needed |
 | **Zero Trust** | Never assume a request is safe because it originates inside the network |
@@ -62,7 +62,7 @@ Use DPoP when tokens cross trust boundaries (public APIs, mobile apps) and beare
 
 ### Framework Callouts
 
-**FastAPI**
+#### FastAPI
 
 ```python
 from fastapi import Depends, HTTPException, status
@@ -89,7 +89,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 Packages: `fastapi-users` (full auth solution), `python-jose` or `authlib` (JWT), `passlib[bcrypt]` (password hashing).
 
-**Gin**
+#### Gin
 
 ```go
 // Use appleboy/gin-jwt middleware
@@ -110,7 +110,7 @@ auth := r.Group("/api")
 auth.Use(authMiddleware.MiddlewareFunc())
 ```
 
-**Fiber**
+#### Fiber
 
 ```go
 // Use gofiber/contrib/jwt
@@ -125,7 +125,7 @@ app.Use(jwtware.New(jwtware.Config{
 }))
 ```
 
-**Elysia (Bun)**
+#### Elysia (Bun)
 
 ```typescript
 import { Elysia } from "elysia";
@@ -167,9 +167,9 @@ app.add_middleware(
 
 Accept only what you explicitly define; reject everything else.
 
-### Framework Callouts
+### Framework Callouts: Input Validation
 
-**FastAPI / Pydantic**
+#### FastAPI / Pydantic
 
 ```python
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -195,7 +195,7 @@ class CreateUserRequest(BaseModel):
 > **CVE-2024-3772**: pydantic < 2.4.0 — ReDoS via malformed email strings. Upgrade to 2.4.0+.
 > **CVE-2024-24762**: python-multipart — unbounded memory on form-data. Pin `python-multipart >= 0.0.7`.
 
-**Go (pgx / sqlx)**
+#### Go (pgx / sqlx)
 
 ```go
 // Always use parameterized queries — never fmt.Sprintf for SQL
@@ -215,7 +215,7 @@ if err := validate.Struct(req); err != nil {
 }
 ```
 
-**Elysia (TypeBox)**
+#### Elysia (TypeBox)
 
 ```typescript
 import { t } from "elysia";
@@ -234,7 +234,7 @@ app.post("/users", ({ body }) => createUser(body), {
 ### Injection Prevention Rules
 
 | Vector | Prevention |
-|---|---|
+| --- | --- |
 | SQL Injection | Parameterized queries or ORM — never string concatenation |
 | NoSQL Injection | Cast/validate input type before passing to query builder |
 | Command Injection | Avoid shell execution; if unavoidable, use argument arrays, not strings |
@@ -246,7 +246,7 @@ app.post("/users", ({ body }) => createUser(body), {
 ### Algorithm Selection
 
 | Algorithm | Best for | Trade-off |
-|---|---|---|
+| --- | --- | --- |
 | **Token Bucket** | APIs with bursty traffic | Allows short bursts above average rate |
 | **Sliding Window** | Strict fairness, auth endpoints | Higher Redis memory usage |
 | **Fixed Window** | Simple implementations | Boundary burst vulnerability |
@@ -257,9 +257,9 @@ Use **sliding window** for authentication endpoints (brute force prevention) and
 
 Request count is an insufficient proxy for compute cost. Rate limit by input + output token count using a leaky-bucket or quota system, similar to OpenAI's TPM (tokens per minute) model.
 
-### Framework Callouts
+### Framework Callouts: Rate Limiting
 
-**FastAPI (SlowAPI)**
+#### FastAPI (SlowAPI)
 
 ```python
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -281,7 +281,7 @@ async def get_data(request: Request, ...):
     ...
 ```
 
-**Gin**
+#### Gin Rate Limiting
 
 ```go
 // Using gin-contrib/ratelimit or a custom Redis middleware
@@ -303,7 +303,7 @@ func RateLimitMiddleware(rdb *redis.Client, limit int, window time.Duration) gin
 }
 ```
 
-**Fiber (built-in)**
+#### Fiber (built-in) Rate Limiting
 
 ```go
 import "github.com/gofiber/fiber/v2/middleware/limiter"
@@ -322,7 +322,7 @@ app.Use(limiter.New(limiter.Config{
 }))
 ```
 
-**Elysia**
+#### Elysia Rate Limiting
 
 ```typescript
 // Elysia does not include a built-in rate limiter as of 2025
@@ -351,7 +351,7 @@ const rateLimit = (limit: number, windowMs: number) =>
 
 ### Required Rate Limit Response Headers
 
-```
+```http
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 87
 X-RateLimit-Reset: 1740000000
@@ -366,9 +366,9 @@ Retry-After: 900
 - Use explicit allowlists — validate `Origin` against a list, not a wildcard regex
 - Restrict `allow_methods` to only what each route needs
 
-### Framework Callouts
+### Framework Callouts: CORS
 
-**FastAPI**
+#### FastAPI CORS
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
@@ -382,7 +382,7 @@ app.add_middleware(
 )
 ```
 
-**Gin**
+#### Gin CORS
 
 ```go
 import "github.com/gin-contrib/cors"
@@ -397,7 +397,7 @@ r.Use(cors.New(cors.Config{
 }))
 ```
 
-**Fiber**
+#### Fiber CORS
 
 ```go
 import (
@@ -413,7 +413,7 @@ app.Use(cors.New(cors.Config{
 }))
 ```
 
-**Elysia**
+#### Elysia CORS
 
 ```typescript
 import cors from "@elysiajs/cors";
@@ -428,7 +428,7 @@ app.use(cors({
 ### Minimum Required Security Headers
 
 | Header | Value | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Enforce HTTPS |
 | `X-Content-Type-Options` | `nosniff` | Prevent MIME sniffing |
 | `X-Frame-Options` | `DENY` | Prevent clickjacking |
@@ -522,7 +522,7 @@ bun audit           # or: npm audit --audit-level=high
 ### Cross-Stack Tools
 
 | Tool | Stack | Command |
-|---|---|---|
+| --- | --- | --- |
 | `snyk` | All | `snyk test` |
 | `trivy` | Container + deps | `trivy fs .` |
 | `govulncheck` | Go | `govulncheck ./...` |
@@ -533,15 +533,15 @@ bun audit           # or: npm audit --audit-level=high
 
 Mutual TLS requires both client and server to present certificates, eliminating reliance on network perimeter for trust.
 
-### When to Use
+### When to Use mTLS
 
 - Microservices in zero-trust networks
 - Service-to-database connections containing sensitive data
 - Internal APIs that should never be reachable from external clients
 
-### Implementation Options
+### mTLS Implementation Options
 
-**Service mesh (recommended for Kubernetes)**
+#### Service mesh (recommended for Kubernetes)
 
 Istio, Linkerd, and Consul Connect provide transparent mTLS without application code changes. The sidecar proxy handles certificate negotiation automatically.
 
@@ -557,11 +557,11 @@ spec:
     mode: STRICT
 ```
 
-**cert-manager (Kubernetes)**
+#### cert-manager (Kubernetes)
 
 Automates certificate issuance, rotation, and renewal from Let's Encrypt, Vault, or internal CAs. Short certificate validity (24–72 hours) limits the blast radius of a leaked certificate.
 
-**Application-level (FastAPI example)**
+#### Application-level (FastAPI example)
 
 ```python
 import ssl
@@ -608,7 +608,7 @@ if token_count > MAX_INPUT_TOKENS:
 This is the **2023 list** — the 2019 list is obsolete.
 
 | # | Vulnerability | Key Risk |
-|---|---|---|
+| --- | --- | --- |
 | **API1** | Broken Object Level Authorization (BOLA) | Attacker accesses another user's resources by changing an ID |
 | **API2** | Broken Authentication | Weak tokens, missing expiry, no brute force protection |
 | **API3** | Broken Object Property Level Authorization | Over-fetching (returning private fields) or mass assignment (accepting unexpected fields) |

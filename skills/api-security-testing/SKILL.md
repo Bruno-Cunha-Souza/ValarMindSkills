@@ -26,7 +26,7 @@ This skill is **fully standalone** — it requires no other skills and contains 
 Install the following tools before starting:
 
 | Tool | Purpose | Install |
-|---|---|---|
+| --- | --- | --- |
 | **Bruno** | Git-friendly API client (`.bru` files versionable in repo) | `npm i -g @usebruno/cli` or desktop app |
 | **Hoppscotch** | Browser-based API client, no install required | hoppscotch.io |
 | **k6** | Load and rate limit testing as-code | `brew install k6` |
@@ -49,7 +49,7 @@ Before running any tests:
 **Framework-specific flags to check before testing:**
 
 | Framework | Production Risk | Check |
-|---|---|---|
+| --- | --- | --- |
 | FastAPI | `/docs`, `/redoc`, `/openapi.json` exposed | `curl https://target/docs` → should return 404 |
 | Gin | Debug mode active | `GIN_MODE` env var should be `release` |
 | Fiber | Prefork mode or Helmet missing | Review middleware stack |
@@ -128,6 +128,7 @@ BOLA (Broken Object Level Authorization) = API1:2023. The most common critical A
 ### 2.1 Setup: Two Test Users
 
 Create two accounts before testing:
+
 - `user_a` with their own resources (posts, orders, profiles, etc.)
 - `user_b` with separate resources
 
@@ -232,7 +233,7 @@ httpx POST https://target/api/fetch -d '{"url": "https://attacker.com/redirect-t
 
 ### 3.5 Framework-Specific Injection Checks
 
-**FastAPI / Pydantic (CVE-2024-3772 ReDoS)**
+### FastAPI / Pydantic (CVE-2024-3772 ReDoS)
 
 ```bash
 # Test with a crafted long email string — pydantic < 2.4.0 hangs on this
@@ -241,7 +242,7 @@ python3 -c "print('a' * 200 + '@' + 'b' * 200 + '.c' * 50)"
 # Submit as email field — measure response time; timeout suggests vulnerable version
 ```
 
-**Elysia / TypeBox — strict mode check**
+### Elysia / TypeBox — strict mode check
 
 ```bash
 # Send extra fields not in the schema
@@ -520,7 +521,7 @@ grep -r "additionalProperties" . --include="*.ts"
 For each finding, document:
 
 | Field | Content |
-|---|---|
+| --- | --- |
 | **Vulnerability ID** | VULN-001 (sequential) |
 | **Severity** | Critical / High / Medium / Low / Informational |
 | **OWASP Category** | e.g., API1:2023 BOLA, API4:2023 Unrestricted Resource Consumption |
@@ -534,7 +535,7 @@ For each finding, document:
 ### Severity Reference
 
 | Severity | CVSS Range | Example |
-|---|---|---|
+| --- | --- | --- |
 | **Critical** | 9.0–10.0 | BOLA returning any user's data, auth bypass |
 | **High** | 7.0–8.9 | SQLi, SSRF reaching internal services, missing auth on endpoints |
 | **Medium** | 4.0–6.9 | Missing rate limiting, CORS misconfiguration, sensitive fields in response |
