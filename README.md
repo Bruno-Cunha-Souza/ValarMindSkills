@@ -5,7 +5,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 ## Available skills
 
 | Skill | Description |
-|---|---|
+| --- | --- |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
 | `code-review` | Elite code review expert specializing in modern AI-powered code |
@@ -14,6 +14,8 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
 | `web-vulnerabilities` | Reference of 100 common web vulnerabilities |
+| `api-security-best-practices` | Secure API design for REST/GraphQL (FastAPI, Gin, Fiber, Elysia) — OWASP API Top 10 2023 |
+| `api-security-testing` | Security testing workflow for APIs with real tools and payloads |
 
 ## Installation on Claude Code CLI
 
@@ -25,6 +27,12 @@ The repository includes a script that creates symlinks from `~/.claude/commands/
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
 cd ValarMindSkills
 bash scripts/install-claude.sh
+```
+
+To install in both Claude Code CLI and Antigravity in one command, use the unified installer:
+
+```bash
+bash scripts/install-all.sh
 ```
 
 ### Plugin
@@ -39,7 +47,7 @@ claude plugins add /path/to/ValarMindSkills
 
 > **Note:** Antigravity does not load symlinks. Skills must be copied as real files.
 
-### Install script (recommended)
+### Install script for Antigravity (recommended)
 
 The repository includes a script that copies the skills to the global Antigravity directory:
 
@@ -49,10 +57,17 @@ cd ValarMindSkills
 bash scripts/install-antigravity.sh
 ```
 
+To install in both Claude Code CLI and Antigravity in one command, use the unified installer:
+
+```bash
+bash scripts/install-all.sh
+```
+
 After running the script, reload the VS Code window so the autocomplete picks up the new skills:
+
 - `Cmd + Shift + P` > `Reload Window`
 
-Re-run `bash scripts/install-antigravity.sh` whenever you pull new changes or add/edit skills.
+Re-run `bash scripts/install-antigravity.sh` (or `bash scripts/install-all.sh`) whenever you pull new changes or add/edit skills.
 
 ### Per-project installation (optional)
 
@@ -65,13 +80,14 @@ cp -r ValarMindSkills/skills/* .agent/skills/
 
 ## Project structure
 
-```
+```text
 skills/
   <slug>/
-    SKILL.md    <- skill definition (YAML frontmatter + Markdown instructions)
+    SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)
 scripts/
-  install-claude.sh       <- installs skills in Claude Code CLI via symlinks
-  install-antigravity.sh  <- copies skills to Antigravity global directory
+  install-claude.sh         <- installs skills in Claude Code CLI via symlinks
+  install-antigravity.sh    <- copies skills to Antigravity global directory
+  install-all.sh            <- runs both install-claude.sh and install-antigravity.sh
 ```
 
 Each directory under `skills/` represents a skill. The directory slug is the identifier used as a slash command.
@@ -100,7 +116,7 @@ Followed by Markdown sections:
 
 1. Create a directory under `skills/` with the new skill's slug
 2. Add a `SKILL.md` file following the format above
-3. Write instructions in Brazilian Portuguese
+3. Write instructions in English
 4. Open a pull request
 
 ## License
