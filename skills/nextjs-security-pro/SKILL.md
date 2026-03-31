@@ -1,10 +1,10 @@
 ---
 name: nextjs-security-pro
-description: "Security audit specialist for React/Next.js frameworks. This skill applies the concepts from the 'web-vulnerabilities' skill specifically to the context of SSR, SSG, and App Router in Next.js 16.1.x."
+description: "Security audit specialist for React/Next.js frameworks. This skill applies the concepts from the 'web-vulnerabilities' skill specifically to the context of SSR, SSG, and App Router in Next.js 16.2.x."
 source: ValarMindSkills
 ---
 
-# Next.js 16.1.x Security Implementation Guide
+# Next.js 16.2.x Security Implementation Guide
 
 ## Pre-Requisite Action (CRITICAL)
 >
@@ -12,7 +12,7 @@ source: ValarMindSkills
 
 ## Purpose
 
-This skill translates the 107 vulnerabilities cataloged in the `web-vulnerabilities` skill to the ecosystem and paradigms of the Next.js 16.1.x framework, focusing on the rigorous protection of the App Router, Server Components, Server Actions, Route Handlers, Proxy, and Caching mechanics.
+This skill translates the 107 vulnerabilities cataloged in the `web-vulnerabilities` skill to the ecosystem and paradigms of the Next.js 16.2.x framework, focusing on the rigorous protection of the App Router, Server Components, Server Actions, Route Handlers, Proxy, and Caching mechanics.
 
 ## Core Next.js Security Vectors & Mitigations
 
@@ -24,6 +24,8 @@ This skill translates the 107 vulnerabilities cataloged in the `web-vulnerabilit
   * Ensure the "Data Transfer Object (DTO)" principle and avoid indiscriminate data transfer from the database (e.g., password hashes, tokens) to the client.
   * Check for secret key leakage: environment variables without the `NEXT_PUBLIC_` prefix should NEVER logically appear or be prop-drilled into the browser.
   * Encourage the `server-only` dependency in Data Access Layer (DAL) files to trigger a build error if they are mistakenly imported into the front-end.
+* **CVE-2025-66478 (CVSS 10.0):** Remote Code Execution via a maliciously crafted RSC protocol payload. Affects React 19.0.0–19.2.1 combined with Next.js 13.x–16.x prior to 16.0.7 — Next.js 16.2 satisfies the fix. Any endpoint that deserializes RSC payloads outside the framework must be audited separately. Run `npx fix-react2shell-next` after upgrading to confirm no vulnerable dependencies remain.
+* **CVE-2025-55183 & CVE-2025-55184:** Additional RSC protocol vulnerabilities disclosed alongside CVE-2025-66478. Both are resolved by the same upgrade path (Next.js >= 16.0.7).
 
 ### 2. Insecure Server Actions
 
@@ -34,6 +36,7 @@ This skill translates the 107 vulnerabilities cataloged in the `web-vulnerabilit
   * Inputs in Actions must be sanitized and strictly validated with `Zod` or similar parsers providing full Type-Safety guarantees.
   * Implement aggressive *Rate Limiting* by UserID or IP. The Next.js framework will not do this natively.
   * Ensure Server Action functions do not expose internal implementation details — keep function bodies minimal and delegate to a separate Data Access Layer.
+* **Server Function Logging (New in 16.2):** The dev server now logs Server Action and Server Function calls to the terminal, including function name, arguments, execution time, and source file path. Sensitive arguments (tokens, passwords, PII) will appear in plaintext. Audit CI and staging pipelines to ensure terminal output is not persisted to logs accessible to unauthorized parties. The correct mitigation is validating inputs at the boundary and never passing secrets as function arguments — not suppressing logs.
 
 ### 3. Dangerous Patterns in JSX
 
@@ -80,9 +83,20 @@ This skill translates the 107 vulnerabilities cataloged in the `web-vulnerabilit
 * **Action/Audit:**
   * Alert for GET Route Handlers or URL Params-based state manipulations that cause server-side mutating side-effects. GETs must never cause data mutation. POST Route Handlers in `app/api/...` require strict checks or auxiliary anti-CSRF frameworks when not using Next.js protections.
 
+### 8. Experimental Error Boundary API (`unstable_catchError` / `unstable_retry`)
+
+* **Base Reference:** Phase 3 (24) - Data Leakage.
+* **Next.js 16.2 Context:** Two new experimental APIs were introduced: `unstable_catchError()` intercepts raw server-side error objects thrown inside Server Components; `unstable_retry()` re-triggers a server render without a full page reload (preferred over the generic `reset()` callback for server-side failures).
+* **Risk:** `unstable_catchError()` gives application code direct access to the raw server-side error object. If the caught error is serialized or partially passed as a prop to a Client Component, internal stack traces, file paths, database query strings, or other sensitive internals can leak to the browser.
+* **Action/Audit:**
+  * Any usage of `unstable_catchError()` must sanitize the caught error before passing anything to the client. Never send `error.message`, `error.stack`, or `error.cause` to Client Components unredacted.
+  * Prefer returning a generic error code/ID and looking up a user-facing message on the client from a static map.
+  * Confirm `unstable_retry()` cannot be triggered by unauthenticated users in a way that causes repeated expensive server-side operations (DoS vector).
+  * These APIs are prefixed `unstable_` — they may change in patch releases. Treat any usage as requiring re-audit on each upgrade.
+
 ## Quick Audit Cheat Sheet Next.js 16
 
-During a PR Review on projects with Next.js v16.1.x, execute the essential Check-list validations:
+During a PR Review on projects with Next.js v16.2.x, execute the essential checklist validations:
 
 1. `server-only`: Does the `import "server-only"` module exist in Database logic or private Helpers? [Ref: Web Vuln ID 24]
 2. `use server`: Do *Server Actions* functions perform an authentic control check before querying (e.g., `await auth()`)? Do they use `z.object().parse` against payloads injected into the RPC input? Are function bodies minimal (no exposed internals)? [Ref: Web Vuln ID 40, 48]
@@ -91,9 +105,11 @@ During a PR Review on projects with Next.js v16.1.x, execute the essential Check
 5. `use cache` Safety: Are `"use cache"` directives used on components that depend on user-specific data (cookies, session)? Are `cacheTag()` values sanitized? [Ref: Web Vuln ID 58]
 6. Remote Patterns & Image Security: Is `images.remotePatterns` limited to exact origins? Is `images.dangerouslyAllowLocalIP` absent or `false`? Is `images.maximumRedirects` at default (3) or lower? [Ref: Web Vuln ID 66, CVE-2025-57752]
 7. XSS / JSX Bypass: Does the page have strings rendered in `dangerouslySetInnerHTML`? Were they sanitized with `DOMPurify.sanitize(input)` beforehand? [Ref: Web Vuln ID 2, 56]
+8. RSC Protocol (CVE-2025-66478): Is the application running Next.js >= 16.0.7 (satisfied by 16.2)? Was `npx fix-react2shell-next` executed after upgrading? Are there any custom RSC payload deserializers outside of the framework? [Ref: CVE-2025-66478, CVE-2025-55183, CVE-2025-55184]
+9. Error Boundary Leakage: Is `unstable_catchError()` used anywhere? Are caught error objects sanitized before any data from them reaches a Client Component or HTTP response — no `error.stack`, `error.message`, or `error.cause` unredacted? [Ref: Web Vuln ID 24]
 
 ---
 
 ## When to Use
 
-This skill should be applied whenever there is a request to analyze, review, write, or refactor modern Next.js 16.1.x React applications (App Router) in the context of identifying framework-specific security pitfalls, vulnerability mitigation, and architectural best practices.
+This skill should be applied whenever there is a request to analyze, review, write, or refactor modern Next.js 16.2.x React applications (App Router) in the context of identifying framework-specific security pitfalls, vulnerability mitigation, and architectural best practices.
