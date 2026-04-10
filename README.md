@@ -16,6 +16,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `web-vulnerabilities` | Reference of 100 common web vulnerabilities |
 | `api-security-best-practices` | Secure API design for REST/GraphQL (FastAPI, Gin, Fiber, Elysia) — OWASP API Top 10 2023 |
 | `api-security-testing` | Security testing workflow for APIs with real tools and payloads |
+| `golang-api-security` | Complete security lifecycle for Go 1.25+ APIs (Gin/Fiber) — auto-detect, audit, patch, validate, OWASP API Top 10 2023 |
 
 ## Installation on Claude Code CLI
 
