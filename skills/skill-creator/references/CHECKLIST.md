@@ -53,9 +53,10 @@ Run this checklist before reporting a new skill back to the user. Failing items 
 - [ ] `README.md` "Available skills" table has a row for the new skill.
 - [ ] Install roundtrip succeeds:
       ```bash
-      bash scripts/install-claude.sh
-      ls ~/.claude/commands/<slug>       # should print the symlinked path
+      bash scripts/install-plugin-claude.sh
+      claude plugins list | grep valarmind@valarmind    # should show the plugin as enabled
       ```
+      After install, the skill is reachable as `/valarmind:<slug>`.
 - [ ] (If targeting Antigravity) `bash scripts/install-antigravity.sh` also succeeds.
 
 ## Manual smoke test

@@ -17,8 +17,8 @@ Meta-skill that scaffolds new skills for the ValarMindSkills repository followin
 ## Do not use when
 
 - User wants to **edit** an existing skill — open the file directly
-- User wants to **install** skills — use `scripts/install-claude.sh` or `install-antigravity.sh`
-- User wants to build a **Claude Code plugin** — that is a different artifact
+- User wants to **install** skills — use `scripts/install-plugin-claude.sh` or `scripts/install-antigravity.sh`
+- User wants to **rebuild the plugin itself** (`.claude-plugin/`, `hooks/`) — that is a separate concern; this skill scaffolds skill content only
 
 ## Goal
 
@@ -178,11 +178,11 @@ Frontmatter:
   description: <first 120 chars…>
 
 Install:
-  bash scripts/install-claude.sh          # Claude Code CLI
+  bash scripts/install-plugin-claude.sh   # Claude Code CLI (plugin valarmind@valarmind)
   bash scripts/install-all.sh             # Claude Code + Antigravity
 
 Invoke:
-  /<slug>
+  /valarmind:<slug>
 ```
 
 Then offer to update `README.md` and, if the user agrees, add the new row to the "Available skills" table.

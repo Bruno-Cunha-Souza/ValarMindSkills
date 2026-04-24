@@ -82,6 +82,6 @@ A well-disclosed skill should feel *surprisingly short* on first read, because m
 - **`README.md` inside a skill.** Redundant with `SKILL.md`. Do not add one.
 - **Nested `references/`.** One level of depth only. Do not create `references/subtopic/FILE.md`.
 - **Relative links between skills.** Breaks the symlink install model.
-- **Hidden dot-files inside a skill.** `install-claude.sh` will happily symlink them into `~/.claude/commands/`; the symptoms are confusing. Keep the directory clean.
+- **Hidden dot-files inside a skill.** The plugin loader would pick them up and expose unintended content; the symptoms are confusing. Keep the directory clean.
 - **Writing Portuguese inside `SKILL.md` or `references/`.** The repository convention per `README.md §Contributing` is English content. Only the `description` may carry bilingual trigger phrases.
 - **Duplicating content across `SKILL.md` and `references/`.** If the body references a topic and then re-explains it, delete the re-explanation — link and trust the reference.

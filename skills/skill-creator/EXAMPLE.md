@@ -102,10 +102,10 @@ Frontmatter:
   description: "Use when the user asks to print, say, or return 'hello world'…"
 
 Install:
-  bash scripts/install-claude.sh
+  bash scripts/install-plugin-claude.sh
 
 Invoke:
-  /hello-skill
+  /valarmind:hello-skill
 ```
 
 Offered to append the new row to `README.md`; user accepted.
