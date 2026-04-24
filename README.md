@@ -29,14 +29,14 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ## Installation on Claude Code CLI
 
-### Install script (recommended)
+### Plugin install (recommended)
 
-The repository includes a script that creates symlinks from `~/.claude/commands/` to each skill. Changes in the repo are reflected immediately — no need to re-run after editing a skill.
+Registers the repository as a local Claude Code marketplace and installs `valarmind@valarmind`. Brings all 20 skills under the `/valarmind:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
 cd ValarMindSkills
-bash scripts/install-claude.sh
+bash scripts/install-plugin-claude.sh
 ```
 
 To install in both Claude Code CLI and Antigravity in one command, use the unified installer:
@@ -45,20 +45,14 @@ To install in both Claude Code CLI and Antigravity in one command, use the unifi
 bash scripts/install-all.sh
 ```
 
-### Plugin (auto-activates caveman hooks)
+To uninstall: `claude plugins uninstall valarmind@valarmind && claude plugins marketplace remove valarmind`.
 
-Installing as a Claude Code plugin (instead of the symlink script) also wires up the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`). Slash commands get namespaced, e.g. `/valarmind:caveman`, `/valarmind:code-review`.
+### Alternative: development load (no install)
 
 ```bash
-# Persistent install (recommended) — registers the repo as a local marketplace
-# and installs valarmind@valarmind.
-bash scripts/install-plugin.sh
-
-# Development install — reads from the repo in place. Run `/reload-plugins` after edits.
+# Reads the repo in place. Run /reload-plugins after edits.
 claude --plugin-dir /path/to/ValarMindSkills
 ```
-
-To uninstall: `claude plugins uninstall valarmind@valarmind && claude plugins marketplace remove valarmind`.
 
 After install, open a new session and caveman mode activates at level `full` by default. Control with:
 
@@ -117,13 +111,21 @@ cp -r ValarMindSkills/skills/* .agent/skills/
 ## Project structure
 
 ```text
+.claude-plugin/
+  plugin.json               <- plugin manifest (name, hooks)
+  marketplace.json          <- local marketplace manifest
+hooks/
+  caveman-activate.js       <- SessionStart hook
+  caveman-mode-tracker.js   <- UserPromptSubmit hook
+  caveman-config.js         <- shared helpers
+  caveman-statusline.sh     <- optional statusline badge
 skills/
   <slug>/
     SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)
 scripts/
-  install-claude.sh         <- installs skills in Claude Code CLI via symlinks
+  install-plugin-claude.sh  <- persistent plugin install for Claude Code CLI
   install-antigravity.sh    <- copies skills to Antigravity global directory
-  install-all.sh            <- runs both install-claude.sh and install-antigravity.sh
+  install-all.sh            <- runs install-plugin-claude.sh and install-antigravity.sh
 ```
 
 Each directory under `skills/` represents a skill. The directory slug is the identifier used as a slash command.

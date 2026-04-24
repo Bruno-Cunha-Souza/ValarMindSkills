@@ -9,7 +9,7 @@ echo " ValarMindSkills — Install All"
 echo "========================================"
 echo ""
 
-bash "$SCRIPT_DIR/install-claude.sh"
+bash "$SCRIPT_DIR/install-plugin-claude.sh"
 
 echo ""
 echo "========================================"
