@@ -6,6 +6,9 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 | Skill | Description |
 | --- | --- |
+| `caveman` | Terse response mode — drops articles, filler, hedging. Intensity levels: lite / full / ultra |
+| `caveman-commit` | Ultra-compressed Conventional Commit. Subject ≤ 50 chars; body only when the *why* is non-obvious |
+| `caveman-review` | One-line PR review comments in the shape `path:line — problem. fix.`, grouped by severity |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
 | `code-review` | Elite code review expert specializing in modern AI-powered code |
