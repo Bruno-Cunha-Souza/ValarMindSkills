@@ -1,0 +1,38 @@
+{
+  "name": "valarmind",
+  "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit).",
+  "version": "0.1.0",
+  "author": {
+    "name": "Bruno Cunha Souza",
+    "url": "https://github.com/Bruno-Cunha-Souza"
+  },
+  "homepage": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
+  "repository": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
+  "license": "MIT",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading caveman mode..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking caveman mode..."
+          }
+        ]
+      }
+    ]
+  }
+}

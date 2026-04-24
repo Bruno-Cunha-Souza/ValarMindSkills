@@ -45,12 +45,38 @@ To install in both Claude Code CLI and Antigravity in one command, use the unifi
 bash scripts/install-all.sh
 ```
 
-### Plugin
+### Plugin (auto-activates caveman hooks)
 
-Alternatively, use as a Claude Code plugin:
+Installing as a Claude Code plugin (instead of the symlink script) also wires up the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`). Slash commands get namespaced, e.g. `/valarmind:caveman`, `/valarmind:code-review`.
 
 ```bash
-claude plugins add /path/to/ValarMindSkills
+# Persistent install (recommended) — registers the repo as a local marketplace
+# and installs valarmind@valarmind.
+bash scripts/install-plugin.sh
+
+# Development install — reads from the repo in place. Run `/reload-plugins` after edits.
+claude --plugin-dir /path/to/ValarMindSkills
+```
+
+To uninstall: `claude plugins uninstall valarmind@valarmind && claude plugins marketplace remove valarmind`.
+
+After install, open a new session and caveman mode activates at level `full` by default. Control with:
+
+- `/valarmind:caveman lite|full|ultra` — switch intensity
+- `/valarmind:caveman off` — deactivate
+- `stop caveman` / `normal mode` (natural language) — deactivate
+
+Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, or with `defaultMode` in `~/.config/caveman/config.json`.
+
+#### Statusline badge (optional)
+
+The plugin ships a badge script that shows `[CAVEMAN]` / `[CAVEMAN:ULTRA]` in your Claude Code status line. To enable, add to `~/.claude/settings.json`:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash \"/path/to/ValarMindSkills/hooks/caveman-statusline.sh\""
+}
 ```
 
 ## Installation on Antigravity IDE

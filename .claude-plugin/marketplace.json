@@ -1,0 +1,19 @@
+{
+  "name": "valarmind",
+  "metadata": {
+    "description": "ValarMind local marketplace — ships the valarmind plugin (skills + caveman auto-activation hooks)"
+  },
+  "owner": {
+    "name": "Bruno Cunha Souza",
+    "url": "https://github.com/Bruno-Cunha-Souza"
+  },
+  "plugins": [
+    {
+      "name": "valarmind",
+      "description": "ValarMindSkills bundle — all project skills plus caveman SessionStart + UserPromptSubmit hooks",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills"
+    }
+  ]
+}
