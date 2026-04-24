@@ -98,6 +98,17 @@ else
         current_cmd=$(jq -r '.statusLine.command // ""' "$SETTINGS_FILE")
         if [ "$current_cmd" = "$STATUSLINE_CMD" ]; then
           echo "  Statusline already configured — no changes."
+        elif [[ "$current_cmd" == *"$REPO_DIR/hooks/"*"statusline"* ]] \
+          || [[ "$current_cmd" == *"$REPO_DIR/hooks/caveman/caveman-statusline.sh"* ]]; then
+          backup="$SETTINGS_FILE.bak.$(date +%Y%m%d%H%M%S)"
+          cp "$SETTINGS_FILE" "$backup"
+          tmp=$(mktemp)
+          jq --arg cmd "$STATUSLINE_CMD" \
+            '.statusLine = {type: "command", command: $cmd}' "$SETTINGS_FILE" > "$tmp" \
+            && mv "$tmp" "$SETTINGS_FILE"
+          echo "  Upgraded ValarMind statusLine to new path (backup: $backup)."
+          echo "    old: $current_cmd"
+          echo "    new: $STATUSLINE_CMD"
         else
           echo "  statusLine already present with a different command — leaving as-is."
           echo "    current: $current_cmd"

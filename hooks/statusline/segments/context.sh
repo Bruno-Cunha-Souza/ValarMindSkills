@@ -36,6 +36,6 @@ fmt_tokens() {
   fi
 }
 
-printf '%b%s%%\033[0m \033[38;5;245m%s/%s\033[0m' \
+printf '\033[38;5;245mcontext:\033[0m %b%s%%\033[0m \033[38;5;245m%s/%s\033[0m' \
   "$color" "$pct_int" \
   "$(fmt_tokens "$total")" "$(fmt_tokens "$size")"
