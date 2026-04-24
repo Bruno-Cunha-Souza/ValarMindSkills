@@ -2,7 +2,7 @@
 
 ## caveman (Julius Brussee)
 
-The files in `hooks/caveman/` (`caveman-activate.js`, `caveman-mode-tracker.js`, `caveman-config.js`, `caveman-statusline.sh`) are ported from [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) and retain the original MIT license. The three `skills/caveman*/` skills were also modeled on the upstream project.
+The files in `hooks/caveman/` (`caveman-activate.js`, `caveman-mode-tracker.js`, `caveman-config.js`) and the caveman statusline segment at `hooks/statusline/segments/caveman.sh` are ported from [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) and retain the original MIT license. The three `skills/caveman*/` skills were also modeled on the upstream project.
 
 ```
 MIT License

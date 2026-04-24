@@ -62,16 +62,20 @@ After install, open a new session and caveman mode activates at level `full` by 
 
 Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, or with `defaultMode` in `~/.config/caveman/config.json`.
 
-#### Statusline badge (optional)
+#### Statusline
 
-The plugin ships a badge script that shows `[CAVEMAN]` / `[CAVEMAN:ULTRA]` in your Claude Code status line. To enable, add to `~/.claude/settings.json`:
+The plugin ships a composable statusline that combines a Caveman mode badge (`[CAVEMAN]` / `[CAVEMAN:ULTRA]`) with the current context window usage (e.g. `42% 420k/1M`, color-coded by threshold).
+
+`scripts/install-plugin-claude.sh` configures it automatically: it adds `statusLine` to `~/.claude/settings.json` (creating the file if needed, backing it up if it already exists). If `statusLine` is already set to a different command, the installer leaves it untouched and prints both values so you can choose. Set `VALARMIND_SKIP_STATUSLINE=1` to opt out, or remove it manually:
 
 ```json
 "statusLine": {
   "type": "command",
-  "command": "bash \"/path/to/ValarMindSkills/hooks/caveman/caveman-statusline.sh\""
+  "command": "bash \"/path/to/ValarMindSkills/hooks/statusline/statusline.sh\""
 }
 ```
+
+The statusline is built from independent segments under `hooks/statusline/segments/` — additional segments can be added there without touching the Caveman plugin.
 
 ## Installation on Antigravity IDE
 
@@ -119,7 +123,11 @@ hooks/
     caveman-activate.js       <- SessionStart hook
     caveman-mode-tracker.js   <- UserPromptSubmit hook
     caveman-config.js         <- shared helpers
-    caveman-statusline.sh     <- optional statusline badge
+  statusline/
+    statusline.sh             <- composer (entry registered in settings.json)
+    segments/
+      caveman.sh              <- caveman mode badge segment
+      context.sh              <- context window usage segment
 skills/
   <slug>/
     SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)

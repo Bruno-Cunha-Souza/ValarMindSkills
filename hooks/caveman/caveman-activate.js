@@ -97,16 +97,15 @@ try {
 
   if (!hasStatusline) {
     const isWindows = process.platform === 'win32';
-    const scriptName = 'caveman-statusline.sh';
-    const scriptPath = path.join(__dirname, scriptName);
+    const scriptPath = path.join(__dirname, '..', 'statusline', 'statusline.sh');
     const command = isWindows
       ? `powershell -ExecutionPolicy Bypass -File "${scriptPath}"`
       : `bash "${scriptPath}"`;
     const statusLineSnippet =
       '"statusLine": { "type": "command", "command": ' + JSON.stringify(command) + ' }';
     output += "\n\n" +
-      "STATUSLINE SETUP NEEDED: valarmind plugin includes statusline badge showing active mode " +
-      "(e.g. [CAVEMAN], [CAVEMAN:ULTRA]). Not configured yet. " +
+      "STATUSLINE SETUP NEEDED: valarmind plugin includes a composable statusline " +
+      "(caveman badge + context window usage, e.g. [CAVEMAN] 42% 420k/1M). Not configured yet. " +
       "To enable, add to " + path.join(claudeDir, 'settings.json') + ": " +
       statusLineSnippet;
   }
