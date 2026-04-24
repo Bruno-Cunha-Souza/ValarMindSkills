@@ -15,7 +15,7 @@ fi
 export STATUSLINE_JSON
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SEGMENTS=(caveman context)
+SEGMENTS=(caveman superpowers context)
 SEPARATOR=' \033[38;5;240m|\033[0m '
 
 OUT=""

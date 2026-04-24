@@ -1,6 +1,6 @@
 {
   "name": "valarmind",
-  "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit).",
+  "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default) and superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default).",
   "version": "0.1.0",
   "author": {
     "name": "Bruno Cunha Souza",
@@ -18,6 +18,12 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-activate.js\"",
             "timeout": 5,
             "statusMessage": "Loading caveman mode..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading superpowers mode..."
           }
         ]
       }
@@ -30,6 +36,12 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-mode-tracker.js\"",
             "timeout": 5,
             "statusMessage": "Tracking caveman mode..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking superpowers mode..."
           }
         ]
       }

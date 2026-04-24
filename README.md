@@ -26,6 +26,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
+| `superpowers` | Engineering-discipline posture — 1% skill-scan rule, four pillars (TDD, systematic, complexity reduction, evidence), twelve red flags, seven-stage workflow. **OFF by default**; opt in per session or persistently |
 
 ## Installation on Claude Code CLI
 
@@ -61,6 +62,18 @@ After install, open a new session and caveman mode activates at level `full` by 
 - `stop caveman` / `normal mode` (natural language) — deactivate
 
 Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, or with `defaultMode` in `~/.config/caveman/config.json`.
+
+#### Superpowers (off by default)
+
+The plugin also ships a `superpowers` posture inspired by [obra/superpowers](https://github.com/obra/superpowers): scan skills before each reply (1% rule), follow the user > skills > defaults hierarchy, refuse twelve rationalizations, apply four pillars (TDD, systematic, complexity reduction, evidence), and walk a seven-stage workflow when scope warrants it. Unlike caveman, **superpowers is OFF by default**; you opt in.
+
+- `/valarmind:superpowers on` (or bare `/valarmind:superpowers`) — activate for the current session
+- `/valarmind:superpowers off` — deactivate
+- `stop superpowers` / `desativar superpowers` (natural language) — deactivate
+
+Make activation persistent with `SUPERPOWERS_DEFAULT_MODE=on` in your environment, or with `{"defaultMode": "on"}` in `~/.config/superpowers/config.json`.
+
+Caveman and superpowers coexist freely — caveman shapes voice, superpowers shapes process. When both are active, the statusline renders both badges (`[CAVEMAN] | [SUPERPOWERS] | context: …`).
 
 #### Statusline
 
@@ -120,14 +133,19 @@ cp -r ValarMindSkills/skills/* .agent/skills/
   marketplace.json          <- local marketplace manifest
 hooks/
   caveman/
-    caveman-activate.js       <- SessionStart hook
-    caveman-mode-tracker.js   <- UserPromptSubmit hook
-    caveman-config.js         <- shared helpers
+    caveman-activate.js         <- SessionStart hook (on by default)
+    caveman-mode-tracker.js     <- UserPromptSubmit hook
+    caveman-config.js           <- shared helpers
+  superpowers/
+    superpowers-activate.js     <- SessionStart hook (off by default)
+    superpowers-mode-tracker.js <- UserPromptSubmit hook
+    superpowers-config.js       <- shared helpers
   statusline/
-    statusline.sh             <- composer (entry registered in settings.json)
+    statusline.sh               <- composer (entry registered in settings.json)
     segments/
-      caveman.sh              <- caveman mode badge segment
-      context.sh              <- context window usage segment
+      caveman.sh                <- caveman mode badge segment
+      superpowers.sh            <- superpowers mode badge segment
+      context.sh                <- context window usage segment
 skills/
   <slug>/
     SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)
