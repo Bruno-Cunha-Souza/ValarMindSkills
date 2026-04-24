@@ -69,7 +69,7 @@ The plugin ships a badge script that shows `[CAVEMAN]` / `[CAVEMAN:ULTRA]` in yo
 ```json
 "statusLine": {
   "type": "command",
-  "command": "bash \"/path/to/ValarMindSkills/hooks/caveman-statusline.sh\""
+  "command": "bash \"/path/to/ValarMindSkills/hooks/caveman/caveman-statusline.sh\""
 }
 ```
 
@@ -115,10 +115,11 @@ cp -r ValarMindSkills/skills/* .agent/skills/
   plugin.json               <- plugin manifest (name, hooks)
   marketplace.json          <- local marketplace manifest
 hooks/
-  caveman-activate.js       <- SessionStart hook
-  caveman-mode-tracker.js   <- UserPromptSubmit hook
-  caveman-config.js         <- shared helpers
-  caveman-statusline.sh     <- optional statusline badge
+  caveman/
+    caveman-activate.js       <- SessionStart hook
+    caveman-mode-tracker.js   <- UserPromptSubmit hook
+    caveman-config.js         <- shared helpers
+    caveman-statusline.sh     <- optional statusline badge
 skills/
   <slug>/
     SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)

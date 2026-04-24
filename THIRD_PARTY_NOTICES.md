@@ -2,7 +2,7 @@
 
 ## caveman (Julius Brussee)
 
-The files in `hooks/` (`caveman-activate.js`, `caveman-mode-tracker.js`, `caveman-config.js`, `caveman-statusline.sh`) are ported from [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) and retain the original MIT license. The three `skills/caveman*/` skills were also modeled on the upstream project.
+The files in `hooks/caveman/` (`caveman-activate.js`, `caveman-mode-tracker.js`, `caveman-config.js`, `caveman-statusline.sh`) are ported from [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) and retain the original MIT license. The three `skills/caveman*/` skills were also modeled on the upstream project.
 
 ```
 MIT License
@@ -34,4 +34,4 @@ SOFTWARE.
 - Dropped `compress` mode / `caveman-compress` skill.
 - Adjusted slash-command regex to match plugin-namespaced `/valarmind:caveman*` in addition to bare `/caveman*`.
 - Added Portuguese (pt-BR) activation/deactivation phrases to the natural-language matchers (`ative caveman`, `modo caveman`, `parar caveman`, `modo normal`).
-- Filter logic in `caveman-activate.js` adapted to the `skills/caveman/SKILL.md` table format used in this repository.
+- Filter logic in `hooks/caveman/caveman-activate.js` adapted to the `skills/caveman/SKILL.md` table format used in this repository.
