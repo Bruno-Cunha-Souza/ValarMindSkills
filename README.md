@@ -23,6 +23,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `nextjs-optimization-pro` | Performance optimization specialist for Next.js 16.2.x — Server Components, rendering, client/server boundaries |
 | `nextjs-security-pro` | Complete security lifecycle for Next.js 16.2.x App Router — audit, patch, validate, OWASP Top 10 |
 | `obsidian-bases` | Create and edit Obsidian Bases (.base files) with views, filters, formulas, and summaries |
+| `obsidian-brain` | Token-efficient session-memory for projects whose CLAUDE.md/AGENTS.md references an Obsidian vault — auto-detects, bootstraps `<vault>/brain/`, lazy-loads index, writes atomic notes for sessions/topics/decisions |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
@@ -32,7 +33,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ### Plugin install (recommended)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 20 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 22 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain `SessionStart` detection hook.
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git

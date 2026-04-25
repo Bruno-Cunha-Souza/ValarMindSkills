@@ -13,7 +13,7 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 1. Brainstorm | — | `@skill-creator` (task is "create/edit a skill") |
 | 2. Worktree | — | — (handled by harness `EnterWorktree`) |
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
-| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@api-security-best-practices`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
+| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@api-security-best-practices`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
 | 5. TDD + debugging | `@code-debugger` (when red/error) | `@api-security-testing` (API under test) |
 | 6. Request review | `@code-review` *or* `@github-pr-review` | `@caveman-review` (terse preference); `@nextjs-security-pro`, `@golang-api-security`, `@web-vulnerabilities` (security-sensitive diff) |
 | 7. Finish branch | `@github-commit` *or* `@caveman-commit` | `@github-release-note` (tag/release in scope) |
@@ -49,6 +49,8 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 
 ### Obsidian
 
+- `IF` `CLAUDE.md` or `AGENTS.md` in cwd (or up to 3 ancestors) references an Obsidian vault
+  → `@obsidian-brain` (load index before any project-specific reasoning; session memory across runs)
 - `IF` working file is `.md` inside a vault (path contains `ValarMindObsidian/` or sibling vault)
   → `@obsidian-markdown` (OFM syntax: wikilinks, callouts, properties, embeds)
 - `IF` task is "operate on the vault" (read/create/search notes from CLI, plugin/theme dev)
