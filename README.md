@@ -27,6 +27,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `obsidian-brain` | Token-efficient session-memory for projects whose CLAUDE.md/AGENTS.md references an Obsidian vault — auto-detects, bootstraps `<vault>/brain/`, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when a vault is detected; the statusline shows a roxo `[OBSIDIAN-BRAIN]` badge while active |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
+| `prompt-engineering` | Lifecycle skill that audits, hardens, translates, and rewrites LLM prompts. Primary targets: skill prompts (`SKILL.md`), RAG prompts, and agent tool descriptions. Detects clarity / hallucination / token-waste gaps; preserves safety rules; outputs original verbatim, severity-ranked findings (Critical/Major/Minor) with risk tags (SAFE/REVIEW/BREAKING), rewritten prompt, and token delta |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
 | `superpowers` | Engineering-discipline posture — 1% skill-scan rule, four pillars (TDD, systematic, complexity reduction, evidence), twelve red flags, seven-stage workflow. **OFF by default**; opt in per session or persistently |
 
@@ -34,7 +35,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ### Plugin install (recommended)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 23 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 24 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
