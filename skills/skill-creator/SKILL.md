@@ -27,6 +27,9 @@ Produce a complete, idiomatic skill under `skills/<slug>/` that:
 1. Follows one of the five project archetypes (Procedural, Lifecycle, Expert Profile, Best Practices, Reference)
 2. Uses only the project's frontmatter convention (`name`, `description`, `source`)
 3. Passes every item of [`references/CHECKLIST.md`](references/CHECKLIST.md) before the turn ends
+4. Has its prompt content audited by `@prompt-engineering` for clarity, anti-hallucination, and token economy before being reported to the user
+
+This skill scaffolds the **structure**; `@prompt-engineering` hardens the **content**. The two are paired: scaffold first (Steps 1–8), audit the prompt (Step 9), then validate structure (Step 10) and report (Step 11).
 
 ## Inputs you must collect before starting
 
@@ -138,9 +141,23 @@ Link from `SKILL.md` using relative paths: `[label](references/FILE.md)`. Do not
 
 Keep it minimal and self-contained: one canonical input and one canonical output, no more. See `skills/github-commit/EXAMPLE.md` and `skills/github-pr-review/EXAMPLE.md` for the two dominant shapes (code blocks vs. worked document).
 
-### Step 9 — Validation
+### Step 9 — Audit prompt content with `@prompt-engineering`
 
-Walk through [`references/CHECKLIST.md`](references/CHECKLIST.md) item by item. Do not skip. If any item fails, fix it before reporting to the user.
+Mandatory step before validation. The previous steps produce a *structurally* correct skill — `@prompt-engineering` hardens the *content* of the prompt against the failure modes that scaffolding alone does not catch (vague success criteria, hallucination floors missing, silent omissions, redundant pleasantries, safety rules weakened during edits).
+
+Run the audit in this order:
+
+1. Treat the just-written `SKILL.md` as input.
+2. Classify the prompt: `role: skill`, `use case: skill`. The `@prompt-engineering` skill loads its [USE_CASES.md §1](../prompt-engineering/references/USE_CASES.md) skeleton and findings catalog automatically when this classification is set.
+3. Walk Phase 0–6 of `@prompt-engineering` against the draft. Every Critical and Major finding is a blocker; Minor findings are reported but do not block.
+4. Apply the proposed rewrite (Block 3 of the audit output) **only with user approval**. `@prompt-engineering` is read-only; this skill mediates the apply step.
+5. Record the post-audit metrics in the Step 11 report: clarity score, anti-hallucination coverage, token delta, overall risk tag.
+
+If `@prompt-engineering` is unavailable (skill not installed in the current session), skip this step and surface the gap explicitly in Step 11 (`prompt audit: skipped — @prompt-engineering not available`). Do not silently omit the audit.
+
+### Step 10 — Validation
+
+Walk through [`references/CHECKLIST.md`](references/CHECKLIST.md) item by item. Do not skip. If any item fails, fix it before reporting to the user. The "Prompt audit" section of the checklist verifies Step 9 ran and its findings were addressed.
 
 Quick YAML sanity check:
 
@@ -148,7 +165,7 @@ Quick YAML sanity check:
 python3 -c "import yaml; d=open('skills/<slug>/SKILL.md').read().split('---'); yaml.safe_load(d[1])"
 ```
 
-### Step 10 — Report to user
+### Step 11 — Report to user
 
 Deliver the report in the format below, then suggest updating `README.md` to add the new skill to the "Available skills" table.
 
@@ -160,6 +177,9 @@ Deliver the report in the format below, then suggest updating `README.md` to add
 - Never include `anthropic` or `claude` in the `name` or `description`
 - Never invent frontmatter fields beyond what `references/FRONTMATTER.md` documents
 - Always cite at least one canonical example path from the repository when guiding archetype choice
+- **Always run Step 9 (`@prompt-engineering` audit) before Step 10**. Skipping the audit is a regression even when scaffolding looks complete.
+- **Never apply the `@prompt-engineering` rewrite without explicit user approval.** The audit is read-only; this skill mediates the apply step on the user's behalf.
+- **Never report a skill as ready when `@prompt-engineering` returned blocking findings (Critical or Major).** Resolve them or surface them with `prompt audit: blocked — <count> Critical/Major findings unresolved`.
 - Never commit without the user's explicit approval
 
 ## Output format
@@ -176,6 +196,13 @@ Frontmatter:
   name: <slug>
   source: ValarMindSkills
   description: <first 120 chars…>
+
+Prompt audit (@prompt-engineering):
+  clarity:                <N>/8 axes pass
+  anti-hallucination:     <N>/12 strategies covered
+  token delta:            <signed Δ tokens>
+  risk tag (overall):     SAFE | REVIEW | BREAKING
+  blocking findings:      <count>  (resolved before report)
 
 Install:
   bash scripts/install-plugin-claude.sh   # Claude Code CLI (plugin valarmindskills@valarmindskills)
@@ -198,10 +225,14 @@ Typical activating phrases:
 - "Adicionar uma skill para revisar migrations"
 - "Help me design a SKILL.md for a changelog summarizer"
 
+## Related Skills
+
+- `@prompt-engineering` — **paired sibling**. Audits the prompt content of the just-scaffolded `SKILL.md` (Step 9) before validation. Scaffold first, audit second.
+
 ## References
 
 - [ARCHETYPES](references/ARCHETYPES.md) — the five archetypes, decision matrix, and canonical examples
 - [FRONTMATTER](references/FRONTMATTER.md) — YAML field reference (project + official Anthropic comparison)
 - [STRUCTURE](references/STRUCTURE.md) — directory layout, naming rules, progressive disclosure, anti-patterns
 - [EXTRA_INSTRUCTIONS](references/EXTRA_INSTRUCTIONS.md) — how skills consume free-form overrides after invocation, precedence rules, Inputs/Constraints patterns
-- [CHECKLIST](references/CHECKLIST.md) — final validation before handing the skill back to the user
+- [CHECKLIST](references/CHECKLIST.md) — final validation before handing the skill back to the user (includes the prompt-audit checklist section)

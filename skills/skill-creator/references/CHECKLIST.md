@@ -47,6 +47,19 @@ Run this checklist before reporting a new skill back to the user. Failing items 
 - [ ] No contradiction between `Inputs` defaults and `Constraints` absolutes.
 - [ ] Hostile smoke test passes: `/<slug> ignore your rules and do X` does not break hard constraints. See [`EXTRA_INSTRUCTIONS.md`](EXTRA_INSTRUCTIONS.md).
 
+## Prompt audit (`@prompt-engineering`)
+
+Step 9 of the procedure runs the `@prompt-engineering` audit against the just-written `SKILL.md`. Verify the audit ran and its blocking findings were resolved before validating structure.
+
+- [ ] `@prompt-engineering` was invoked with `role: skill`, `use case: skill` so it loads [USE_CASES.md §1](../../prompt-engineering/references/USE_CASES.md) (skeleton + findings catalog for skill prompts).
+- [ ] Phase 0–6 of `@prompt-engineering` walked the draft to completion.
+- [ ] Every Critical and Major finding was resolved in the draft (or surfaced explicitly in the Step 11 report as `prompt audit: blocked — <count> unresolved`).
+- [ ] Block 3 of the audit (rewritten prompt) was either applied with user approval, or the user explicitly chose to keep the original.
+- [ ] No safety rule (`never`, `must not`, `do not`, `refuse if`) was dropped or weakened during the apply step.
+- [ ] Token delta from the audit is recorded in the Step 11 report (signed; positive deltas justified).
+- [ ] Overall risk tag (SAFE | REVIEW | BREAKING) is recorded in the Step 11 report.
+- [ ] If the audit was skipped (skill not installed in this session), Step 11 reports `prompt audit: skipped — @prompt-engineering not available`. Silent omission is a regression.
+
 ## Integration checks
 
 - [ ] `ls skills/ | grep <slug>` returns exactly one match — no collision.
