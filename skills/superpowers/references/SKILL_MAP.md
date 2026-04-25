@@ -13,7 +13,7 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 1. Brainstorm | — | `@skill-creator` (task is "create/edit a skill") |
 | 2. Worktree | — | — (handled by harness `EnterWorktree`) |
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
-| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@api-security-best-practices`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
+| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@api-security-best-practices`, `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
 | 5. TDD + debugging | `@code-debugger` (when red/error) | `@api-security-testing` (API under test) |
 | 6. Request review | `@code-review` *or* `@github-pr-review` | `@caveman-review` (terse preference); `@nextjs-security-pro`, `@golang-api-security`, `@web-vulnerabilities` (security-sensitive diff) |
 | 7. Finish branch | `@github-commit` *or* `@caveman-commit` | `@github-release-note` (tag/release in scope) |
@@ -41,6 +41,13 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
   → `@api-security-best-practices` (design phase) + `@api-security-testing` (validation phase)
 - `IF` API in FastAPI / Bun+Elysia / Gin / Fiber and security focus is "find issues now"
   → `@api-security-testing` (active OWASP API Top 10 2023 tests)
+
+### CI/CD / GitHub Actions
+
+- `IF` `.github/workflows/` is missing or empty AND project root has `go.mod` / `Cargo.toml` / `package.json`, OR task is "set up CI/CD", "create GitHub Actions workflow", "add CI pipeline", "scaffold pipeline", "criar CI", "gerar pipeline", "configurar CI/CD"
+  → `@ci-cd-generator` (phased GitHub Actions generation with documented heuristics: coverage gates, N+1 detection, race condition PBT, memory leak detection, optional load testing — plus SAST/SCA/secret/container/SBOM gates per chosen security level)
+- `IF` editing an existing workflow with security-sensitive content (secrets, third-party actions without SHA pin, `pull_request_target`, broad `permissions:`)
+  → `@ci-cd-generator` (refactor toward safer defaults) + `@web-vulnerabilities` (catalog of supply-chain attack classes)
 
 ### Generic web vulnerabilities
 

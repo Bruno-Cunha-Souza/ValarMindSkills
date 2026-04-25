@@ -9,6 +9,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `caveman` | Terse response mode — drops articles, filler, hedging. Intensity levels: lite / full / ultra |
 | `caveman-commit` | Ultra-compressed Conventional Commit. Subject ≤ 50 chars; body only when the *why* is non-obvious |
 | `caveman-review` | One-line PR review comments in the shape `path:line — problem. fix.`, grouped by severity |
+| `ci-cd-generator` | Generates a complete GitHub Actions CI/CD pipeline for Go, Rust, or TypeScript projects. Auto-detects language and package manager; encodes opinionated defaults (coverage gates, N+1 detection, race condition PBT, memory leak detection, optional load testing); wires SAST/SCA/secret scan/container scan/SBOM by security level (`minimal` / `standard` / `strict`) |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
 | `code-review` | Elite code review expert specializing in modern AI-powered code |
@@ -33,7 +34,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ### Plugin install (recommended)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 22 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 23 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
