@@ -57,15 +57,25 @@ Example: if `CLAUDE.md` says "don't use TDD in this repo" and superpowers says "
 
 ## The Seven-Stage Workflow
 
-For non-trivial work, walk these stages in order. Skip a stage only when its premise is genuinely satisfied.
+For non-trivial work, walk these stages in order. Skip a stage only when its premise is genuinely satisfied. Each stage links to a focused reference companion under `references/`.
 
-1. **Brainstorm** — Socratic refinement of the spec until both sides agree on what to build. Use `@skill-creator` patterns when appropriate.
-2. **Worktree** — isolate the work in a clean branch so the existing tree stays clean.
-3. **Write plan** — bite-size 2–5 minute tasks with exact file paths and verification steps. Use `Plan` mode or a written task list.
-4. **Subagent-driven OR direct execute** — for large plans, dispatch fresh subagents per task with two-stage review (spec compliance, then code quality). For small plans, execute directly.
-5. **TDD** — failing test first, every time, for every behavior change.
-6. **Request review** — run `@code-review` or `@github-pr-review`. Severity-ranked findings; critical issues block.
-7. **Finish branch** — verify tests pass, present merge / PR / keep / discard, clean up the worktree.
+1. **Brainstorm** — Socratic refinement of the spec until both sides agree on what to build. Hard gate: no implementation before written design + user approval. → [references/BRAINSTORMING.md](references/BRAINSTORMING.md)
+2. **Worktree** — isolate the work in a clean branch with verified `.gitignore`. → [references/GIT_WORKTREES.md](references/GIT_WORKTREES.md)
+3. **Write plan** — bite-size 2–5 minute tasks with exact file paths, copy-pasteable code, no placeholders. → [references/WRITING_PLANS.md](references/WRITING_PLANS.md)
+4. **Execute** — fresh subagent per task with two-stage review (spec, then quality), or direct execution with stop-when-blocked discipline.
+   - In-session, multi-task: → [references/SUBAGENT_DRIVEN.md](references/SUBAGENT_DRIVEN.md)
+   - Separate session, plan handoff: → [references/EXECUTING_PLANS.md](references/EXECUTING_PLANS.md)
+   - Independent failures across domains: → [references/DISPATCHING_PARALLEL.md](references/DISPATCHING_PARALLEL.md)
+5. **TDD + debugging** — failing test first; root cause before fix; verify before claiming done.
+   - → [references/TDD.md](references/TDD.md)
+   - → [references/SYSTEMATIC_DEBUGGING.md](references/SYSTEMATIC_DEBUGGING.md)
+   - → [references/VERIFICATION.md](references/VERIFICATION.md)
+6. **Request review** — dispatch `@code-review` or `@github-pr-review` with crafted context; act on critical/important; receive feedback as technical evaluation, not theater.
+   - → [references/REQUESTING_REVIEW.md](references/REQUESTING_REVIEW.md)
+   - → [references/RECEIVING_REVIEW.md](references/RECEIVING_REVIEW.md)
+7. **Finish branch** — verify tests pass on merged result, present exactly four options (merge / PR / keep / discard), clean up the worktree. → [references/FINISHING_BRANCH.md](references/FINISHING_BRANCH.md)
+
+When the task itself is "create or edit a skill", apply TDD to documentation: → [references/WRITING_SKILLS.md](references/WRITING_SKILLS.md) (and prefer `@skill-creator` for scaffolding).
 
 ## Twelve Red Flags
 
@@ -136,6 +146,26 @@ The level does **not** auto-revert after N turns.
 - "discipline mode"
 - "stop superpowers" (exit)
 
+## References
+
+Each reference is a focused companion to one stage or discipline of the posture. Read the one(s) relevant to your current stage; the SKILL.md is the index, not a replacement.
+
+| File | Topic |
+| :--- | :--- |
+| [TDD.md](references/TDD.md) | Test-Driven Development — RED-GREEN-REFACTOR, iron law, watch-it-fail rule. |
+| [SYSTEMATIC_DEBUGGING.md](references/SYSTEMATIC_DEBUGGING.md) | Four-phase root-cause debugging — investigation before fixes, 3-attempt stop rule. |
+| [VERIFICATION.md](references/VERIFICATION.md) | Evidence before claims — fresh command output, regression test verification dance. |
+| [BRAINSTORMING.md](references/BRAINSTORMING.md) | Stage 1 — design gate, one-question dialogue, spec self-review, terminal hand-off to plans. |
+| [WRITING_PLANS.md](references/WRITING_PLANS.md) | Stage 3 — bite-size tasks, no placeholders, copy-pasteable code, repeat-yourself rule. |
+| [EXECUTING_PLANS.md](references/EXECUTING_PLANS.md) | Stage 4 — separate-session execution with critical review and stop-when-blocked. |
+| [SUBAGENT_DRIVEN.md](references/SUBAGENT_DRIVEN.md) | Stage 4 — in-session subagent loop with two-stage review (spec then quality). |
+| [DISPATCHING_PARALLEL.md](references/DISPATCHING_PARALLEL.md) | Concurrent investigations — one agent per independent domain, no shared state. |
+| [REQUESTING_REVIEW.md](references/REQUESTING_REVIEW.md) | Stage 6 — dispatching reviewers with crafted context; severity-ranked action. |
+| [RECEIVING_REVIEW.md](references/RECEIVING_REVIEW.md) | Stage 6 — read/understand/verify/evaluate/respond/implement; no performative agreement. |
+| [GIT_WORKTREES.md](references/GIT_WORKTREES.md) | Stage 2 — isolated worktrees with verified `.gitignore`, baseline test gate. |
+| [FINISHING_BRANCH.md](references/FINISHING_BRANCH.md) | Stage 7 — four-option close: merge / PR / keep / discard. Tests-pass gate. |
+| [WRITING_SKILLS.md](references/WRITING_SKILLS.md) | TDD applied to skill authoring — pressure-test first, document rationalizations, close loopholes. |
+
 ## Attribution
 
-Inspired by [obra/superpowers](https://github.com/obra/superpowers) (MIT, Copyright 2025 Jesse Vincent). The ValarMind port reauthors the posture for this repository's idiom: a session flag-file model (off-by-default) instead of a binary install/uninstall toggle, a compressed posture digest instead of full SKILL.md injection, Portuguese (pt-BR) trigger phrases, and delegation to the existing ValarMind skills library rather than shipping the upstream's sixteen skills. See `THIRD_PARTY_NOTICES.md`.
+Inspired by [obra/superpowers](https://github.com/obra/superpowers) (MIT, Copyright 2025 Jesse Vincent). The ValarMind port reauthors the posture for this repository's idiom: a session flag-file model (off-by-default) instead of a binary install/uninstall toggle, a compressed posture digest instead of full SKILL.md injection, Portuguese (pt-BR) trigger phrases, thirteen condensed reference companions in `references/` instead of the upstream's sixteen separate top-level skills, and delegation to the existing ValarMind skills library (`@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, `@skill-creator`) for capabilities that already exist locally. See `THIRD_PARTY_NOTICES.md`.

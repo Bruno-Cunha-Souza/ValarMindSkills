@@ -69,6 +69,26 @@ SOFTWARE.
 - Replaced the install/uninstall binary toggle with a session flag-file model (`~/.claude/.superpowers-active`) plus `SessionStart` + `UserPromptSubmit` hooks, mirroring the local caveman pattern.
 - Default mode is `off` (upstream is "active when installed"). Activation requires `SUPERPOWERS_DEFAULT_MODE=on`, `~/.config/superpowers/config.json`, or a per-session slash command.
 - Slash command grammar is `on|off` (binary). No `lite/full/ultra` invented variants.
-- Injected posture is a compressed ~60–90 line digest, not the full upstream `using-superpowers` SKILL.md.
+- Injected posture is a compressed digest, not the full upstream `using-superpowers` SKILL.md.
 - Added Portuguese (pt-BR) activation/deactivation phrases to the natural-language matchers (`ative superpowers`, `modo superpowers`, `desativar superpowers`).
-- Skills library is intentionally not ported — only the posture skill is included; the seven-stage workflow is referenced by name and delegated to existing ValarMind skills (`@github-pr-review`, `@code-review`, `@clean-code`, `@code-debugger`, `@skill-creator`).
+- Upstream's sixteen top-level skills are condensed into thirteen reference companions inside `skills/superpowers/references/` (one per upstream skill, except `using-superpowers` which is encoded directly in `SKILL.md`). The capabilities that already exist as ValarMind skills (`@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, `@skill-creator`) are referenced rather than duplicated.
+
+### Reference companions ported from upstream skills
+
+Each file under `skills/superpowers/references/` is a condensed port of one upstream skill, preserving the iron laws and killer quotes verbatim:
+
+| Reference | Upstream skill |
+| :--- | :--- |
+| `TDD.md` | `test-driven-development` |
+| `SYSTEMATIC_DEBUGGING.md` | `systematic-debugging` |
+| `VERIFICATION.md` | `verification-before-completion` |
+| `BRAINSTORMING.md` | `brainstorming` |
+| `WRITING_PLANS.md` | `writing-plans` |
+| `EXECUTING_PLANS.md` | `executing-plans` |
+| `SUBAGENT_DRIVEN.md` | `subagent-driven-development` |
+| `DISPATCHING_PARALLEL.md` | `dispatching-parallel-agents` |
+| `REQUESTING_REVIEW.md` | `requesting-code-review` |
+| `RECEIVING_REVIEW.md` | `receiving-code-review` |
+| `GIT_WORKTREES.md` | `using-git-worktrees` |
+| `FINISHING_BRANCH.md` | `finishing-a-development-branch` |
+| `WRITING_SKILLS.md` | `writing-skills` |
