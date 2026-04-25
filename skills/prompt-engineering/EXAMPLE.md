@@ -282,3 +282,5 @@ Skill version: prompt-engineering @ <git rev>
 - **Risk tags differentiate** SAFE additions (role, never-invent, example) from REVIEW changes (success criterion, schema, refusal hook).
 - **Token delta is positive** and explicitly justified — short prompts almost always need *additions*, and the rule "never strip safety, always add missing strategies" trumps token economy.
 - **Block 5 verification suggestions** are concrete probes the user can run to validate the rewrite against the same model.
+
+This worked example uses use case `code` (a user prompt for PR review). The same workflow applies to skill prompts (USE_CASES §1), RAG prompts (§2), agent tool descriptions (§3), and agent base / system prompts (§4). For agent-base prompts in particular, see the canonical skeleton in [references/USE_CASES.md §4](references/USE_CASES.md) — the persistence test, disambiguation test, refusal probe, and authorization probe in §4 are agent-base specific verification probes that complement Block 5's generic ones.

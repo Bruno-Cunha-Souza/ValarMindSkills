@@ -34,6 +34,8 @@ Audit the diff below for OWASP API Top 10 issues.
 
 **When to apply.** Always — for any non-trivial prompt. Skip only for one-shot trivial prompts (`"summarize this paragraph"`).
 
+**Counter-signal.** Telling the model `"you are an expert"` or assigning lofty job titles (`"world-class senior engineer"`) can degrade output instead of improving it ([The Register, 2026-03](https://www.theregister.com/2026/03/24/ai_models_persona_prompting/)). Describe **behavior** (`"respond in numbered steps"`, `"cite path:line for every claim"`), not **titles**. Role grounding works because it pins **scope**, not **status**.
+
 ---
 
 ## 2. Output schema pinning
@@ -298,6 +300,8 @@ Default: do not call a tool. State the rule that fires before each call.
 
 **When to apply.** Agent prompts with two or more tools / skills.
 
+**Why this matters.** Vector-based / semantic tool selection reduces wrong-tool errors by ~86% in published benchmarks. The corresponding prompt-side investment is a 1-line `Use when:` rule per tool that names the **trigger condition**, not the tool's name. Bad: `"Use this to search."`. Good: `"Use when the user asks about a library, framework, or API and the answer may have changed since training."`.
+
 ---
 
 ## 12. Verification step
@@ -324,6 +328,8 @@ If any check fails, repair the output before returning.
 
 **When to apply.** Long-form output; structured output; tasks where downstream parsers depend on integrity.
 
+**Pattern name.** This is **Chain-of-Verification (CoVe)**: after producing the answer, the model lists checks (`each cited path exists in the diff`, `each "confidence: High" claim has evidence`) and repairs the output before returning. Two-pass beats one-pass for factual / structured tasks; the second pass catches drift the first pass cannot see.
+
 ---
 
 ## How the skill uses this catalog
@@ -332,13 +338,16 @@ Phase 3 walks the prompt against §1–§12 in order. Each strategy that applies
 
 A single prompt rarely needs all 12 strategies. The audit picks the **subset required by the use case** declared in Phase 0.3:
 
-| Use case      | Strategies usually required                  |
-| ------------- | -------------------------------------------- |
-| factual       | 1, 2, 3, 4, 5, 7, 8, 12                       |
-| extraction    | 1, 2, 3, 5, 6, 8, 12                          |
-| classification| 1, 2, 4, 6, 7, 8, 12                          |
-| generation    | 1, 2, 6, 7, 8, 12                             |
-| planning      | 1, 7, 8, 9, 11, 12                            |
-| code          | 1, 2, 3, 5, 6, 7, 8, 12                       |
-| conversation  | 1, 7, 8                                       |
-| agent         | 1, 2, 5, 7, 8, 9, 11, 12                      |
+| Use case      | Strategies usually required                                        |
+| ------------- | ------------------------------------------------------------------ |
+| skill         | 1, 2, 5, 6, 7, 9, 11, 12 (see [USE_CASES §1](USE_CASES.md))         |
+| rag           | 1, 2, 3, 5, 7, 8, 12 (see [USE_CASES §2](USE_CASES.md))             |
+| agent-tool    | 1, 2, 5, 7, 11 (see [USE_CASES §3](USE_CASES.md))                   |
+| agent-base    | 1, 4, 5, 7, 9, 11, 12 (see [USE_CASES §4](USE_CASES.md))            |
+| factual       | 1, 2, 3, 4, 5, 7, 8, 12                                             |
+| extraction    | 1, 2, 3, 5, 6, 8, 12                                                |
+| classification| 1, 2, 4, 6, 7, 8, 12                                                |
+| generation    | 1, 2, 6, 7, 8, 12                                                   |
+| planning      | 1, 7, 8, 9, 11, 12                                                  |
+| code          | 1, 2, 3, 5, 6, 7, 8, 12                                             |
+| conversation  | 1, 7, 8                                                             |

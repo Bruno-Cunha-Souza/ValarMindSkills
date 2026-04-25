@@ -1,6 +1,6 @@
 ---
 name: prompt-engineering
-description: "Audits, hardens, translates, and rewrites prompts. Primary targets: skill prompts (SKILL.md), RAG prompts (templates wrapping retrieved chunks), and agent tool descriptions. Also handles generic system, user, few-shot prompts. Detects clarity gaps (missing success criteria, schema, role), hallucination gaps (no citation, no calibrated confidence, no never-invent floor, no refusal hooks, no prompt-injection guard for RAG), token waste. Translates non-EN prompts to EN preserving technical terms and safety rules. Outputs original verbatim, severity-ranked findings with risk tags (SAFE/REVIEW/BREAKING), rewritten prompt, token delta. Read-only — never auto-applies. Trigger phrases: 'review prompt', 'improve prompt', 'audit SKILL.md', 'harden RAG prompt', 'review tool description', 'prompt engineering', 'revisar prompt', 'auditar prompt', 'auditar SKILL.md', 'engenharia de prompt', '/prompt-engineering', '/valarmindskills:prompt-engineering'."
+description: "Audits, hardens, translates, and rewrites LLM prompts. Primary targets: skill prompts (SKILL.md), RAG prompts, agent tool descriptions, and agent base/system prompts (agent identity, capabilities, tool access, refusal rules, plan/act/verify workflow). Detects clarity / hallucination / token-waste gaps; preserves safety rules. Audit is real: emits LGTM and stops if the prompt is sound — never fabricates findings to appear thorough. Outputs original verbatim, severity-ranked findings with risk tags (SAFE/REVIEW/BREAKING), rewritten prompt, token delta. Read-only — never auto-applies. Trigger phrases: 'review prompt', 'improve prompt', 'audit SKILL.md', 'harden RAG prompt', 'review tool description', 'audit agent prompt', 'review agent system prompt', 'prompt engineering', 'revisar prompt', 'auditar prompt', 'auditar SKILL.md', 'auditar prompt de agente', 'engenharia de prompt', '/prompt-engineering', '/valarmindskills:prompt-engineering'."
 source: ValarMindSkills
 ---
 
@@ -14,11 +14,12 @@ The skill exists because LLM-facing prompts written by hand drift toward the sam
 
 ## When to Use
 
-This skill is built for three primary classes of prompt — see [references/USE_CASES.md](references/USE_CASES.md) for the per-class strategy subset, canonical skeleton, and findings catalog.
+This skill is built for four primary classes of prompt — see [references/USE_CASES.md](references/USE_CASES.md) for the per-class strategy subset, canonical skeleton, and findings catalog.
 
-1. **Skill prompts (`SKILL.md` and equivalents).** Auditing or rewriting an LLM-agent skill: Claude Code skills, ChatGPT GPTs, Cursor rules, agent system prompts. Pairs with `@skill-creator` (which scaffolds the file; this skill audits the prompt content inside it).
+1. **Skill prompts (`SKILL.md` and equivalents).** Short-lived, slash-command-triggered LLM-agent skills: Claude Code skills, ChatGPT GPTs, Cursor rules. Pairs with `@skill-creator` (which scaffolds the file; this skill audits the prompt content inside it).
 2. **RAG prompts.** System / user templates that wrap retrieved chunks before sending to the model. Heavy emphasis on prompt-injection guards, citation requirements, and structured input parsing.
 3. **Agent tool descriptions.** The `description` fields on functions / tools that drive when and how a model calls them. Emphasis on disambiguation, side-effect declaration, and "do not use when" antipatterns.
+4. **Agent base / system prompts.** Long-running agent identity prompts (Claude Code subagents, custom GPT system prompts, LangGraph node prompts) — define persona, capabilities, tool map, refusal hooks, and plan/act/verify workflow for the entire session. Distinct from (1): skill prompts are short and slash-triggered; agent base prompts frame the session itself. Distinct from (3): tool descriptions are read by the agent to decide whether to call a tool; agent base prompts define the agent that does the calling.
 
 Also handles generic system, user, and few-shot prompts as a secondary use case.
 
@@ -78,9 +79,9 @@ Determine three axes:
 
 | Axis | Values | Why it matters |
 | --- | --- | --- |
-| **Role** | system, user, agent, few-shot, RAG, **skill** (`SKILL.md`), **tool-description** | Drives which strategies are relevant (refusal hooks for system, schema for user, tool map for agent, prompt-injection guard for RAG, trigger phrases for skill, "do not use when" for tool-description) |
+| **Role** | system, user, **agent-base**, few-shot, RAG, **skill** (`SKILL.md`), **tool-description** | Drives which strategies are relevant (persona stability + tool map + plan-act-verify for agent-base, schema for user, prompt-injection guard for RAG, trigger phrases for skill, "do not use when" for tool-description) |
 | **Language** | en, pt, es, other | Triggers Phase 1 if not `en` |
-| **Use case** | **skill** \| **rag** \| **agent-tool** \| factual \| generation \| classification \| extraction \| planning \| code \| conversation | The first three map to the [USE_CASES.md](references/USE_CASES.md) canonical skeletons; the rest map to generic strategy subsets in [STRATEGIES.md](references/STRATEGIES.md#how-the-skill-uses-this-catalog) |
+| **Use case** | **skill** \| **rag** \| **agent-tool** \| **agent-base** \| factual \| generation \| classification \| extraction \| planning \| code \| conversation | The first four map to the [USE_CASES.md](references/USE_CASES.md) canonical skeletons; the rest map to generic strategy subsets in [STRATEGIES.md](references/STRATEGIES.md#how-the-skill-uses-this-catalog) |
 
 State each axis explicitly in one line before moving on. Example:
 
@@ -90,7 +91,7 @@ language:    pt
 use case:    extraction (parse PR diff → JSON findings)
 ```
 
-For the three primary classes, the use case is named explicitly:
+For the four primary classes, the use case is named explicitly:
 
 ```text
 role:        skill           # SKILL.md being authored or revised
@@ -104,11 +105,27 @@ use case:    rag             # → load USE_CASES.md §2
 role:        tool-description # Function description in JSON Schema
 language:    en
 use case:    agent-tool      # → load USE_CASES.md §3
+
+role:        agent-base      # Agent system prompt (long-running session)
+language:    en
+use case:    agent-base      # → load USE_CASES.md §4
 ```
 
 ### 0.3 Bound the audit
 
 Count the prompt size. Long prompts (> 2000 tokens estimated, ~1500 words) usually contain duplicated instructions and are the highest-yield targets for Phase 5. Short prompts (< 50 tokens) usually need *more* content — additions in Phase 4 will outweigh subtractions in Phase 5.
+
+### 0.4 Honest audit pledge
+
+Before producing any finding, commit to:
+
+1. **Cite verbatim.** Each finding quotes a passage that is **literally absent**, **directly contradictory**, or **demonstrably redundant** in the original. Paraphrase is not evidence.
+2. **Read the use case baseline first.** Open [USE_CASES.md](references/USE_CASES.md) §N for the declared use case and check **every** required strategy against the original before flagging anything as missing.
+3. **Different wording is not a missing strategy.** If a strategy from [STRATEGIES.md](references/STRATEGIES.md) is genuinely present — even with vocabulary unlike the catalog — do not promote it to a finding.
+4. **Stop on LGTM.** If the prompt passes every required strategy for its use case, emit Block 4 with `LGTM — no clarity, hallucination, or token-economy gaps in scope` and stop. Do not promote Minor or speculative observations to fill the report.
+5. **Calibrate confidence.** Findings derived from heuristics (regex, "this looks ambiguous") are `Confidence: Low` or `Medium`. `Confidence: High` requires a verbatim quote of the gap.
+
+This pledge is the audit's contract with the user. Padded reports erode trust faster than missed findings.
 
 ## Phase 1 — Translate & Normalize
 
@@ -333,6 +350,8 @@ For non-trivial rewrites, propose how the user can validate the change:
 - **Never strip a safety rule.** Every `never`, `must not`, `do not`, or `refuse if` clause in the original survives into the rewrite, in EN, with the same force. Preserved verbatim if possible.
 - **Never claim translation fidelity without listing preserved terms.** Phase 1.2 produces an explicit preservation list; if the list is empty, the translation is not approved.
 - **Never inflate severity to look thorough.** Use [references/SEVERITY_RUBRIC.md](references/SEVERITY_RUBRIC.md). Heuristic findings start at Medium; promotion requires confirmation.
+- **Never invent findings to appear thorough.** If the audit yields zero genuine gaps for the declared use case, emit Block 2 with `(no findings)`, Block 3 with `no rewrite needed — prompt already passes the audit`, Block 4 with `LGTM`, and stop. Every finding cites a verbatim absence, contradiction, or redundancy. Speculation is not a finding.
+- **Never promote Minor findings to Major to fill the report.** Severity is bound to impact × likelihood per [references/SEVERITY_RUBRIC.md](references/SEVERITY_RUBRIC.md), not to report length. Padding the report erodes audit credibility faster than missed findings.
 - **Never quote a user instruction paraphrased.** Quotes in findings are byte-for-byte from the original. If a passage is summarized for brevity, label it `summary:` not `quote:`.
 - **Never recommend a strategy without citing the catalog entry.** Every Phase 3 finding links to [STRATEGIES.md §N](references/STRATEGIES.md).
 - **Never omit Block 1.** The original verbatim is the contract; comparing to it is how the user audits the audit.
@@ -348,9 +367,9 @@ Print verbatim after every successful run. The four-block report is the delivera
 
 ```text
 prompt-engineering: <one-line description provided by user, or auto-derived>
-  role:        <system | user | agent | few-shot | rag>
+  role:        <system | user | agent-base | few-shot | rag | skill | tool-description>
   language:    <in> → <out>
-  use case:    <factual | generation | classification | extraction | planning | code | conversation>
+  use case:    <skill | rag | agent-tool | agent-base | factual | generation | classification | extraction | planning | code | conversation>
   size:        <est. tokens before> → <est. tokens after>  (Δ <signed delta>)
 
 ═══════════════════════════════════════════════════════════════════════
@@ -414,7 +433,17 @@ Suggested next step:
 Skill version: prompt-engineering @ <git rev of SKILL.md>
 ```
 
-When there are zero findings, print Blocks 1, 2 (with `(no findings)`), 3 (a copy of Block 1 with a note `no rewrite needed — prompt already passes the audit`), and 4 with `LGTM — no clarity, hallucination, or token-economy gaps in scope`.
+### Zero-findings result
+
+When Phases 2 + 3 yield no Critical, Major, or Minor findings for the declared use case:
+
+- **Block 1** — original verbatim (mandatory — never skipped, even on LGTM).
+- **Block 2** — single row `(no findings — prompt passes audit for use case <N>)`. No fabricated Minors. No "could be improved" observations.
+- **Block 3** — copy of Block 1 with note `no rewrite needed — prompt already passes the audit`.
+- **Block 4** — summary table with `Risk tag: SAFE`, `LGTM — no clarity, hallucination, or token-economy gaps in scope` in suggested next step.
+- **Stop.** Do not invent Minors to populate Block 2. Zero-findings is a valid outcome, not an audit failure.
+
+A second auditor reading only Block 1 should be able to reach the same conclusion. If they could not, the gap is real and the result is not LGTM.
 
 ## Related Skills
 
@@ -427,7 +456,7 @@ When there are zero findings, print Blocks 1, 2 (with `(no findings)`), 3 (a cop
 
 ## References
 
-- [USE_CASES](references/USE_CASES.md) — canonical skeletons + findings catalogs for the three primary classes (skill prompts, RAG prompts, agent tool descriptions)
+- [USE_CASES](references/USE_CASES.md) — canonical skeletons + findings catalogs for the four primary classes (skill prompts, RAG prompts, agent tool descriptions, agent base / system prompts)
 - [STRATEGIES](references/STRATEGIES.md) — twelve clarity and anti-hallucination strategies with before/after examples
 - [CHECKLIST](references/CHECKLIST.md) — copy-paste cheat sheet ordered by audit phase
 - [SEVERITY_RUBRIC](references/SEVERITY_RUBRIC.md) — Severity × Category matrix and risk-tag rubric

@@ -18,6 +18,19 @@ Each row is a category (Clarity, Hallucination, Token economy, Translation). Eac
 
 A single prompt can have findings across multiple categories. Aggregate **at the highest single-finding severity**, not by counting.
 
+### Agent-base specific severity patterns
+
+When use case = `agent-base`, the dominant failure modes are persona / authorization / refusal rather than schema or citation. Apply this table only for agent-base audits; for other use cases, read the matrix above.
+
+| Pattern                                                          | Severity   | Reasoning                                                                       |
+| ---------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------- |
+| Authorization scope ambiguous (one approval implies blanket)     | Critical   | Silent escalation of user authority; one of the highest-impact failure modes for agents that take irreversible actions |
+| No plan-before-act for irreversible tools                        | Critical   | Destructive action without confirmation hook; high impact × every-run likelihood |
+| Refusal hook absent for out-of-scope requests                    | High       | Agent improvises out-of-scope answers; depends on use case for impact            |
+| Persona drift not guarded ("stay in character" rule absent)      | Major      | Long-session degradation; impact rises with session length                       |
+| Tool map missing `Use when` rule per tool                        | Major      | Tool over-call / wrong-tool race; semantic tool selection mitigates              |
+| `"You are an expert"` framing without behavioral specifics       | Minor      | Documented to degrade output ([The Register 2026-03](https://www.theregister.com/2026/03/24/ai_models_persona_prompting/)); replace with behavior framing |
+
 ## Calibration aids — Impact × Likelihood
 
 For findings whose category placement is borderline, score **impact** (what happens if the model hallucinates / drifts / over-spends tokens) against **likelihood** (how often this gap will trigger in the prompt's actual use case):
@@ -58,6 +71,16 @@ Findings derived from absence-detection heuristics (regex matches like "no `neve
 2. The reviewer has read the surrounding prompt and confirmed the gap is not satisfied by an equivalent paraphrase.
 
 Inflated severity erodes trust faster than missed findings. A rewrite that bundles three Critical findings — when only one was real — gets dismissed wholesale.
+
+## Anti-pattern: padding the report
+
+Three failure modes erode audit credibility faster than missed findings:
+
+1. **Inventing Minors to fill space.** Zero-findings is a valid result. If the prompt passes for the declared use case, emit `LGTM` and stop. Do not promote speculative observations (`"could be clearer"`, `"might benefit from"`) to fill Block 2.
+2. **Promoting Minors to Major.** Severity is bound to impact × likelihood (above), not to report length. A typo is Minor, not Major, even if it is the only finding.
+3. **Hedging without evidence.** `"This could potentially be clearer"` without a verbatim quote of what is unclear is not a finding — it is noise. Drop it.
+
+**Reproducibility rule.** Every finding must be reproducible from the original prompt. If a second auditor reading **only** the original cannot identify the same gap, the finding is speculation and must be dropped.
 
 ## Floor: when not to file a finding
 

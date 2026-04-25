@@ -7,10 +7,10 @@ Copy-paste cheat sheet. One section per audit phase. Tick each item; unticked it
 ## Phase 0 — Capture & Classify
 
 - [ ] Original prompt captured verbatim, with delimiters preserved
-- [ ] Role classified: system | user | agent | few-shot | RAG | **skill** | **tool-description**
+- [ ] Role classified: system | user | **agent-base** | few-shot | RAG | **skill** | **tool-description**
 - [ ] Source language identified (en | pt | es | other)
-- [ ] Use case identified: **skill** | **rag** | **agent-tool** | factual | generation | classification | extraction | planning | code | conversation
-- [ ] If use case is `skill`, `rag`, or `agent-tool` → load the canonical skeleton from [USE_CASES.md](USE_CASES.md)
+- [ ] Use case identified: **skill** | **rag** | **agent-tool** | **agent-base** | factual | generation | classification | extraction | planning | code | conversation
+- [ ] If use case is `skill`, `rag`, `agent-tool`, or `agent-base` → load the canonical skeleton from [USE_CASES.md](USE_CASES.md)
 - [ ] Token size estimated (before)
 
 ## Phase 1 — Translate (only if not EN)
@@ -47,6 +47,7 @@ Apply only the strategies listed for the declared use case (see [STRATEGIES.md t
 - [ ] Counter-example present when ambiguity is high ([§10](STRATEGIES.md#10-counter-examples))
 - [ ] Skill / tool map for agent prompts ([§11](STRATEGIES.md#11-skill--tool-map))
 - [ ] Verification step closes the prompt for long output ([§12](STRATEGIES.md#12-verification-step))
+- [ ] Each finding cites a verbatim absence, contradiction, or redundancy in the original — no speculation, no `"this could be improved"` without a concrete missing strategy from §1–§12
 
 ## Phase 4 — Structure
 
@@ -82,3 +83,6 @@ Apply only the strategies listed for the declared use case (see [STRATEGIES.md t
 - [ ] No safety rule from the original was dropped
 - [ ] Rewrite ≤ 2× original token count, unless explicitly requested otherwise
 - [ ] Risk tag (overall) reported: SAFE | REVIEW | BREAKING
+- [ ] Zero-findings result not padded with speculative Minors to look thorough
+- [ ] No Minor was promoted to Major to fill the report — severity calibrated against [SEVERITY_RUBRIC.md](SEVERITY_RUBRIC.md)
+- [ ] If LGTM emitted, it was justified (every required strategy from declared use case has a verbatim presence in the original)
