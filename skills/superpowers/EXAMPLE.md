@@ -93,6 +93,33 @@ Caveman compresses voice; superpowers enforces process. Both apply at the same t
 
 ---
 
+## Scenario 4 — Multi-skill dynamic invocation (via SKILL_MAP)
+
+### Question
+
+> "Add a `/api/search` route in our Next.js 16.2 app that takes a query string and returns paginated results from the DB. Use a Server Action for the form."
+
+### Superpowers ON
+
+> Skill scan via `references/SKILL_MAP.md`:
+>
+> - Trigger: `next.config.ts` + `app/` + Server Action → `@nextjs-optimization-pro` (RSC + rendering strategy) **and** `@nextjs-security-pro` (Server Action + route handler audit).
+> - Stage 4 default → `@clean-code` (helper / handler quality).
+> - Standby: `@code-debugger` if any test fails. `@github-commit` at stage 7.
+>
+> Priority: security never yields, so `@nextjs-security-pro` checks (CSRF on Server Action, input validation on the search query, authz on the route) gate the design. `@nextjs-optimization-pro` shapes the RSC boundary (server component for results, client only for the form). `@clean-code` polices naming and duplication.
+>
+> **Plan (4 tasks):**
+>
+> 1. Failing test: hit `/api/search?q=foo&page=2`, assert pagination shape and that unsafe input is rejected.
+> 2. Implement route handler (Server) with zod-validated query, parameterized DB call, authz check.
+> 3. Implement Server Action for the form with origin check and rate limit.
+> 4. RSC boundary review: page is a Server Component; only the form is `"use client"`.
+>
+> Stage 1 first. Evidence required for every step before moving on.
+
+---
+
 ## Auto-Clarity (security turn — neither posture loosens)
 
 ### Question

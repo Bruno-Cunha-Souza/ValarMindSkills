@@ -38,6 +38,8 @@ Before any reply or action, scan available skills. The bar is *1% chance the ski
 
 If a skill applies, **you do not have a choice — you must use it**. This is not negotiable. This is not optional.
 
+Use [references/SKILL_MAP.md](references/SKILL_MAP.md) as the ground truth of the scan — it lists candidate skills per stage and per context trigger (Next.js detected, Go API, Obsidian vault, test failure, etc.). The map does not replace the 1% rule; it makes it executable. If a skill applies and is missing from the map, invoke it anyway and update the map.
+
 ## Instruction Hierarchy
 
 When instructions conflict, follow this precedence:
@@ -102,6 +104,8 @@ When you catch yourself thinking one of these, stop. Go back to the 1% rule and 
 
 When multiple skills apply, *process* skills win over *implementation* skills. `@code-debugger` and `@skill-creator` come before `@github-commit`. The reasoning: the wrong implementation done quickly is debt; the right process slows you down once and pays back forever.
 
+**Security never yields.** `@*-security-*` skills and `@web-vulnerabilities` outrank process skills — they always run when their triggers fire, and they are never skipped for speed. Full priority resolution lives in [references/SKILL_MAP.md](references/SKILL_MAP.md) §3.
+
 ## Persistence
 
 Active until the user says:
@@ -117,7 +121,7 @@ The level does **not** auto-revert after N turns.
 - **Does not override safety.** Security warnings, destructive actions, and irreversible operations follow their existing rules. Superpowers tightens process; it never loosens guardrails.
 - **Coexists with caveman.** Caveman shapes voice; superpowers shapes process. Both can be active simultaneously — the reply is terse AND disciplined.
 - **Does not bypass user instructions.** If the user explicitly skips a stage, skip it.
-- **Skill library is delegated.** Superpowers does not ship its own brainstorm / plan / review skills. It points to the existing ValarMind skills (`@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, `@skill-creator`) and to the harness's built-in `Plan`, `EnterWorktree`, and subagent capabilities.
+- **Skill library is delegated.** Superpowers does not ship its own brainstorm / plan / review skills. It points to the existing ValarMind skills and to the harness's built-in `Plan`, `EnterWorktree`, and subagent capabilities. The full catalog (stage→skill, context triggers, priority) lives in [references/SKILL_MAP.md](references/SKILL_MAP.md); core skills referenced inline are `@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, and `@skill-creator`.
 
 ## Inputs you may receive after invocation
 
@@ -152,6 +156,7 @@ Each reference is a focused companion to one stage or discipline of the posture.
 
 | File | Topic |
 | :--- | :--- |
+| [SKILL_MAP.md](references/SKILL_MAP.md) | Stage→skill catalog + context triggers + priority resolution — the ground truth for the 1% rule. |
 | [TDD.md](references/TDD.md) | Test-Driven Development — RED-GREEN-REFACTOR, iron law, watch-it-fail rule. |
 | [SYSTEMATIC_DEBUGGING.md](references/SYSTEMATIC_DEBUGGING.md) | Four-phase root-cause debugging — investigation before fixes, 3-attempt stop rule. |
 | [VERIFICATION.md](references/VERIFICATION.md) | Evidence before claims — fresh command output, regression test verification dance. |
@@ -168,4 +173,4 @@ Each reference is a focused companion to one stage or discipline of the posture.
 
 ## Attribution
 
-Inspired by [obra/superpowers](https://github.com/obra/superpowers) (MIT, Copyright 2025 Jesse Vincent). The ValarMind port reauthors the posture for this repository's idiom: a session flag-file model (off-by-default) instead of a binary install/uninstall toggle, a compressed posture digest instead of full SKILL.md injection, Portuguese (pt-BR) trigger phrases, thirteen condensed reference companions in `references/` instead of the upstream's sixteen separate top-level skills, and delegation to the existing ValarMind skills library (`@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, `@skill-creator`) for capabilities that already exist locally. See `THIRD_PARTY_NOTICES.md`.
+Inspired by [obra/superpowers](https://github.com/obra/superpowers) (MIT, Copyright 2025 Jesse Vincent). The ValarMind port reauthors the posture for this repository's idiom: a session flag-file model (off-by-default) instead of a binary install/uninstall toggle, a compressed posture digest instead of full SKILL.md injection, Portuguese (pt-BR) trigger phrases, fourteen condensed reference companions in `references/` instead of the upstream's sixteen separate top-level skills, and delegation to the existing ValarMind skills library (`@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, `@skill-creator`) for capabilities that already exist locally. See `THIRD_PARTY_NOTICES.md`.
