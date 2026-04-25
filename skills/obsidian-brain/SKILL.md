@@ -104,6 +104,17 @@ If the user refuses bootstrap, exit silently — do not retry within the session
 
 Trigger: `<indexPath>` exists.
 
+> [!info] Route the prompt before reading
+> Before loading anything, classify the user's question into one of three buckets — the answer determines which subtree of the vault to consult:
+>
+> | Bucket | Examples | Where the answer lives | Phase to follow |
+> | :--- | :--- | :--- | :--- |
+> | **Brain-history** | "what was decided about X", "when did we discuss Y", "open todos", "recent activity" | `brain/sessions`, `brain/topics`, `brain/decisions` | Phase 2 (this section) |
+> | **General-doc** | "how does X work", "what does skill Y do", "where is the architecture for Z", "show me the MOC" | Project docs (`<vaultRoot>/<MOC>.md`, `Skills/`, `Arquitetura.md`, `Manual de Uso/`, `Technical Design/`) | [Phase 2.5](#phase-25--searching-general-project-docs) |
+> | **Mixed** | "explain auth and what we decided about it" | Both — but lead with the general doc for substance, then surface brain context | Phase 2.5 then Phase 2 |
+>
+> Default to **Phase 2.5** if the question is about *how the system works*. Default to **Phase 2** only when the question is about *what happened in past sessions*. When unclear, run Phase 2.5 first; the brain is cheap to consult after.
+
 1. **Read only the index** at session start (≤500 tokens). Do not preemptively load sessions, topics, or decisions.
 2. From the index, identify the wikilinks relevant to the current user prompt — match by topic name, tag, or recent-session date.
 3. Lazy-load only matched targets:
@@ -114,6 +125,37 @@ Trigger: `<indexPath>` exists.
 5. Critical-facts callout in the index is the only block you may quote verbatim into your reasoning. Everything else is a wikilink to follow on demand.
 
 Detailed strategy and the canonical CLI command catalog: [references/READING_AND_SEARCHING.md](references/READING_AND_SEARCHING.md).
+
+## Phase 2.5 — Searching general project docs
+
+Trigger: the user's question is about how the system works (general-doc bucket above) or the brain index has no matching wikilink.
+
+The brain captures **what happened**; the project's main vault docs capture **how it works**. When the answer lives in the main docs, you must search them with the CLI **before** reaching for `Read`/`grep`.
+
+1. **Use the cached `mode` from Phase 2.** If `mode = cli`, run the CLI recipes below. If `mode = file`, fall back to `grep`/`find`/`Read`.
+2. **Scope the search to the project doc folder**, not the entire vault:
+
+   ```bash
+   obsidian search query="<term>" path="<vaultRoot>"     # verify with `obsidian help search` first
+   ```
+
+   `<vaultRoot>` here is the same path computed in Phase 0 (e.g., `Projetos/ValarMindSkills/`).
+3. **Filter by tag or property** when the user named a category — `tag="skill"`, `tag="lang/go"`, `property="type=skill"`. Combine with `total` to count first:
+
+   ```bash
+   obsidian search tag="skill/segurança-api" total
+   ```
+4. **Read the top match** with `obsidian read file="<note-name>" silent`. Aliases resolve automatically — prefer `file=` over `path=` unless there is ambiguity.
+5. **Optionally check backlinks** to surface related sessions in the brain:
+
+   ```bash
+   obsidian backlinks file="<note-name>"
+   ```
+6. **Quote sparingly.** Pull only the one or two passages that answer the question. Link to the doc with `[[<note>]]` when writing back to the brain — do not duplicate the doc into a topic note.
+
+Full intent→command recipe table, fallback chain, and Notes/-read-only reminder live in [references/READING_AND_SEARCHING.md § Searching general project docs](references/READING_AND_SEARCHING.md#searching-general-project-docs-beyond-brain). Canonical CLI catalog (used by every other agent too) is in `@obsidian-cli`.
+
+Always probe `@obsidian-cli` first; only fall back to `Read`/`grep` when the cached `mode = file`. Aliases, wikilinks, and the vault index are invisible to plain `grep`.
 
 ## Phase 3 — Operate (write strategy)
 

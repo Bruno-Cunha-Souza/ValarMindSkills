@@ -21,6 +21,47 @@ The brain is a **pointer-based** memory. The index lists wikilinks; you follow t
 - Load all sessions to "find the relevant one." Use `obsidian search` instead.
 - Re-read the same note twice in one session.
 
+## Searching general project docs (beyond `brain/`)
+
+The brain holds **what happened**; the rest of the vault — `<vaultRoot>/<MOC>.md`, `Skills/`, `Arquitetura.md`, `Manual de Uso/`, `Technical Design/`, daily notes, etc. — holds **how the system works**. Both are searched with the same CLI; they differ only in scope and routing.
+
+When the user's prompt matches the **general-doc bucket** from [SKILL.md Phase 2 routing](../SKILL.md#phase-2--load-read-strategy), follow this recipe before opening any `Read`/`grep` fallback. The CLI is preferred because it resolves aliases, walks wikilink shortcuts, and is index-backed (faster on large vaults).
+
+### Intent → CLI → fallback
+
+| Intent | CLI command | Confidence | Fallback |
+| :--- | :--- | :--- | :--- |
+| Find a doc by topic, scoped to the project folder | `obsidian search query="<term>" path="<vaultRoot>"` | **verify** | `grep -rn '<term>' <vaultRoot>` |
+| List all skill notes | `obsidian search tag="skill" total` | **verify** | `grep -lrn '^  - skill$' <vaultRoot>/Skills` |
+| Filter docs by language tag | `obsidian search tag="lang/go" total` | **verify** | `grep -lrn '^  - lang/go' <vaultRoot>` |
+| Filter docs by frontmatter type | `obsidian search property="type=skill"` | **verify** | `grep -lrn '^type: skill$' <vaultRoot>` |
+| Find docs that link to a specific skill or topic | `obsidian backlinks file="<slug>"` | exemplified | `grep -lrn '\[\[<slug>\]\]\|\[\[<slug>|' <vaultRoot>` |
+| Read a specific MOC by alias | `obsidian read file="<alias>" silent` | exemplified | (CLI required — aliases unresolved without it) |
+| Read a specific MOC by exact path | `obsidian read path="<vaultRoot>/<MOC>.md" silent` | exemplified | `Read` tool on absolute path |
+| Combine tag + property filter | `obsidian search tag="skill" property="status=stable"` | **verify** | `grep -l ... \| xargs grep -l ...` chain |
+| Count without listing content | append `total` to any `search` | exemplified for `tag`, **verify** for `property` | `grep -lrn ... \| wc -l` |
+
+For the full canonical command reference (flags, vault targeting, plugin commands), see `@obsidian-cli`. The table above is a curated subset focused on documentation discovery.
+
+### Token economy when searching docs
+
+| Flag | Why |
+| :--- | :--- |
+| `silent` | Skips refocusing the file in the Obsidian UI — preserves the user's current view. |
+| `total` | Returns a count instead of full content — confirm cohort size before iterating. |
+| `limit=N` | Caps `search` hits. Use 5–10 by default; raise only when the cohort is genuinely larger. |
+| `--copy` | Sends output to clipboard for paste-ready answers. Drop unless the user asked for it. |
+
+Pair `tag` + `total` first to scope the cohort, then `read` only the top match. Do not paginate through full search output unless the user asked for an inventory.
+
+### Read-only folder reminder
+
+Some folders are **read-only** per the project's `CLAUDE.md` (in this vault: `Notes/`). Read-only ≠ search-only — `obsidian search`, `obsidian read`, and `obsidian backlinks` MAY include them when relevant; **writes** (`create`, `append`, `property:set`) must refuse. If a search hit lives under a read-only folder and the user wants to record that finding, the recording goes in `brain/` (not in the source folder), with a wikilink back.
+
+### Boundary — when in doubt, link don't restate
+
+When the answer is in the general docs, the brain entry **links** (`[[<doc>]]`) and adds context (when this came up, what was decided about it) — it never copies the doc body. Restating duplicates the source of truth and rots the moment the doc evolves. A one-line summary plus a wikilink is the maximum.
+
 ## CLI command catalog (primary path)
 
 The `@obsidian-cli` is the **primary I/O mechanism** for every operation.
