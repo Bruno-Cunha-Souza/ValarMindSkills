@@ -78,6 +78,13 @@ Trigger: `<indexPath>` does **not** exist. **If it exists, skip this section ent
 Sequence (must be in this order):
 
 1. **Confirm with user.** Single yes/no, asked at most once per session. If no, exit silently for the rest of the session and remember the refusal — do not re-prompt on subsequent turns.
+
+   **When to ask** (mirrors [SKILL.md Phase 1 timing rule](../SKILL.md#phase-1--bootstrap-first-run)):
+   - **Default** — immediately after Phase 0 detection succeeds, before any other substantive task.
+   - **Auto mode / mid-task** — defer to the first natural pause (end-of-task report, hand-off, validation gate, before end-of-session sync). Record the deferral as an intent in conversation context so it survives `/compact`.
+   - **Phase 3 race guard** — if a write trigger (session, topic, decision) fires before the question was answered, ask now and block the write until the user responds.
+   - **Re-injection** — if the SessionStart hook re-fires while the deferral is still pending, resume the same one-shot intent; do not ask twice and do not re-defer indefinitely.
+   - **Refusal is sticky** — a "no" persists for the rest of the session even across hook re-injections.
 2. **Probe `@obsidian-cli`.** Set `mode = cli` if `obsidian --version` exits 0; else `mode = file`. Cache for the session.
 3. **Create directory tree.** See [SKILL.md Phase 1](../SKILL.md#phase-1--bootstrap-first-run) for exact commands per mode.
 4. **Seed index from template.** Template lives in [STRUCTURE.md](STRUCTURE.md#index-template). Token budget: ≤500 total, ≤150 in critical-facts callout.

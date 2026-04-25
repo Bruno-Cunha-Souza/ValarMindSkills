@@ -75,9 +75,18 @@ Trigger: `<indexPath>` does not exist.
 
 **Idempotency rule.** If `<indexPath>` already exists on disk, **skip Phase 1 entirely** and go to Phase 2 — never re-bootstrap, never overwrite the index. Re-bootstrap is only allowed if the user explicitly says so (e.g., "wipe the brain and start over"), and even then only after a one-question confirmation.
 
+> [!important] When to ask the bootstrap question
+> Phase 1 is **lazy-init** — Phase 0 always runs, Phase 1 only when the user is ready to be asked. The timing rule:
+>
+> - **Default (interactive sessions)** — ask the question immediately after Phase 0 succeeds, before any other substantive task. The user sees the prompt as the first interaction of the session.
+> - **Auto mode / mid-task exception** — if another skill's task is already in flight (e.g., the user invoked `/skill-creator` and execution started), it is acceptable to **defer** the bootstrap question to the first natural pause: end-of-task report, hand-off to another skill, validation gate, or before end-of-session sync. **Never** silently skip the question — record the deferral as an intent in conversation context so it survives compaction.
+> - **Phase 3 race guard** — if any Phase 3 write trigger (new session note, topic, decision) fires before Phase 1 has been answered, **stop and ask now**. Never write to `brain/` without an existing index.
+> - **Re-injection idempotency** — the SessionStart hook re-injects the activation digest after `/compact` and across new sessions. If the digest fires while Phase 1 is still pending, resume the same intent (do not re-defer indefinitely, do not ask twice). Treat the deferral state as a single one-shot until answered or the user explicitly refuses.
+> - **Refusal is sticky for the session** — once the user says no, do not re-prompt; mark the brain as opted-out for the rest of the session and respect that across re-injections.
+
 Steps:
 
-1. Confirm with the user before any write: "Bootstrap obsidian-brain at `<indexPath>`? This creates `brain/`, three subdirectories, and seeds the index. Proceed?" Wait for explicit yes.
+1. Confirm with the user before any write: "Bootstrap obsidian-brain at `<indexPath>`? This creates `brain/`, three subdirectories, and seeds the index. Proceed?" Wait for explicit yes. Choose the moment per the timing rule above.
 2. Create the directory tree. **Phase 1 prefers the shell-IO path** because directory creation and bulk file seeding are more reliably done with `mkdir`/`Write` than via the CLI's `create` subcommand (which the local `@obsidian-cli` skill exemplifies only with `name=`, not `path=`). Use:
 
    ```bash
