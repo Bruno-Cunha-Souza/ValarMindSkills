@@ -167,6 +167,48 @@ new = "updated: 2026-04-24"
 
 Match the exact line including indentation. Do not rewrite the entire frontmatter block.
 
+## Wikilink hygiene
+
+Two failure modes produce orphan notes in the graph view. Avoid both.
+
+### Filename-only, never path-prefixed
+
+Obsidian resolves wikilinks **from the vault root**, not from the file's directory. Use the filename only:
+
+```markdown
+✅ [[2026-04-25-ci-cd-generator|2026-04-25]]
+✅ [[0001-pick-bases-over-dataview|0001]]
+✅ [[ci-cd-generator]]
+✅ [[valarmindskills-brain|Brain]]
+
+❌ [[sessions/2026-04-25-ci-cd-generator|2026-04-25]]      ← path doesn't resolve
+❌ [[brain/topics/auth.md|Auth]]                            ← path + extension both wrong
+❌ [[../brain/<slug>-brain]]                                ← relative paths never resolve
+```
+
+Filenames must be globally unique within the vault. The brain's naming conventions are already designed for this (timestamped sessions, ID-prefixed ADRs, slug-prefixed index).
+
+### Always link back to the index
+
+Every session, topic, and decision note must have a `## Related` section in its body that includes:
+
+- `[[<slug>-brain|Brain]]` — the project's brain index (mandatory).
+- Every wikilink also declared in frontmatter (`topics:`, `decisions:`, `related:`) — repeated as a body wikilink.
+
+**Why repeat frontmatter wikilinks in the body?** Obsidian's graph view does **not** by default follow wikilinks declared only in frontmatter properties. A session whose only `[[ci-cd-generator]]` reference is in `topics: ["[[ci-cd-generator]]"]` will appear as an orphan even though the link technically exists. The body wikilink fixes this — it is graph-visible and backlinks-visible everywhere.
+
+The `## Related` section is the last block of every note. See [STRUCTURE.md § Session note template](STRUCTURE.md#session-note-template) for the canonical shape.
+
+### Self-check before saving
+
+Before writing any brain note, scan its wikilinks:
+
+- All `[[...]]` resolve to a real `.md` file by filename only?
+- The note has a `## Related` section linking back to `[[<slug>-brain|Brain]]`?
+- Every frontmatter wikilink is also present as a body wikilink?
+
+If any answer is no, fix before saving. Orphans accumulate silently — graph view is the only signal, and you may not notice until the graph is already a mess.
+
 ## Token economy in writing
 
 | Rule | Why |

@@ -156,6 +156,20 @@ Use the **dash form** (`brain-index`) for top-level filters and the **slash form
 
 Stay within this set — do not invent custom callouts. Bases ignores callouts, so they are a human-readability aid only.
 
+## Wikilink format rule
+
+> [!important] Filename-only, never path-prefixed
+> Obsidian resolves wikilinks **from the vault root**, not from the file's own directory. Use the filename only, never a path prefix:
+>
+> - ✅ `[[2026-04-25-ci-cd-generator|2026-04-25]]` — Obsidian resolves by filename across the entire vault
+> - ❌ `[[sessions/2026-04-25-ci-cd-generator|2026-04-25]]` — would only resolve if `sessions/` lived at the vault root, which it doesn't (the brain lives nested under `Projetos/<slug>/brain/sessions/`)
+> - ✅ `[[0001-pick-bases-over-dataview|0001]]` — for ADRs
+> - ❌ `[[decisions/0001-pick-bases-over-dataview|0001]]` — same problem
+>
+> Filenames must be **unique across the vault** for this to work. The brain's naming conventions (`<slug>-brain.md`, `YYYY-MM-DD-<short-slug>.md`, `NNNN-<short-slug>.md`) are designed to be globally unique on purpose.
+>
+> This rule applies to every wikilink in every brain note — index, sessions, topics, decisions. It applies equally to the index template, the session-note template, and the topic/decision templates below.
+
 ## Index template
 
 This is the seed used by Phase 1 bootstrap. Replace `<slug>` and `<Project name>` literally. Keep the total under 500 tokens.
@@ -190,16 +204,16 @@ updated: YYYY-MM-DD
 
 ## Recent sessions (last 10)
 
-- `[[sessions/YYYY-MM-DD-<slug>|YYYY-MM-DD]]` — <one-line summary>
+- `[[YYYY-MM-DD-<slug>|YYYY-MM-DD]]` — <one-line summary>
 
 ## Decisions (ADRs)
 
-- `[[decisions/0001-<slug>|0001]]` — <one-line summary>
+- `[[0001-<slug>|0001]]` — <one-line summary>
 
 ## Keywords
 
-- `<keyword>` → `[[topics/<topic>]]`
-- `<keyword>` → `[[topics/<topic>]]`
+- `<keyword>` → `[[<topic>]]`
+- `<keyword>` → `[[<topic>]]`
 
 ## Pending
 
@@ -254,8 +268,17 @@ updated: YYYY-MM-DD
 
 ## Decisions made
 
-- `[[decisions/NNNN-<slug>|NNNN]]` — <one-line summary>
+- `[[NNNN-<slug>|NNNN]]` — <one-line summary>
+
+## Related
+
+- `[[<slug>-brain|Brain]]` — link back to the project's brain index (mandatory for graph connectivity)
+- `[[<topic>]]` — every topic referenced above, repeated here as an explicit body wikilink
+- `[[<skill-or-doc>]]` — any general project doc the session touched (Skills/<slug>, Arquitetura, etc.)
 ```
+
+> [!warning] Related section is mandatory
+> Obsidian's graph view does not by default follow wikilinks declared **only in frontmatter** (`topics:`, `decisions:`, `related:`). A session whose only links are in `topics:` will appear as an orphan in the graph. The `## Related` section guarantees the session is reachable both visually (graph) and structurally (backlinks pane).
 
 ## Topic note template
 
