@@ -18,7 +18,7 @@ Review early, review often. The reviewer gets precisely crafted context — neve
    BASE_SHA=$(git rev-parse HEAD~1)   # or origin/main
    HEAD_SHA=$(git rev-parse HEAD)
    ```
-2. **Dispatch a code-review subagent.** In our repo, use the `valarmind:code-review` or `valarmind:github-pr-review` skill via the Task tool. Provide:
+2. **Dispatch a code-review subagent.** In this repo, activate the `valarmindskills:code-review` skill (or `valarmindskills:github-pr-review` for a GitHub PR) via the Skill tool, or dispatch a `general-purpose` Agent with the skill's procedure inlined into its prompt. Provide:
    - `WHAT_WAS_IMPLEMENTED` — 2-4 sentence summary of behavior change.
    - `PLAN_OR_REQUIREMENTS` — pointer to the plan or spec.
    - `BASE_SHA`, `HEAD_SHA`.

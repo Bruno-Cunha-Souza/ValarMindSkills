@@ -16,7 +16,7 @@ You have a written implementation plan to execute in a separate session with rev
 
 - Read the plan in full.
 - Review critically. Raise concerns BEFORE starting.
-- Only after concerns are addressed: create TodoWrite from the plan tasks. Proceed.
+- Only after concerns are addressed: create tasks via `TaskCreate` from the plan tasks. Proceed.
 
 ### Step 2 — Per task
 

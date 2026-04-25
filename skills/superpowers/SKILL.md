@@ -114,7 +114,7 @@ Active until the user says:
 - `stop superpowers`, `disable superpowers`, `desativar superpowers`, `desligar superpowers`, `parar superpowers`
 - The session ends.
 
-The level does **not** auto-revert after N turns.
+The posture does **not** auto-revert after N turns.
 
 ## Boundaries
 

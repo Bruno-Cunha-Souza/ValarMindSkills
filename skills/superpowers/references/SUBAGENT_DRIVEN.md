@@ -17,7 +17,7 @@ Never start work on `main` / `master` without explicit user consent.
 ### Setup
 
 - Read the plan once. Extract **all** tasks with full text + scene-setting context.
-- Create TodoWrite with all tasks.
+- Create tasks via `TaskCreate` with all tasks.
 - **Do not** make subagents read the plan. Provide complete task text directly. Plan files drift; copies are immutable.
 
 ### Per task
