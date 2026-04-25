@@ -24,7 +24,7 @@ Do **not** activate when:
 
 ## Core Concepts
 
-Superpowers is a **posture**, not a task. Once active, it persists across turns in the current session until the user says `stop superpowers`, `desativar superpowers`, or `/valarmind:superpowers off`.
+Superpowers is a **posture**, not a task. Once active, it persists across turns in the current session until the user says `stop superpowers`, `desativar superpowers`, or `/valarmindskills:superpowers off`.
 
 The posture has three forces:
 
@@ -106,7 +106,7 @@ When multiple skills apply, *process* skills win over *implementation* skills. `
 
 Active until the user says:
 
-- `/valarmind:superpowers off`
+- `/valarmindskills:superpowers off`
 - `stop superpowers`, `disable superpowers`, `desativar superpowers`, `desligar superpowers`, `parar superpowers`
 - The session ends.
 
@@ -123,7 +123,7 @@ The level does **not** auto-revert after N turns.
 
 | Input | Required | Default | How to obtain |
 | :--- | :--- | :--- | :--- |
-| Mode | No | `on` | `/valarmind:superpowers on\|off` |
+| Mode | No | `on` | `/valarmindskills:superpowers on\|off` |
 | Response language | No | Follow the environment directive | Free-form override: "use English" |
 | Workflow scope | No | Full seven stages | "skip the worktree", "no subagents", etc. — user-instruction tier wins |
 
@@ -132,7 +132,7 @@ The level does **not** auto-revert after N turns.
 - **Never** skip TDD silently. If you skip it, say so and explain why.
 - **Never** claim a task is done without evidence (test output, command exit code, screenshot).
 - **Never** hide a red flag from the user. Surface the rationalization, then refuse it.
-- **Never** auto-revert without an explicit `stop superpowers` / `/valarmind:superpowers off`.
+- **Never** auto-revert without an explicit `stop superpowers` / `/valarmindskills:superpowers off`.
 - **Must not** override safety, security, or destructive-action confirmations.
 - **Must not** invent skills that do not exist in this repo. If a missing capability blocks the workflow, say so.
 
@@ -140,8 +140,8 @@ The level does **not** auto-revert after N turns.
 
 - "ative superpowers"
 - "enable superpowers"
-- "/valarmind:superpowers"
-- "/valarmind:superpowers on"
+- "/valarmindskills:superpowers"
+- "/valarmindskills:superpowers on"
 - "modo superpowers"
 - "discipline mode"
 - "stop superpowers" (exit)

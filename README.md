@@ -32,7 +32,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ### Plugin install (recommended)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmind@valarmind`. Brings all 20 skills under the `/valarmind:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 20 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
@@ -46,7 +46,7 @@ To install in both Claude Code CLI and Antigravity in one command, use the unifi
 bash scripts/install-all.sh
 ```
 
-To uninstall: `claude plugins uninstall valarmind@valarmind && claude plugins marketplace remove valarmind`.
+To uninstall: `claude plugins uninstall valarmindskills@valarmindskills && claude plugins marketplace remove valarmindskills`.
 
 ### Alternative: development load (no install)
 
@@ -55,10 +55,10 @@ To uninstall: `claude plugins uninstall valarmind@valarmind && claude plugins ma
 claude --plugin-dir /path/to/ValarMindSkills
 ```
 
-After install, open a new session and caveman mode activates at level `full` by default. Control with:
+After install, open a new session and caveman mode activates at level `lite` by default. Control with:
 
-- `/valarmind:caveman lite|full|ultra` — switch intensity
-- `/valarmind:caveman off` — deactivate
+- `/valarmindskills:caveman lite|full|ultra` — switch intensity
+- `/valarmindskills:caveman off` — deactivate
 - `stop caveman` / `normal mode` (natural language) — deactivate
 
 Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, or with `defaultMode` in `~/.config/caveman/config.json`.
@@ -67,8 +67,8 @@ Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, 
 
 The plugin also ships a `superpowers` posture inspired by [obra/superpowers](https://github.com/obra/superpowers): scan skills before each reply (1% rule), follow the user > skills > defaults hierarchy, refuse twelve rationalizations, apply four pillars (TDD, systematic, complexity reduction, evidence), and walk a seven-stage workflow when scope warrants it. Unlike caveman, **superpowers is OFF by default**; you opt in.
 
-- `/valarmind:superpowers on` (or bare `/valarmind:superpowers`) — activate for the current session
-- `/valarmind:superpowers off` — deactivate
+- `/valarmindskills:superpowers on` (or bare `/valarmindskills:superpowers`) — activate for the current session
+- `/valarmindskills:superpowers off` — deactivate
 - `stop superpowers` / `desativar superpowers` (natural language) — deactivate
 
 Make activation persistent with `SUPERPOWERS_DEFAULT_MODE=on` in your environment, or with `{"defaultMode": "on"}` in `~/.config/superpowers/config.json`.

@@ -5,8 +5,9 @@
 // See THIRD_PARTY_NOTICES.md.
 //
 // Inspects user input for /superpowers commands and writes mode to flag file.
-// Matches both bare `/superpowers` and plugin-namespaced `/valarmind:superpowers`
-// forms. Default arg is `on` (binary toggle, no levels).
+// Matches bare `/superpowers` and plugin-namespaced `/valarmindskills:superpowers`
+// (legacy `/valarmind:` accepted for backwards compatibility).
+// Default arg is `on` (binary toggle, no levels).
 
 const fs = require('fs');
 const path = require('path');
@@ -32,7 +33,7 @@ process.stdin.on('end', () => {
     }
 
     // Match slash commands — both bare and plugin-namespaced
-    const slashMatch = prompt.match(/^\/(?:valarmind:)?superpowers\b\s*(\S*)/);
+    const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?superpowers\b\s*(\S*)/);
     if (slashMatch) {
       const arg = slashMatch[1] || '';
 

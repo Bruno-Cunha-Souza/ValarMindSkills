@@ -105,7 +105,7 @@ Install:
   bash scripts/install-plugin-claude.sh
 
 Invoke:
-  /valarmind:hello-skill
+  /valarmindskills:hello-skill
 ```
 
 Offered to append the new row to `README.md`; user accepted.

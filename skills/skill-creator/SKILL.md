@@ -178,11 +178,11 @@ Frontmatter:
   description: <first 120 chars…>
 
 Install:
-  bash scripts/install-plugin-claude.sh   # Claude Code CLI (plugin valarmind@valarmind)
+  bash scripts/install-plugin-claude.sh   # Claude Code CLI (plugin valarmindskills@valarmindskills)
   bash scripts/install-all.sh             # Claude Code + Antigravity
 
 Invoke:
-  /valarmind:<slug>
+  /valarmindskills:<slug>
 ```
 
 Then offer to update `README.md` and, if the user agrees, add the new row to the "Available skills" table.

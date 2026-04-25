@@ -33,7 +33,7 @@ safeWriteFlag(flagPath, mode);
 const INDEPENDENT_MODES = new Set(['commit', 'review']);
 
 if (INDEPENDENT_MODES.has(mode)) {
-  process.stdout.write('CAVEMAN MODE ACTIVE — level: ' + mode + '. Behavior defined by /valarmind:caveman-' + mode + ' skill.');
+  process.stdout.write('CAVEMAN MODE ACTIVE — level: ' + mode + '. Behavior defined by /valarmindskills:caveman-' + mode + ' skill.');
   process.exit(0);
 }
 
@@ -74,7 +74,7 @@ if (skillContent) {
     'Respond terse like smart caveman. All technical substance stay. Only fluff die.\n\n' +
     '## Persistence\n\n' +
     'ACTIVE EVERY RESPONSE. No revert after many turns. No filler drift. Off only: "stop caveman" / "normal mode".\n\n' +
-    'Current level: **' + modeLabel + '**. Switch: `/valarmind:caveman lite|full|ultra`.\n\n' +
+    'Current level: **' + modeLabel + '**. Switch: `/valarmindskills:caveman lite|full|ultra`.\n\n' +
     '## Rules\n\n' +
     'Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. ' +
     'Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.\n\n' +
@@ -104,7 +104,7 @@ try {
     const statusLineSnippet =
       '"statusLine": { "type": "command", "command": ' + JSON.stringify(command) + ' }';
     output += "\n\n" +
-      "STATUSLINE SETUP NEEDED: valarmind plugin includes a composable statusline " +
+      "STATUSLINE SETUP NEEDED: valarmindskills plugin includes a composable statusline " +
       "(caveman badge + context window usage, e.g. [CAVEMAN] 42% 420k/1M). Not configured yet. " +
       "To enable, add to " + path.join(claudeDir, 'settings.json') + ": " +
       statusLineSnippet;

@@ -48,7 +48,7 @@ if (skillContent) {
 } else {
   output =
     'SUPERPOWERS MODE ACTIVE\n\n' +
-    'Engineering-discipline posture. Persists for the session until `/valarmind:superpowers off` or "stop superpowers".\n\n' +
+    'Engineering-discipline posture. Persists for the session until `/valarmindskills:superpowers off` or "stop superpowers".\n\n' +
     '## The 1% Rule\n\n' +
     'Before any reply or action, scan available skills. Even a 1% chance a skill applies means invoke it to check. Skill check comes BEFORE clarifying questions.\n\n' +
     '## Instruction Hierarchy\n\n' +
@@ -82,7 +82,7 @@ if (skillContent) {
     '- "The user didn\'t ask for tests" — the four pillars apply unless the user explicitly opts out.\n' +
     '- "I\'ll write a quick hack" — quick hacks become tech debt; reach for a skill.\n\n' +
     '## Boundaries\n\n' +
-    'Does not override safety. Coexists with caveman (caveman shapes voice; superpowers shapes process). Stop with `/valarmind:superpowers off`, "stop superpowers", or "desativar superpowers".';
+    'Does not override safety. Coexists with caveman (caveman shapes voice; superpowers shapes process). Stop with `/valarmindskills:superpowers off`, "stop superpowers", or "desativar superpowers".';
 }
 
 process.stdout.write(output);

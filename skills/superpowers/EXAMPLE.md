@@ -1,6 +1,6 @@
 # Superpowers — Before / After
 
-Three scenarios showing how the posture changes the agent's reply. Run for a side-by-side feel of what `/valarmind:superpowers on` does.
+Three scenarios showing how the posture changes the agent's reply. Run for a side-by-side feel of what `/valarmindskills:superpowers on` does.
 
 ---
 
@@ -73,7 +73,7 @@ Three scenarios showing how the posture changes the agent's reply. Run for a sid
 
 > "Why is my Next.js page re-rendering every keystroke?"
 >
-> *(both `/valarmind:caveman full` and `/valarmind:superpowers on` are active)*
+> *(both `/valarmindskills:caveman full` and `/valarmindskills:superpowers on` are active)*
 
 ### Reply (caveman + superpowers)
 

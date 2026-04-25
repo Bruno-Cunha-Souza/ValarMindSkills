@@ -1,5 +1,5 @@
 {
-  "name": "valarmind",
+  "name": "valarmindskills",
   "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default) and superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default).",
   "version": "0.1.0",
   "author": {

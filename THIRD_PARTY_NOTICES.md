@@ -32,7 +32,7 @@ SOFTWARE.
 
 - Dropped wenyan (Classical Chinese) modes.
 - Dropped `compress` mode / `caveman-compress` skill.
-- Adjusted slash-command regex to match plugin-namespaced `/valarmind:caveman*` in addition to bare `/caveman*`.
+- Adjusted slash-command regex to match plugin-namespaced `/valarmindskills:caveman*` (and legacy `/valarmind:caveman*`) in addition to bare `/caveman*`.
 - Added Portuguese (pt-BR) activation/deactivation phrases to the natural-language matchers (`ative caveman`, `modo caveman`, `parar caveman`, `modo normal`).
 - Filter logic in `hooks/caveman/caveman-activate.js` adapted to the `skills/caveman/SKILL.md` table format used in this repository.
 

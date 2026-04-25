@@ -54,9 +54,9 @@ Run this checklist before reporting a new skill back to the user. Failing items 
 - [ ] Install roundtrip succeeds:
       ```bash
       bash scripts/install-plugin-claude.sh
-      claude plugins list | grep valarmind@valarmind    # should show the plugin as enabled
+      claude plugins list | grep valarmindskills@valarmindskills    # should show the plugin as enabled
       ```
-      After install, the skill is reachable as `/valarmind:<slug>`.
+      After install, the skill is reachable as `/valarmindskills:<slug>`.
 - [ ] (If targeting Antigravity) `bash scripts/install-antigravity.sh` also succeeds.
 
 ## Manual smoke test

@@ -4,7 +4,8 @@
 // Ported from JuliusBrussee/caveman (MIT). See THIRD_PARTY_NOTICES.md.
 //
 // Inspects user input for /caveman commands and writes mode to flag file.
-// Matches both bare `/caveman` and plugin-namespaced `/valarmind:caveman` forms.
+// Matches bare `/caveman` and plugin-namespaced `/valarmindskills:caveman`
+// (legacy `/valarmind:` accepted for backwards compatibility).
 
 const fs = require('fs');
 const path = require('path');
@@ -33,7 +34,7 @@ process.stdin.on('end', () => {
     }
 
     // Match slash commands — both bare and plugin-namespaced
-    const slashMatch = prompt.match(/^\/(?:valarmind:)?(caveman(?:-commit|-review)?)\b\s*(\S*)/);
+    const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?(caveman(?:-commit|-review)?)\b\s*(\S*)/);
     if (slashMatch) {
       const cmd = slashMatch[1];
       const arg = slashMatch[2] || '';

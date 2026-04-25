@@ -2,18 +2,18 @@
 
 # Persistent install of the ValarMindSkills plugin in Claude Code CLI.
 # Registers the repository as a local marketplace and installs the
-# `valarmind@valarmind` plugin, which wires up:
+# `valarmindskills@valarmindskills` plugin, which wires up:
 #   - All skills under skills/<slug>/
 #   - Caveman auto-activation hooks (SessionStart + UserPromptSubmit)
 #
-# Exports slash commands as /valarmind:<slug> (plugin namespace).
+# Exports slash commands as /valarmindskills:<slug> (plugin namespace).
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-MARKETPLACE_NAME="valarmind"
-PLUGIN_REF="valarmind@valarmind"
+MARKETPLACE_NAME="valarmindskills"
+PLUGIN_REF="valarmindskills@valarmindskills"
 
 echo "========================================"
 echo " ValarMindSkills — Plugin Install"
@@ -42,7 +42,7 @@ claude plugins validate "$REPO_DIR" || {
 
 echo ""
 echo "Step 2/4 — registering local marketplace"
-if claude plugins marketplace list 2>/dev/null | grep -q "^$MARKETPLACE_NAME\b"; then
+if claude plugins marketplace list 2>/dev/null | grep -qE "[[:space:]]${MARKETPLACE_NAME}\$"; then
   echo "Marketplace '$MARKETPLACE_NAME' already registered — updating"
   claude plugins marketplace update "$MARKETPLACE_NAME" || true
 else
@@ -66,12 +66,12 @@ echo ""
 echo "Slash commands: /$MARKETPLACE_NAME:<skill>"
 echo "  e.g. /$MARKETPLACE_NAME:caveman, /$MARKETPLACE_NAME:caveman-commit"
 echo ""
-echo "Caveman auto-activation: ON (default level = full)."
+echo "Caveman auto-activation: ON (default level = lite)."
 echo "Override via env: export CAVEMAN_DEFAULT_MODE=lite|full|ultra|off"
-echo "Or create ~/.config/caveman/config.json with {\"defaultMode\": \"lite\"}"
+echo "Or create ~/.config/caveman/config.json with {\"defaultMode\": \"full\"}"
 echo ""
 echo "Superpowers auto-activation: OFF (default mode = off)."
-echo "Activate per-session: /valarmind:superpowers on"
+echo "Activate per-session: /valarmindskills:superpowers on"
 echo "Override default via env: export SUPERPOWERS_DEFAULT_MODE=on"
 echo "Or create ~/.config/superpowers/config.json with {\"defaultMode\": \"on\"}"
 echo ""
