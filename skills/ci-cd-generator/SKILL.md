@@ -1,6 +1,6 @@
 ---
 name: ci-cd-generator
-description: "Use when the user asks to generate, scaffold, or set up a GitHub Actions CI/CD pipeline for a Go, Rust, or TypeScript project. Auto-detects the language and package manager, applies opinionated defaults (coverage gates 60–80%, N+1 detection, race condition property-based testing, memory leak detection, load testing), wires security gates (CodeQL/Semgrep, govulncheck/cargo-audit/npm audit, trivy, SBOM, gitleaks), and emits ready-to-commit YAML under `.github/workflows/`. Trigger phrases: 'criar CI', 'gerar pipeline', 'criar workflow GitHub Actions', 'configurar CI/CD', 'set up CI/CD', 'create GitHub Actions workflow', 'scaffold pipeline', 'add CI pipeline', '/ci-cd-generator'. Output is one or more workflow files plus a short report listing required secrets, suggested branch protection rules, and follow-up actions. Not for editing an isolated existing workflow line — use `@github-pr-review` or direct edits."
+description: "Use when the user asks to generate, scaffold, or set up a GitHub Actions CI/CD pipeline for a Go, Rust, or TypeScript project, or to audit existing workflows against the same baseline. Auto-detects the language and package manager, applies opinionated defaults (coverage gates 60–80%, N+1 detection, race condition property-based testing, memory leak detection, load testing), wires security gates (CodeQL/Semgrep, govulncheck/cargo-audit/npm audit, trivy, SBOM, gitleaks), and either emits ready-to-commit YAML under `.github/workflows/` or produces a severity-ranked findings report with fix proposals for the existing workflows. Trigger phrases: 'criar CI', 'gerar pipeline', 'configurar CI/CD', 'auditar pipeline', 'auditar workflow', 'set up CI/CD', 'create GitHub Actions workflow', 'audit CI pipeline', 'review existing workflow', '/ci-cd-generator'. Output is workflow files plus a report (generation mode), or a findings table plus optional unified-diff fixes (audit mode)."
 source: ValarMindSkills
 ---
 
@@ -10,16 +10,27 @@ Lifecycle skill that scaffolds a complete GitHub Actions pipeline for a Go, Rust
 
 ## When to Use
 
+The skill has two operating modes — **generation** (the default, walks Phase 0 → 6 below) and **audit** (read-only review of an existing pipeline, walks Phase A0 → A5 in [references/AUDIT.md](references/AUDIT.md)).
+
+### Generation mode
+
 - A new repository (Go, Rust, or TypeScript) has no `.github/workflows/` directory and the user wants CI/CD wired up
 - An existing repository has an ad-hoc workflow that the user wants replaced with a complete, opinionated baseline
 - The user explicitly asks for "criar CI", "gerar pipeline", "scaffold workflow", or invokes `/valarmindskills:ci-cd-generator`
 - A polyglot monorepo needs per-language pipelines (run the skill once per project root)
 
-This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML → validates. For language-agnostic API tests run from a CI pipeline, complement with `@api-security-testing`. For deeper Go security audits in the CI workflow, complement with `@golang-api-security`. For Next.js-specific CI, see `@nextjs-security-pro` and `@nextjs-optimization-pro`.
+### Audit mode
+
+- The repository already has workflows authored before this skill existed and the user wants them reviewed
+- A security incident exposed a CI weakness (compromised secret, malicious action) and the user wants the full surface checked
+- Pre-release gate: confirm the workflows match the security level the team thinks they are running at
+- The user explicitly asks for "auditar pipeline", "audit CI pipeline", "review existing workflow"
+
+This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For language-agnostic API tests run from a CI pipeline, complement with `@api-security-testing`. For deeper Go security audits in the CI workflow, complement with `@golang-api-security`. For Next.js-specific CI, see `@nextjs-security-pro` and `@nextjs-optimization-pro`.
 
 ## Do not use when
 
-- The user wants to fix or refactor a single line in an existing workflow — open the YAML directly or use `@github-pr-review`
+- The user wants to fix or refactor a single line in an existing workflow — open the YAML directly or use `@github-pr-review`. For a full pipeline audit, switch to **audit mode** instead.
 - The CI platform is GitLab CI, CircleCI, Buildkite, or Jenkins — this skill is GitHub Actions only
 - The project language is not Go, Rust, or TypeScript (Node.js / Bun / Deno)
 - The user wants to deploy infrastructure (Terraform, Pulumi, Kubernetes manifests) — pipeline ≠ infra
@@ -235,6 +246,20 @@ The full validation matrix and the optional `gh workflow run --ref <branch> ci.y
 
 A worked end-to-end run of Phase 0 → Phase 6 for a Go API project is in [EXAMPLE.md](EXAMPLE.md).
 
+## Audit mode (alternate entry)
+
+When the user asks to **audit** an existing pipeline rather than generate one, branch at the very top of Phase 0 into the audit procedure documented in [references/AUDIT.md](references/AUDIT.md). The audit walks Phase A0 → A5 (inventory → heuristic compliance → security gate compliance → anti-pattern sweep → action freshness → caching/concurrency hygiene) and emits a severity-ranked findings table with fix proposals.
+
+The audit is **read-only by default**. The user can opt in per finding ID for the skill to apply unified-diff fixes; each fix is tagged **SAFE** / **REVIEW** / **BREAKING** and re-validated with `actionlint` before report-ok. The skill never commits.
+
+Pick the entry point by user intent:
+
+| Intent signal | Entry |
+| --- | --- |
+| "criar CI", "gerar pipeline", "scaffold workflow", `/ci-cd-generator` on a repo with no `.github/workflows/` | Phase 0 (generation) |
+| "auditar pipeline", "audit CI", "review existing workflow", `/ci-cd-generator` on a repo with workflows present | Phase A0 (audit) |
+| Ambiguous and `.github/workflows/` exists | Ask once: "audit existing workflows or generate a new baseline alongside?" — do not assume |
+
 ## Constraints
 
 - **Never** commit the generated YAML without explicit user approval — emit the diff first
@@ -296,4 +321,5 @@ Next: review the diff, then `/valarmindskills:github-commit`.
 - [USER_HEURISTICS](references/USER_HEURISTICS.md) — coverage gate, N+1, race PBT, leak detection, load testing — rationale and snippets
 - [SECURITY_GATES](references/SECURITY_GATES.md) — SAST, SCA, container, SBOM, secret scan, license — per-language tool matrix
 - [CHECKLIST](references/CHECKLIST.md) — post-generation validation, branch protection, smoke test
+- [AUDIT](references/AUDIT.md) — audit mode procedure, detection rules, severity matrix, report format, opt-in fix application
 - [EXAMPLE](EXAMPLE.md) — end-to-end worked example for a Go API project
