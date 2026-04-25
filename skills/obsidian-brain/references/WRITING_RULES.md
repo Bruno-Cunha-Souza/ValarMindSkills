@@ -176,14 +176,15 @@ Two failure modes produce orphan notes in the graph view. Avoid both.
 Obsidian resolves wikilinks **from the vault root**, not from the file's directory. Use the filename only:
 
 ```markdown
-✅ [[2026-04-25-ci-cd-generator|2026-04-25]]
-✅ [[0001-pick-bases-over-dataview|0001]]
-✅ [[ci-cd-generator]]
-✅ [[valarmindskills-brain|Brain]]
+✅ [[2026-04-25-ci-cd-generator|2026-04-25]]   ← session note (brain-internal)
+✅ [[0001-pick-bases-over-dataview|0001]]      ← decision note (brain-internal)
+✅ [[auth-middleware]]                          ← topic note (brain-internal)
+✅ [[valarmindskills-brain|Brain]]              ← index (the only boundary node)
 
-❌ [[sessions/2026-04-25-ci-cd-generator|2026-04-25]]      ← path doesn't resolve
-❌ [[brain/topics/auth.md|Auth]]                            ← path + extension both wrong
-❌ [[../brain/<slug>-brain]]                                ← relative paths never resolve
+❌ [[sessions/2026-04-25-ci-cd-generator|2026-04-25]]   ← path doesn't resolve
+❌ [[brain/topics/auth.md|Auth]]                         ← path + extension both wrong
+❌ [[../brain/<slug>-brain]]                             ← relative paths never resolve
+❌ [[prompt-engineering]]                                ← project doc, not a brain note (see § Brain isolation below)
 ```
 
 Filenames must be globally unique within the vault. The brain's naming conventions are already designed for this (timestamped sessions, ID-prefixed ADRs, slug-prefixed index).
@@ -195,9 +196,33 @@ Every session, topic, and decision note must have a `## Related` section in its 
 - `[[<slug>-brain|Brain]]` — the project's brain index (mandatory).
 - Every wikilink also declared in frontmatter (`topics:`, `decisions:`, `related:`) — repeated as a body wikilink.
 
-**Why repeat frontmatter wikilinks in the body?** Obsidian's graph view does **not** by default follow wikilinks declared only in frontmatter properties. A session whose only `[[ci-cd-generator]]` reference is in `topics: ["[[ci-cd-generator]]"]` will appear as an orphan even though the link technically exists. The body wikilink fixes this — it is graph-visible and backlinks-visible everywhere.
+**Why repeat frontmatter wikilinks in the body?** Obsidian's graph view does **not** by default follow wikilinks declared only in frontmatter properties. A session whose only `[[<some-topic>]]` reference is in `topics: ["[[<some-topic>]]"]` will appear as an orphan even though the link technically exists. The body wikilink fixes this — it is graph-visible and backlinks-visible everywhere.
 
 The `## Related` section is the last block of every note. See [STRUCTURE.md § Session note template](STRUCTURE.md#session-note-template) for the canonical shape.
+
+### Brain isolation — no wikilinks to project docs
+
+Brain notes (sessions, topics, decisions) **must not** wikilink to project documentation. The graph of *what happened* (brain) and the graph of *how things work* (project docs) stay visually and structurally separate.
+
+| Allowed wikilink target | Example | Notes |
+| :--- | :--- | :--- |
+| Brain index | `[[<slug>-brain\|Brain]]` | Always present in `## Related`. |
+| Sibling brain note (same project) | `[[<topic>]]`, `[[NNNN-<slug>]]`, `[[YYYY-MM-DD-<slug>]]` | Intra-brain only. |
+
+| Forbidden wikilink target | Why |
+| :--- | :--- |
+| Project skill notes (`[[prompt-engineering]]`, `[[skill-creator]]`) | Belongs to the docs graph; mention in prose with backticks instead. |
+| MOCs (`[[Skills]]`, `[[ValarMindSkills]]`) | Same — index is the only bridge. |
+| Architecture / general docs (`[[Arquitetura]]`, `[[CLAUDE.md]]`) | Same. |
+
+To mention a skill or doc in the body of a brain note, use backticks:
+
+```markdown
+✅ A skill `prompt-engineering` audita o `SKILL.md` recém-escrito.
+❌ A skill [[prompt-engineering]] audita o `SKILL.md` recém-escrito.
+```
+
+The **index** (`<slug>-brain.md`) is the **single boundary node** allowed to wikilink to project MOCs and skills. Phase 5 of the SKILL (suggest updating main docs) is the only mechanism by which the brain may influence project docs — never via a direct wikilink from a session/topic/decision.
 
 ### Self-check before saving
 
@@ -206,6 +231,7 @@ Before writing any brain note, scan its wikilinks:
 - All `[[...]]` resolve to a real `.md` file by filename only?
 - The note has a `## Related` section linking back to `[[<slug>-brain|Brain]]`?
 - Every frontmatter wikilink is also present as a body wikilink?
+- All wikilinks point to brain notes (sessions, topics, decisions, the index) — none point to project docs (`Skills/<slug>`, MOCs, `Arquitetura`, etc.)? Use backticks for textual mention of project docs instead.
 
 If any answer is no, fix before saving. Orphans accumulate silently — graph view is the only signal, and you may not notice until the graph is already a mess.
 

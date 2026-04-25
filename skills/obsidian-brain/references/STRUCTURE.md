@@ -274,11 +274,14 @@ updated: YYYY-MM-DD
 
 - `[[<slug>-brain|Brain]]` — link back to the project's brain index (mandatory for graph connectivity)
 - `[[<topic>]]` — every topic referenced above, repeated here as an explicit body wikilink
-- `[[<skill-or-doc>]]` — any general project doc the session touched (Skills/<slug>, Arquitetura, etc.)
+- `[[<NNNN-...>]]` or `[[<YYYY-MM-DD-...>]]` — sibling brain notes (decisions, other sessions) referenced in the body
 ```
 
 > [!warning] Related section is mandatory
 > Obsidian's graph view does not by default follow wikilinks declared **only in frontmatter** (`topics:`, `decisions:`, `related:`). A session whose only links are in `topics:` will appear as an orphan in the graph. The `## Related` section guarantees the session is reachable both visually (graph) and structurally (backlinks pane).
+
+> [!important] Brain isolation rule
+> Brain notes (sessions, topics, decisions) **must not** wikilink to project docs (`Skills/<slug>`, `Arquitetura`, MOCs, `Manual de Uso`, etc.). The index (`<slug>-brain.md`) is the **only boundary node** allowed to wikilink across layers. Mention project skills/docs in body prose with backticks (`` `prompt-engineering` ``), never with wikilinks. The brain captures *what happened*; project docs capture *how things work* — keeping the graphs separate prevents the brain from polluting the documentation graph.
 
 ## Topic note template
 
@@ -309,13 +312,16 @@ updated: YYYY-MM-DD
 
 ## Sessions where this came up
 
-- `[[sessions/YYYY-MM-DD-<slug>]]`
+- `[[YYYY-MM-DD-<slug>]]`
 
 ## Related
 
+- `[[<slug>-brain|Brain]]`
 - `[[<other-topic>]]`
-- `[[<project-MOC>]]`
 ```
+
+> [!important] Topic notes follow the same boundary rule as sessions
+> Do **not** wikilink to project docs (`Skills/<slug>`, MOCs, etc.) from a topic note. Use backticks (`` `prompt-engineering` ``) for textual mention. The index is the only boundary.
 
 ## Decision note template (ADR)
 
@@ -355,8 +361,16 @@ superseded_by: ""
 
 ## Sessions where this was decided
 
-- `[[sessions/YYYY-MM-DD-<slug>]]`
+- `[[YYYY-MM-DD-<slug>]]`
+
+## Related
+
+- `[[<slug>-brain|Brain]]`
+- `[[<topic>]]` — topic this decision crystallizes (if any)
 ```
+
+> [!important] Decisions follow the same boundary rule
+> Do **not** wikilink to project docs from an ADR. Use backticks for textual mention.
 
 ## brain.base (optional dashboard)
 
