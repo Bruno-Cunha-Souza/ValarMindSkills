@@ -1,6 +1,6 @@
 {
   "name": "valarmindskills",
-  "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default), superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default), and obsidian-brain SessionStart hook (auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault).",
+  "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default), superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default), and obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found).",
   "version": "0.1.0",
   "author": {
     "name": "Bruno Cunha Souza",
@@ -48,6 +48,12 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-mode-tracker.js\"",
             "timeout": 5,
             "statusMessage": "Tracking superpowers mode..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking obsidian-brain mode..."
           }
         ]
       }

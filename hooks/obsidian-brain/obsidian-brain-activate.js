@@ -2,25 +2,37 @@
 // obsidian-brain — Claude Code SessionStart activation hook
 //
 // Runs on every session start:
-//   1. Locate CLAUDE.md (preferred) or AGENTS.md in cwd or up to 3 ancestors.
-//   2. Scan the body for an Obsidian vault reference (path containing "Obsidian").
-//   3. If the reference resolves to an existing directory, derive the brain
-//      index path and emit a system-reminder pointing the agent to it.
-//   4. On any failure or no match: silent skip — writes "OK" and exits 0.
+//   1. Resolve mode (env > config > 'on'). If 'off', clear flag, exit OK.
+//   2. Locate CLAUDE.md (preferred) or AGENTS.md in cwd or up to 3 ancestors.
+//   3. Scan the body for an Obsidian vault reference (path containing "Obsidian").
+//   4. If the reference resolves to an existing directory, derive the brain
+//      index path, write the flag file with 'on', and emit a system-reminder
+//      pointing the agent to it.
+//   5. On any failure or no match: clear flag, write "OK", exit 0.
 //
-// The hook never writes to disk and never modifies the vault.
+// The hook never writes to the vault — only the local flag file at
+// $CLAUDE_CONFIG_DIR/.obsidian-brain-active.
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const { getDefaultMode, safeWriteFlag } = require('./obsidian-brain-config');
 
 const MAX_ANCESTORS = 3;
 // Match a relative, absolute, or home-relative path containing "Obsidian",
 // terminated by whitespace, quote, backtick, or close-paren.
 const VAULT_REGEX = /(?:~\/|\.{1,2}\/|\/)[^\s"'`)]*Obsidian[^\s"'`)]*/i;
 
+const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
+const flagPath = path.join(claudeDir, '.obsidian-brain-active');
+
+function cleanFlag() {
+  try { fs.unlinkSync(flagPath); } catch (e) { /* ignore ENOENT */ }
+}
+
 function expandTilde(p) {
   if (p.startsWith('~/') || p === '~') {
-    return path.join(require('os').homedir(), p.slice(2));
+    return path.join(os.homedir(), p.slice(2));
   }
   return p;
 }
@@ -42,6 +54,7 @@ function findFile(startDir, fileNames) {
 }
 
 function silentExit() {
+  cleanFlag();
   process.stdout.write('OK');
   process.exit(0);
 }
@@ -54,6 +67,12 @@ function deriveSlug(folderName) {
 }
 
 try {
+  // Mode override — env > config > 'on'. 'off' clears the flag and exits.
+  const mode = getDefaultMode();
+  if (mode === 'off') {
+    silentExit();
+  }
+
   const cwd = process.cwd();
   const found = findFile(cwd, ['CLAUDE.md', 'AGENTS.md']);
   if (!found) silentExit();
@@ -91,10 +110,13 @@ try {
     '2. Lazy-load topics/sessions/decisions only when matched to the user prompt.\n' +
     '3. After relevant changes, suggest updating the main project docs.\n\n' +
     'See @obsidian-brain (skills/obsidian-brain/SKILL.md) for the full procedure.\n' +
-    'Prefer @obsidian-cli for I/O. Fall back to file-IO only if `obsidian --version` fails.';
+    'Prefer @obsidian-cli for I/O. Fall back to file-IO only if `obsidian --version` fails.\n' +
+    'Disable for this session with `/valarmindskills:obsidian-brain off`.';
 
+  safeWriteFlag(flagPath, 'on');
   process.stdout.write(message);
 } catch (e) {
+  cleanFlag();
   process.stdout.write('OK');
   process.exit(0);
 }

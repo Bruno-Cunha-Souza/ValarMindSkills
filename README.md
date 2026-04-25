@@ -23,7 +23,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 | `nextjs-optimization-pro` | Performance optimization specialist for Next.js 16.2.x — Server Components, rendering, client/server boundaries |
 | `nextjs-security-pro` | Complete security lifecycle for Next.js 16.2.x App Router — audit, patch, validate, OWASP Top 10 |
 | `obsidian-bases` | Create and edit Obsidian Bases (.base files) with views, filters, formulas, and summaries |
-| `obsidian-brain` | Token-efficient session-memory for projects whose CLAUDE.md/AGENTS.md references an Obsidian vault — auto-detects, bootstraps `<vault>/brain/`, lazy-loads index, writes atomic notes for sessions/topics/decisions |
+| `obsidian-brain` | Token-efficient session-memory for projects whose CLAUDE.md/AGENTS.md references an Obsidian vault — auto-detects, bootstraps `<vault>/brain/`, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when a vault is detected; the statusline shows a roxo `[OBSIDIAN-BRAIN]` badge while active |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
@@ -33,7 +33,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ### Plugin install (recommended)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 22 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain `SessionStart` detection hook.
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 22 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
@@ -76,9 +76,23 @@ Make activation persistent with `SUPERPOWERS_DEFAULT_MODE=on` in your environmen
 
 Caveman and superpowers coexist freely — caveman shapes voice, superpowers shapes process. When both are active, the statusline renders both badges (`[CAVEMAN] | [SUPERPOWERS] | context: …`).
 
+#### Obsidian Brain (on by default when vault detected)
+
+Token-efficient session-memory for any project whose `CLAUDE.md` or `AGENTS.md` references an Obsidian vault. The `SessionStart` hook auto-detects the vault, writes a flag file at `~/.claude/.obsidian-brain-active`, and injects a one-time digest pointing the agent at the brain index. With no vault detected, the hook silently clears the flag and the statusline badge hides — no posture, no noise.
+
+- `/valarmindskills:obsidian-brain on` (or bare `/valarmindskills:obsidian-brain`) — re-enable for the current session
+- `/valarmindskills:obsidian-brain off` — disable for the current session
+- `stop obsidian-brain` / `desativar obsidian-brain` (natural language) — deactivate
+
+Disable persistently via `OBSIDIAN_BRAIN_DEFAULT_MODE=off` in your environment, or with `{"defaultMode": "off"}` in `~/.config/obsidian-brain/config.json`.
+
 #### Statusline
 
-The plugin ships a composable statusline that combines a Caveman mode badge (`[CAVEMAN]` / `[CAVEMAN:ULTRA]`) with the current context window usage (e.g. `42% 420k/1M`, color-coded by threshold).
+The plugin ships a composable statusline that combines three optional badges with the current context window usage (e.g. `42% 420k/1M`, color-coded by threshold):
+
+- `[CAVEMAN]` / `[CAVEMAN:ULTRA]` — laranja, hidden when caveman is off.
+- `[SUPERPOWERS]` — cyan when on, dim when off (always visible).
+- `[OBSIDIAN-BRAIN]` — roxo (cor 99 ≈ #875FFF, próxima do roxo Obsidian), hidden when no vault is detected or the user opted out.
 
 `scripts/install-plugin-claude.sh` configures it automatically: it adds `statusLine` to `~/.claude/settings.json` (creating the file if needed, backing it up if it already exists). If `statusLine` is already set to a different command, the installer leaves it untouched and prints both values so you can choose. Set `VALARMIND_SKIP_STATUSLINE=1` to opt out, or remove it manually:
 
@@ -134,19 +148,24 @@ cp -r ValarMindSkills/skills/* .agent/skills/
   marketplace.json          <- local marketplace manifest
 hooks/
   caveman/
-    caveman-activate.js         <- SessionStart hook (on by default)
-    caveman-mode-tracker.js     <- UserPromptSubmit hook
-    caveman-config.js           <- shared helpers
+    caveman-activate.js             <- SessionStart hook (on by default)
+    caveman-mode-tracker.js         <- UserPromptSubmit hook
+    caveman-config.js               <- shared helpers
   superpowers/
-    superpowers-activate.js     <- SessionStart hook (off by default)
-    superpowers-mode-tracker.js <- UserPromptSubmit hook
-    superpowers-config.js       <- shared helpers
+    superpowers-activate.js         <- SessionStart hook (off by default)
+    superpowers-mode-tracker.js     <- UserPromptSubmit hook
+    superpowers-config.js           <- shared helpers
+  obsidian-brain/
+    obsidian-brain-activate.js      <- SessionStart hook (on when vault detected)
+    obsidian-brain-mode-tracker.js  <- UserPromptSubmit hook
+    obsidian-brain-config.js        <- shared helpers
   statusline/
-    statusline.sh               <- composer (entry registered in settings.json)
+    statusline.sh                   <- composer (entry registered in settings.json)
     segments/
-      caveman.sh                <- caveman mode badge segment
-      superpowers.sh            <- superpowers mode badge segment
-      context.sh                <- context window usage segment
+      caveman.sh                    <- caveman mode badge segment
+      superpowers.sh                <- superpowers mode badge segment
+      obsidian-brain.sh             <- obsidian-brain badge segment (roxo)
+      context.sh                    <- context window usage segment
 skills/
   <slug>/
     SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)

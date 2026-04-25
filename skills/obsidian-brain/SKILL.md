@@ -17,6 +17,8 @@ Operates as a knowledge graph **per project**, complementing — never duplicati
 - The hook `hooks/obsidian-brain/obsidian-brain-activate.js` injected the activation system-reminder at session start.
 - A relevant change was made (architecture, decision, refactor, gotcha) and you need to record it for the next session.
 
+The statusline renders a roxo `[OBSIDIAN-BRAIN]` badge while the skill is active in this session. The badge is hidden when no vault is detected or when the user opted out via `/valarmindskills:obsidian-brain off`.
+
 ## Do not use when
 
 - No `CLAUDE.md` or `AGENTS.md` exists in the cwd or any ancestor up to the repo root.
@@ -167,6 +169,20 @@ Do not update main docs unilaterally. The user reviews the diff first.
 
 This skill orchestrates the **strategy** (what to write where, when to read what); the delegated skills handle the **mechanism**.
 
+## Persistence
+
+Default mode: **on**. The `SessionStart` hook auto-activates per session whenever a vault is detected via `CLAUDE.md` or `AGENTS.md`. With no vault detected, the hook silently clears the active flag and the statusline badge hides — the skill produces no further effect that session.
+
+| Action | Effect |
+| :--- | :--- |
+| `/valarmindskills:obsidian-brain off` | Disable for this session — flag cleared, badge hidden, no `additionalContext`. |
+| `/valarmindskills:obsidian-brain on` | Re-enable for this session (only meaningful if the SessionStart hook had set the flag in the first place). |
+| `stop obsidian-brain`, `desativar obsidian-brain` (PT/EN) | Same as `off`. |
+| `OBSIDIAN_BRAIN_DEFAULT_MODE=off` (env) | Disable persistently across all new sessions. |
+| `~/.config/obsidian-brain/config.json` with `{"defaultMode": "off"}` | Disable persistently (XDG fallback). |
+
+The skill **does not** inject reinforcement into every `UserPromptSubmit` — the SessionStart digest is sufficient. Adding per-turn context would defeat the token-economy goal.
+
 ## Constraints
 
 - **Never** write under any directory the project's `CLAUDE.md` marks read-only (`Notes/` in this repo).
@@ -205,6 +221,9 @@ Omit the report when the operation was a silent skip (no detection match, user r
 - "carregue a memória do projeto antes de responder"
 - "load project memory"
 - "/valarmindskills:obsidian-brain"
+- "/valarmindskills:obsidian-brain on" — re-enable after a previous off in the same session.
+- "/valarmindskills:obsidian-brain off" — disable for this session.
+- "stop obsidian-brain", "desativar obsidian-brain" — natural-language disable.
 - "/valarmindskills:obsidian-brain synthesize" — consolidates recent sessions into topic notes.
 
 ## References
