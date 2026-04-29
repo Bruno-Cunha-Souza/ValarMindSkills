@@ -88,12 +88,14 @@ Build the message following this format:
 - Lowercase first letter
 - No period at the end
 
-**Body** rules (when needed):
+**Body** rules (only when needed):
 
-- Separated from the description by a blank line
-- Wrap at 72 characters
-- Explain the "why" of the change, not the "what"
-- Use when the description alone is not sufficient
+- **Default to no body.** Most commits should be subject-only. Add a body only if the "why" is genuinely non-obvious from subject + diff (hidden constraint, surprising trade-off, non-local consequence).
+- Hard cap: **≤ 4 lines, ≤ 300 characters total**, single paragraph. If you need more, split into multiple commits.
+- Wrap at 72 characters, separated from the description by a blank line.
+- Explain the "why", not the "what". The diff already shows what changed — do not narrate it.
+- **Forbidden patterns:** per-file or per-section enumeration ("Three changes:", "- File A now does X", "- File B now does Y"); restating the subject in prose; describing code structure ("the function now branches on..."); meta-commentary ("Result:", "Confirma?"); trailing questions.
+- Bullets allowed **only** when listing 3+ genuinely independent concerns that share one "why". If you can write one sentence instead, do.
 
 **Footer** rules (when applicable):
 
@@ -111,7 +113,10 @@ Build the message following this format:
 - Follow the Conventional Commits spec strictly
 - Never invent changes — only describe what the diff shows
 - Subject line must be at most 72 characters, imperative mood, lowercase, no period
-- Body must wrap at 72 characters, separated by a blank line
+- **Default to subject-only.** A body is the exception, not the rule. When unsure, omit it.
+- Body, if present, must be ≤ 4 lines and ≤ 350 characters, wrap at 72, separated by a blank line
+- Never enumerate files or sections in the body — the diff is the enumeration
+- Never end the body with a question or confirmation prompt; the confirmation lives outside the message
 - If the project has its own conventions, they take precedence
 - Include `BREAKING CHANGE:` in the footer when the change breaks backward compatibility
 - Reference issues/PRs in the footer when mentioned by the user
