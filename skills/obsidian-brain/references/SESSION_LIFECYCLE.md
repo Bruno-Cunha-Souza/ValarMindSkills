@@ -80,9 +80,10 @@ Sequence (must be in this order):
 1. **Confirm with user.** Single yes/no, asked at most once per session. If no, exit silently for the rest of the session and remember the refusal — do not re-prompt on subsequent turns.
 
    **When to ask** (mirrors [SKILL.md Phase 1 timing rule](../SKILL.md#phase-1--bootstrap-first-run)):
-   - **Default** — immediately after Phase 0 detection succeeds, before any other substantive task.
-   - **Auto mode / mid-task** — defer to the first natural pause (end-of-task report, hand-off, validation gate, before end-of-session sync). Record the deferral as an intent in conversation context so it survives `/compact`.
+   - **Default (every session, including auto mode)** — ask immediately after Phase 0 detection succeeds, as the **first user-facing sentence** of the next response. Auto mode does not suppress the question. Phase 1 is eager-ask, lazy-write: the actual `mkdir` + seed runs only after a yes.
+   - **Mid-task exception (rare)** — defer only when another skill has an actual interactive prompt on screen waiting for input. Do not defer to vague "natural pauses" — that is the failure mode that left brains uncreated.
    - **Phase 3 race guard** — if a write trigger (session, topic, decision) fires before the question was answered, ask now and block the write until the user responds.
+   - **Phase 4 entry guard** — Phase 4 is gated on Phase 1. If end-of-session fires before Phase 1 was answered AND the session had substantive work, ask now before any sync action.
    - **Re-injection** — if the SessionStart hook re-fires while the deferral is still pending, resume the same one-shot intent; do not ask twice and do not re-defer indefinitely.
    - **Refusal is sticky** — a "no" persists for the rest of the session even across hook re-injections.
 2. **Probe `@obsidian-cli`.** Set `mode = cli` if `obsidian --version` exits 0; else `mode = file`. Cache for the session.

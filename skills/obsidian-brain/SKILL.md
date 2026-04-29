@@ -76,11 +76,12 @@ Trigger: `<indexPath>` does not exist.
 **Idempotency rule.** If `<indexPath>` already exists on disk, **skip Phase 1 entirely** and go to Phase 2 — never re-bootstrap, never overwrite the index. Re-bootstrap is only allowed if the user explicitly says so (e.g., "wipe the brain and start over"), and even then only after a one-question confirmation.
 
 > [!important] When to ask the bootstrap question
-> Phase 1 is **lazy-init** — Phase 0 always runs, Phase 1 only when the user is ready to be asked. The timing rule:
+> Phase 1 is **eager-ask, lazy-write** — the question fires as the agent's first user-facing sentence; the actual `mkdir` + seed only happens after the user says yes. The timing rule:
 >
-> - **Default (interactive sessions)** — ask the question immediately after Phase 0 succeeds, before any other substantive task. The user sees the prompt as the first interaction of the session.
-> - **Auto mode / mid-task exception** — if another skill's task is already in flight (e.g., the user invoked `/skill-creator` and execution started), it is acceptable to **defer** the bootstrap question to the first natural pause: end-of-task report, hand-off to another skill, validation gate, or before end-of-session sync. **Never** silently skip the question — record the deferral as an intent in conversation context so it survives compaction.
+> - **Default (every session, including auto mode)** — ask the question **immediately** after Phase 0 succeeds, as the first user-facing sentence of the next response. Auto mode does **not** suppress the question: a single y/n is one keystroke, not a real interruption, and Phase 1 has no other reliable trigger that does not depend on the brain already existing (Phase 3 needs the index to know what to write; Phase 4 needs the index to sync).
+> - **Mid-task exception (rare)** — if another skill is already mid-question (an actual interactive prompt is on screen waiting for input), defer **only** until that prompt is answered, then ask. Do **not** defer to "first natural pause", "end-of-task report", or any other vague handoff — those are the failure modes that left brains uncreated. Record the deferral as a single one-shot intent so it survives `/compact`.
 > - **Phase 3 race guard** — if any Phase 3 write trigger (new session note, topic, decision) fires before Phase 1 has been answered, **stop and ask now**. Never write to `brain/` without an existing index.
+> - **Phase 4 entry guard** — if any end-of-session signal fires before Phase 1 was answered, ask now before running any Phase 4 action. Phase 4 is **gated** on Phase 1.
 > - **Re-injection idempotency** — the SessionStart hook re-injects the activation digest after `/compact` and across new sessions. If the digest fires while Phase 1 is still pending, resume the same intent (do not re-defer indefinitely, do not ask twice). Treat the deferral state as a single one-shot until answered or the user explicitly refuses.
 > - **Refusal is sticky for the session** — once the user says no, do not re-prompt; mark the brain as opted-out for the rest of the session and respect that across re-injections.
 
@@ -187,6 +188,7 @@ Templates per note type, dedupe heuristics, ADR triggers, and atomic-note rules:
 
 When the user signals end-of-session ("/clear", "obrigado", "encerrar", actual session close, or after a substantial finished task), perform this sequence at most once per session:
 
+0. **Phase 1 entry guard.** If `<indexPath>` is missing AND the session had ≥1 substantive turn (anything beyond "hi"/typo fix), surface the Phase 1 bootstrap question **now**, before any other Phase 4 action. Block the rest of Phase 4 until the user answers. If the user refuses, exit Phase 4 silently — there is nothing to sync. This guard catches the case where the SessionStart digest was emitted but the agent failed to ask the question earlier in the session.
 1. **Append session summary** as a `> [!summary]` callout to the active session note in `brain/sessions/`. ≤30 lines, ≤6 bullets.
 2. **Update properties** of touched topics and the index (`updated: YYYY-MM-DD`) via surgical CLI calls.
 3. **Refresh "Recent sessions"** in the index — wikilink to today's session note at the top, drop entries older than 10. If buildup exceeds 10, suggest the dedicated `synthesize` command.

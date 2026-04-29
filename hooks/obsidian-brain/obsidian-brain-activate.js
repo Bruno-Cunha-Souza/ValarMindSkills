@@ -98,17 +98,33 @@ try {
   const brainRoot = path.join(vaultPath, 'brain');
   const indexPath = path.join(brainRoot, slug + '-brain.md');
   const indexExists = fs.existsSync(indexPath);
-  const action = indexExists ? 'Read' : 'Bootstrap';
+
+  let actionBlock;
+  if (indexExists) {
+    actionBlock =
+      'Action this session:\n' +
+      '1. Read the index (≤500 tokens) before any project-specific reasoning.\n' +
+      '2. Lazy-load topics/sessions/decisions only when matched to the user prompt.\n' +
+      '3. After relevant changes, suggest updating the main project docs.';
+  } else {
+    actionBlock =
+      'BOOTSTRAP REQUIRED — index does not exist on disk.\n\n' +
+      'Your next user-facing sentence MUST be exactly this question (in the user\'s language):\n' +
+      '  "Bootstrap obsidian-brain at ' + indexPath + '? This creates brain/, three subdirectories, and seeds the index. Proceed? (y/n)"\n\n' +
+      'Rules:\n' +
+      '1. Ask BEFORE doing any other work this session, even if a task is in flight. The question is one keystroke from the user — not a real interruption — and Phase 1 has no other reliable trigger in auto mode.\n' +
+      '2. Block all brain writes until the user answers. Do NOT attempt Phase 3 (sessions/topics/decisions) before the user says yes.\n' +
+      '3. On "yes": follow Phase 1 in @obsidian-brain — mkdir tree, seed index from references/STRUCTURE.md, then proceed.\n' +
+      '4. On "no": refusal is sticky for the entire session. Do not re-ask after /compact or hook re-injection.\n' +
+      '5. If a Phase 4 end-of-session signal fires before the question was answered AND the session had substantive work, ask now before any sync action.';
+  }
 
   const message =
     'OBSIDIAN-BRAIN ACTIVE\n\n' +
     'Vault detected at ' + vaultPath + '\n' +
     'Brain index: ' + indexPath + ' (' +
-    (indexExists ? 'exists' : 'MISSING — bootstrap on first relevant turn') + ')\n\n' +
-    'Action this session:\n' +
-    '1. ' + action + ' the index (≤500 tokens) before any project-specific reasoning.\n' +
-    '2. Lazy-load topics/sessions/decisions only when matched to the user prompt.\n' +
-    '3. After relevant changes, suggest updating the main project docs.\n\n' +
+    (indexExists ? 'exists' : 'MISSING') + ')\n\n' +
+    actionBlock + '\n\n' +
     'See @obsidian-brain (skills/obsidian-brain/SKILL.md) for the full procedure.\n' +
     'Prefer @obsidian-cli for I/O. Fall back to file-IO only if `obsidian --version` fails.\n' +
     'Disable for this session with `/valarmindskills:obsidian-brain off`.';
