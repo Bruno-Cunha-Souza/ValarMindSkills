@@ -87,9 +87,8 @@ Sequence (must be in this order):
    - **Refusal is sticky** — a "no" persists for the rest of the session even across hook re-injections.
 2. **Probe `@obsidian-cli`.** Set `mode = cli` if `obsidian --version` exits 0; else `mode = file`. Cache for the session.
 3. **Create directory tree.** See [SKILL.md Phase 1](../SKILL.md#phase-1--bootstrap-first-run) for exact commands per mode.
-4. **Seed index from template.** Template lives in [STRUCTURE.md](STRUCTURE.md#index-template). Token budget: ≤500 total, ≤150 in critical-facts callout.
-5. **Wikilink into project MOC.** Append a row to the project's main MOC's "Navegação" or equivalent section. Do not edit other parts of the MOC.
-6. **Report bootstrap.** Use the [Output format](../SKILL.md#output-format) from `SKILL.md`.
+4. **Seed index from template.** Template lives in [STRUCTURE.md](STRUCTURE.md#index-template). Token budget: ≤500 total, ≤150 in critical-facts callout. Brain stays out of the project doc graph — **do not modify any file outside `brain/`** during bootstrap (no wikilink into the project MOC, no edit of `Arquitetura.md`, etc.).
+5. **Report bootstrap.** Use the [Output format](../SKILL.md#output-format) from `SKILL.md`.
 
 If any step fails, abort the rest. Do not leave a partial bootstrap on disk — clean up created directories.
 

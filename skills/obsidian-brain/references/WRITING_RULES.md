@@ -179,7 +179,7 @@ Obsidian resolves wikilinks **from the vault root**, not from the file's directo
 ✅ [[2026-04-25-ci-cd-generator|2026-04-25]]   ← session note (brain-internal)
 ✅ [[0001-pick-bases-over-dataview|0001]]      ← decision note (brain-internal)
 ✅ [[auth-middleware]]                          ← topic note (brain-internal)
-✅ [[valarmindskills-brain|Brain]]              ← index (the only boundary node)
+✅ [[valarmindskills-brain|Brain]]              ← index (pointed to by sibling brain notes; intra-brain only)
 
 ❌ [[sessions/2026-04-25-ci-cd-generator|2026-04-25]]   ← path doesn't resolve
 ❌ [[brain/topics/auth.md|Auth]]                         ← path + extension both wrong
@@ -200,20 +200,22 @@ Every session, topic, and decision note must have a `## Related` section in its 
 
 The `## Related` section is the last block of every note. See [STRUCTURE.md § Session note template](STRUCTURE.md#session-note-template) for the canonical shape.
 
-### Brain isolation — no wikilinks to project docs
+### Brain isolation — closed graph in both directions
 
-Brain notes (sessions, topics, decisions) **must not** wikilink to project documentation. The graph of *what happened* (brain) and the graph of *how things work* (project docs) stay visually and structurally separate.
+Brain (including the index, sessions, topics, and decisions) is a **closed graph**. No node in `brain/` wikilinks to project docs, and no project doc wikilinks to a node in `brain/`. The graph of *what happened* (brain) and the graph of *how things work* (project docs) stay visually and structurally separate.
 
 | Allowed wikilink target | Example | Notes |
 | :--- | :--- | :--- |
-| Brain index | `[[<slug>-brain\|Brain]]` | Always present in `## Related`. |
+| Brain index | `[[<slug>-brain\|Brain]]` | Pointed to by sibling brain notes only. |
 | Sibling brain note (same project) | `[[<topic>]]`, `[[NNNN-<slug>]]`, `[[YYYY-MM-DD-<slug>]]` | Intra-brain only. |
 
 | Forbidden wikilink target | Why |
 | :--- | :--- |
 | Project skill notes (`[[prompt-engineering]]`, `[[skill-creator]]`) | Belongs to the docs graph; mention in prose with backticks instead. |
-| MOCs (`[[Skills]]`, `[[ValarMindSkills]]`) | Same — index is the only bridge. |
+| MOCs (`[[Skills]]`, `[[ValarMindSkills]]`) | Same — there is no boundary node; brain is fully isolated. |
 | Architecture / general docs (`[[Arquitetura]]`, `[[CLAUDE.md]]`) | Same. |
+
+The reverse is **also forbidden**: never edit a project doc to add `[[brain/<slug>-brain]]` or `[[<topic>]]`. The `Navegação` section of project MOCs must not list the brain.
 
 To mention a skill or doc in the body of a brain note, use backticks:
 
@@ -222,16 +224,16 @@ To mention a skill or doc in the body of a brain note, use backticks:
 ❌ A skill [[prompt-engineering]] audita o `SKILL.md` recém-escrito.
 ```
 
-The **index** (`<slug>-brain.md`) is the **single boundary node** allowed to wikilink to project MOCs and skills. Phase 5 of the SKILL (suggest updating main docs) is the only mechanism by which the brain may influence project docs — never via a direct wikilink from a session/topic/decision.
+Phase 5 of the SKILL (suggest updating main docs) is the **only** mechanism by which the brain may influence project docs — and it is **prose, never a wikilink**. There is no boundary node; the whole brain is closed.
 
 ### Self-check before saving
 
 Before writing any brain note, scan its wikilinks:
 
 - All `[[...]]` resolve to a real `.md` file by filename only?
-- The note has a `## Related` section linking back to `[[<slug>-brain|Brain]]`?
+- Sessions/topics/decisions have a `## Related` section linking back to `[[<slug>-brain|Brain]]`? (The index itself does not need a `## Related` — it is pointed to, never points to siblings.)
 - Every frontmatter wikilink is also present as a body wikilink?
-- All wikilinks point to brain notes (sessions, topics, decisions, the index) — none point to project docs (`Skills/<slug>`, MOCs, `Arquitetura`, etc.)? Use backticks for textual mention of project docs instead.
+- All wikilinks point to brain notes (sessions, topics, decisions, **or the index**) — none point to project docs (`Skills/<slug>`, MOCs, `Arquitetura`, etc.)? The index follows the same rule as the rest of the brain — there is no boundary-node exception. Use backticks for textual mention of project docs instead.
 
 If any answer is no, fix before saving. Orphans accumulate silently — graph view is the only signal, and you may not notice until the graph is already a mess.
 
@@ -264,3 +266,5 @@ The brain does not write to the project's main docs (`<project-MOC>.md`, `Arquit
 3. Hand off to `@obsidian-markdown` for syntax and `@obsidian-cli` for the write.
 
 The brain is not a doc-update mechanism. It tracks history and proposes; the human approves.
+
+The reverse is also forbidden: **never** edit a project doc to add a wikilink to a brain node. Brain stays out of the project documentation graph entirely — Phase 5 produces prose suggestions, never a `[[brain/...]]` link in a project MOC.

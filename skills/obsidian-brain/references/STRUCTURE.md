@@ -193,14 +193,16 @@ updated: YYYY-MM-DD
 
 > [!summary] Critical facts (≤150 tokens)
 > - Project: <one line — what this project is>
-> - Source of truth: `[[<project-MOC>]]`
+> - Source of truth do código/docs: caminhos em prosa (e.g., `Projetos/<slug>/`), backticks para nomes de docs externos. **Sem wikilinks para fora do brain.**
 > - Read this index first; lazy-load the rest via wikilinks.
-> - Brain is for **what happened**; main docs are for **how it works**.
+> - Brain is for **what happened**; main docs are for **how it works**. Os dois grafos são separados — brain não wikilinka para docs e docs não wikilinkam para o brain.
 
-## Topics (MOCs)
+## Topics (brain-internal)
 
-- `[[topics/<topic-1>|<Topic 1>]]` — <one-line summary>
-- `[[topics/<topic-2>|<Topic 2>]]` — <one-line summary>
+_Topic notes próprias do brain. Docs externos do projeto são mencionados em backticks na seção Keywords abaixo, sem wikilinks._
+
+- `[[<topic-1>|<Topic 1>]]` — <one-line summary>
+- `[[<topic-2>|<Topic 2>]]` — <one-line summary>
 
 ## Recent sessions (last 10)
 
@@ -212,18 +214,14 @@ updated: YYYY-MM-DD
 
 ## Keywords
 
-- `<keyword>` → `[[<topic>]]`
-- `<keyword>` → `[[<topic>]]`
+_Mapa mental para orientar busca — referências externas em backticks (sem wikilinks); referências intra-brain em `[[<topic>]]`._
+
+- `<keyword>` → `[[<brain-topic>]]` (intra-brain)
+- `<keyword>` → `` `nome-do-doc-externo` `` (doc do projeto, sem wikilink)
 
 ## Pending
 
 - `> [!todo]` items rolled up from active sessions (refreshed by Phase 4 sync).
-
-## Related
-
-- `[[<project-MOC>]]`
-- `[[Arquitetura]]` (if applicable)
-- `[[CLAUDE.md]]` (vault rules)
 ````
 
 ## Session note template
@@ -281,7 +279,7 @@ updated: YYYY-MM-DD
 > Obsidian's graph view does not by default follow wikilinks declared **only in frontmatter** (`topics:`, `decisions:`, `related:`). A session whose only links are in `topics:` will appear as an orphan in the graph. The `## Related` section guarantees the session is reachable both visually (graph) and structurally (backlinks pane).
 
 > [!important] Brain isolation rule
-> Brain notes (sessions, topics, decisions) **must not** wikilink to project docs (`Skills/<slug>`, `Arquitetura`, MOCs, `Manual de Uso`, etc.). The index (`<slug>-brain.md`) is the **only boundary node** allowed to wikilink across layers. Mention project skills/docs in body prose with backticks (`` `prompt-engineering` ``), never with wikilinks. The brain captures *what happened*; project docs capture *how things work* — keeping the graphs separate prevents the brain from polluting the documentation graph.
+> Brain notes — **including the index** (`<slug>-brain.md`), sessions, topics, and decisions — **must not** wikilink to project docs (`Skills/<slug>`, `Arquitetura`, MOCs, `Manual de Uso`, etc.). The reverse is also forbidden: project docs must not wikilink to any node under `brain/`. Brain is a **closed graph**, separated from the documentation graph by design. Mention project skills/docs in body prose with backticks (`` `prompt-engineering` ``), never with wikilinks. The brain captures *what happened*; project docs capture *how things work* — keeping the graphs separate prevents the brain from polluting the documentation graph.
 
 ## Topic note template
 
@@ -320,8 +318,8 @@ updated: YYYY-MM-DD
 - `[[<other-topic>]]`
 ```
 
-> [!important] Topic notes follow the same boundary rule as sessions
-> Do **not** wikilink to project docs (`Skills/<slug>`, MOCs, etc.) from a topic note. Use backticks (`` `prompt-engineering` ``) for textual mention. The index is the only boundary.
+> [!important] Topic notes follow the same boundary rule
+> Do **not** wikilink to project docs (`Skills/<slug>`, MOCs, etc.) from a topic note. Use backticks (`` `prompt-engineering` ``) for textual mention. The index follows the same rule — there is no boundary node; the entire brain is closed.
 
 ## Decision note template (ADR)
 
@@ -370,7 +368,7 @@ superseded_by: ""
 ```
 
 > [!important] Decisions follow the same boundary rule
-> Do **not** wikilink to project docs from an ADR. Use backticks for textual mention.
+> Do **not** wikilink to project docs from an ADR. Use backticks for textual mention. Brain (incluindo o index) é um grafo fechado — a regra vale para todos os tipos de nota.
 
 ## brain.base (optional dashboard)
 

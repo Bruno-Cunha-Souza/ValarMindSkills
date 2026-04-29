@@ -99,11 +99,7 @@ Steps:
 
 3. Seed `<indexPath>` from the **index template** in [references/STRUCTURE.md](references/STRUCTURE.md). The seed must satisfy the token economy budget: ≤500 tokens total, ≤150 tokens in the `> [!summary]` "Critical facts" callout.
 
-4. Append a wikilink to the project's main MOC. For ValarMindSkills, append a row to the `Navegação` table of `Projetos/ValarMindSkills/ValarMindSkills.md`:
-
-   ```markdown
-   | `[[brain/<slug>-brain\|Brain]]` | Memória de sessões, tópicos e decisões |
-   ```
+4. **Do not modify any file outside `brain/`.** Brain is an isolated graph — the project's main MOC must not be edited to point at the brain, and the brain must not link out to project docs. Phase 1 touches only the `brain/` subtree and its index.
 
 5. Output the bootstrap report (see Output format).
 
@@ -208,7 +204,7 @@ After any change that alters architecture, conventions, public interfaces, or sk
 2. Surface a one-line suggestion: "Consider updating `<doc>` to reflect <change>. Want me to draft the diff?"
 3. If the user agrees, hand off to `@obsidian-markdown` for syntax and to `@obsidian-cli` for the actual write.
 
-Do not update main docs unilaterally. The user reviews the diff first.
+Do not update main docs unilaterally. The user reviews the diff first. The Phase 5 suggestion is **prose only** — never create a wikilink from a brain note to a project doc, and never edit the project MOC to wikilink to the brain. Brain stays out of the project documentation graph in both directions.
 
 ## Skills it delegates to
 
@@ -243,6 +239,8 @@ The skill **does not** inject reinforcement into every `UserPromptSubmit` — th
 - **Never** write prose paragraphs in brain files — bullets, callouts, wikilinks only.
 - **Never** rewrite a note when only a property changed — use surgical property update.
 - **Never** edit an ADR after it has been written — supersede via a new file with `status: superseded`.
+- **Never** wikilink from any brain note (sessions, topics, decisions, **or the index**) to project docs. Mention skills/docs in body prose with backticks (`` `prompt-engineering` ``) instead.
+- **Never** modify the project MOC, `Arquitetura.md`, or any other project doc to add a wikilink to the brain. Brain is a closed graph; isolation is bidirectional.
 - **Must** prefer `@obsidian-cli` for every I/O operation **for commands marked exemplified** in [references/READING_AND_SEARCHING.md](references/READING_AND_SEARCHING.md). For commands marked **verify**, run `obsidian help <subcommand>` once before first use; on failure, drop to file-IO without retrying with guessed flags.
 - **Must** dedupe before creating any topic or decision note.
 - **Must** include a `> [!summary]` callout as the first content block of every session note.
