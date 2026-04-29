@@ -35,7 +35,7 @@ Look for project-specific commit configurations:
 - `.commitlintrc`, `.commitlintrc.json`, `.commitlintrc.yml`, `commitlint.config.js`, `commitlint.config.ts`
 - `commitlint` section in `package.json`
 - `CONTRIBUTING.md`, `CLAUDE.md`
-- Recent commit history: `git log --oneline -10`
+- Recent commit history: `git log --oneline -5`
 
 If specific conventions are found, they take precedence over the default rules.
 
