@@ -17,7 +17,7 @@ Operates as a knowledge graph **per project**, complementing — never duplicati
 - The hook `hooks/obsidian-brain/obsidian-brain-activate.js` injected the activation system-reminder at session start.
 - A relevant change was made (architecture, decision, refactor, gotcha) and you need to record it for the next session.
 
-The statusline renders a roxo `[OBSIDIAN-BRAIN]` badge while the skill is active in this session. The badge is hidden when no vault is detected or when the user opted out via `/valarmindskills:obsidian-brain off`.
+The statusline renders a roxo `[OBSIDIAN-BRAIN]` badge while the skill is active in this session, and a dim cinza `[OBSIDIAN-BRAIN]` badge when no vault is detected or when the user opted out via `/valarmindskills:obsidian-brain off` — paralelo ao `[SUPERPOWERS]`.
 
 ## Do not use when
 
@@ -218,11 +218,11 @@ This skill orchestrates the **strategy** (what to write where, when to read what
 
 ## Persistence
 
-Default mode: **on**. The `SessionStart` hook auto-activates per session whenever a vault is detected via `CLAUDE.md` or `AGENTS.md`. With no vault detected, the hook silently clears the active flag and the statusline badge hides — the skill produces no further effect that session.
+Default mode: **on**. The `SessionStart` hook auto-activates per session whenever a vault is detected via `CLAUDE.md` or `AGENTS.md`. With no vault detected, the hook silently clears the active flag and the statusline badge dims to cinza — the skill produces no further effect that session.
 
 | Action | Effect |
 | :--- | :--- |
-| `/valarmindskills:obsidian-brain off` | Disable for this session — flag cleared, badge hidden, no `additionalContext`. |
+| `/valarmindskills:obsidian-brain off` | Disable for this session — flag cleared, badge dim cinza, no `additionalContext`. |
 | `/valarmindskills:obsidian-brain on` | Re-enable for this session (only meaningful if the SessionStart hook had set the flag in the first place). |
 | `stop obsidian-brain`, `desativar obsidian-brain` (PT/EN) | Same as `off`. |
 | `OBSIDIAN_BRAIN_DEFAULT_MODE=off` (env) | Disable persistently across all new sessions. |
