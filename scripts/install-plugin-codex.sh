@@ -152,5 +152,3 @@ fi
 echo ""
 echo "Done! Restart Codex CLI to load hooks and skills."
 echo ""
-echo "⚠  Hook event names 'startup'/'prompt' confirmed for Codex v0.125+."
-echo "   config.toml updated at: $CONFIG_TOML"
