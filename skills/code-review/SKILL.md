@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Lifecycle code review skill for pull requests, audits, and pre-merge gates across Go, Rust, and TypeScript projects. Auto-detects language and toolchain, runs a static-analysis sweep, performs a manual read-through, and emits a severity-ranked findings report with file:line evidence, suggested diffs, and risk tags (SAFE/REVIEW/BREAKING). Covers OWASP Top 10, performance and scalability anti-patterns, test quality, and maintainability. Designed to suppress hallucinations: every finding must cite a real file:line, quote the exact source, and is rejected without it. Use when reviewing pull requests, conducting code audits, refactoring legacy modules, validating a feature before merge, or assessing technical debt. Trigger phrases: 'review code', 'code review', 'revisar código', 'pull request review', 'PR review', 'auditar código', '/code-review', '/valarmindskills:code-review'."
+description: "Lifecycle code review for Go, Rust, TypeScript. Auto-detects toolchain, runs static analysis, emits severity-ranked findings with file:line evidence, suggested diffs, risk tags (SAFE/REVIEW/BREAKING). Covers OWASP Top 10, perf anti-patterns, test quality. Read-only — every finding cites real file:line. Triggers: 'review code', 'revisar código', 'auditar código', '/code-review'."
 source: ValarMindSkills
 ---
 

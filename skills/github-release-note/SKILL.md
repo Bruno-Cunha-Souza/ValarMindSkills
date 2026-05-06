@@ -1,6 +1,6 @@
 ---
 name: github-release-note
-description: Use this skill when I ask to create release notes, generate a changelog, write version notes, or prepare text for a GitHub Release from a tag range.
+description: "Generate GitHub Release notes / changelog from a tag range. Triggers: 'release notes', 'changelog', 'version notes'."
 source: ValarMind Skills
 ---
 

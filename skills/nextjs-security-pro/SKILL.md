@@ -1,12 +1,6 @@
 ---
 name: nextjs-security-pro
-description: "Complete security lifecycle specialist for Next.js 16.2.x App Router projects.
-  Audits RSC payloads, Server Actions, Route Handlers, proxy.ts, caching directives,
-  Image Optimizer, and next.config for OWASP Web Top 10 2021 and OWASP API Top 10 2023
-  issues. Detects the auth library in use (Auth.js, Clerk, Supabase, Lucia, Iron Session),
-  generates patches with build-gated apply, and runs Next.js-specific active tests.
-  Use when auditing, hardening, or fixing security issues in a Next.js App Router project.
-  Pages Router projects are not supported."
+description: "Security lifecycle for Next.js 16.2.x App Router. Audits RSC payloads, Server Actions, Route Handlers, proxy.ts, caching, Image Optimizer, next.config for OWASP Web/API Top 10. Detects auth lib (Auth.js, Clerk, Supabase, Lucia, Iron Session). Build-gated patches + active testing. Pages Router not supported."
 source: ValarMindSkills
 ---
 

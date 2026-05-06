@@ -1,6 +1,6 @@
 ---
 name: prompt-engineering
-description: "Audits, hardens, translates, and rewrites LLM prompts. Primary targets: skill prompts (SKILL.md), RAG prompts, agent tool descriptions, and agent base/system prompts (agent identity, capabilities, tool access, refusal rules, plan/act/verify workflow). Detects clarity / hallucination / token-waste gaps; preserves safety rules. Audit is real: emits LGTM and stops if the prompt is sound — never fabricates findings to appear thorough. Outputs original verbatim, severity-ranked findings with risk tags (SAFE/REVIEW/BREAKING), rewritten prompt, token delta. Read-only — never auto-applies. Trigger phrases: 'review prompt', 'improve prompt', 'audit SKILL.md', 'harden RAG prompt', 'review tool description', 'audit agent prompt', 'review agent system prompt', 'prompt engineering', 'revisar prompt', 'auditar prompt', 'auditar SKILL.md', 'auditar prompt de agente', 'engenharia de prompt', '/prompt-engineering', '/valarmindskills:prompt-engineering'."
+description: "Audit, harden, rewrite LLM prompts (SKILL.md, RAG, agent tool descriptions, system prompts). Detects clarity/hallucination/token-waste gaps; preserves safety. Real audit — emits LGTM if sound. Outputs findings (SAFE/REVIEW/BREAKING) + rewritten prompt + token delta. Read-only. Triggers: 'audit prompt', 'auditar prompt', 'engenharia de prompt', '/prompt-engineering'."
 source: ValarMindSkills
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: caveman
-description: "Use when the user asks to activate caveman mode, talk like a caveman, switch to terse responses, cut token usage, or be brief. Trigger phrases: 'caveman mode', 'talk like caveman', 'modo caveman', 'fale como caveman', 'be terse', 'less tokens', 'economize tokens', '/caveman', '/caveman lite', '/caveman full', '/caveman ultra'. Output is an activated response posture that drops articles, filler, pleasantries, and hedging while keeping technical substance, code blocks, and error strings exact. Not for onboarding, pedagogical explanations, or security warnings."
+description: "Terse response posture — drops articles, filler, pleasantries, hedging. Keeps technical substance, code blocks, error strings exact. Not for onboarding, pedagogy, or security warnings. Triggers: 'caveman mode', 'modo caveman', 'be terse', 'economize tokens', '/caveman lite|full|ultra'."
 source: https://github.com/JuliusBrussee/caveman/tree/mainValarMindSkills
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: ci-cd-generator
-description: "Use when the user asks to generate, scaffold, or set up a GitHub Actions CI/CD pipeline for a Go, Rust, or TypeScript project, or to audit existing workflows against the same baseline. Auto-detects the language and package manager, applies opinionated defaults (coverage gates 60–80%, N+1 detection, race condition property-based testing, memory leak detection, load testing), wires security gates (CodeQL/Semgrep, govulncheck/cargo-audit/npm audit, trivy, SBOM, gitleaks), and either emits ready-to-commit YAML under `.github/workflows/` or produces a severity-ranked findings report with fix proposals for the existing workflows. Trigger phrases: 'criar CI', 'gerar pipeline', 'configurar CI/CD', 'auditar pipeline', 'auditar workflow', 'set up CI/CD', 'create GitHub Actions workflow', 'audit CI pipeline', 'review existing workflow', '/ci-cd-generator'. Output is workflow files plus a report (generation mode), or a findings table plus optional unified-diff fixes (audit mode)."
+description: "Scaffold or audit GitHub Actions CI/CD for Go, Rust, TypeScript. Generation emits workflows with coverage gates (60–80%), security scans (CodeQL/Semgrep, SCA, SBOM, gitleaks), N+1/race/leak/load tests. Audit reviews existing pipelines with severity-ranked findings + diff fixes. Triggers: 'criar CI', 'gerar pipeline', 'auditar pipeline', 'set up CI/CD', '/ci-cd-generator'."
 source: ValarMindSkills
 ---
 

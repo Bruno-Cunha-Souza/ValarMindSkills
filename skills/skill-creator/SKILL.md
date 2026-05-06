@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: "Use when the user asks to create a new skill, scaffold a skill, add a skill to ValarMindSkills, design a SKILL.md, or needs help structuring references/EXAMPLE files following project conventions. Trigger phrases: 'criar skill', 'nova skill', 'scaffold skill', 'adicionar skill', 'create skill', 'new skill'."
+description: "Scaffold new ValarMindSkills following project conventions. Builds SKILL.md, references/, EXAMPLE files. Triggers: 'criar skill', 'nova skill', 'scaffold skill', 'create skill'."
 source: ValarMindSkills
 ---
 

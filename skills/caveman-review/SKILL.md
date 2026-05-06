@@ -1,6 +1,6 @@
 ---
 name: caveman-review
-description: "Use when the user asks for a terse, caveman-style pull request review, one-line PR comments, or a compressed PR analysis. Trigger phrases: 'caveman review', 'terse review', 'review caveman', 'revisar PR caveman', 'review curto', '/caveman-review'. Output is a PR review where each finding is a single line formatted as 'path:line — problem. fix.' grouped by severity, with a two-sentence executive summary and an explicit verdict. For full-detail PR reviews use @github-pr-review instead."
+description: "Terse PR review: each finding 'path:line — problem. fix.' grouped by severity, two-sentence summary + verdict. For full-detail use @github-pr-review. Triggers: 'caveman review', 'terse review', 'revisar PR caveman', '/caveman-review'."
 source: https://github.com/JuliusBrussee/caveman/tree/main
 ---
 

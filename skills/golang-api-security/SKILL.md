@@ -1,10 +1,6 @@
 ---
 name: golang-api-security
-description: "Complete security lifecycle specialist for Go 1.25+ REST APIs using Gin or Fiber.
-  Auto-detects the framework, audits source code for OWASP API Top 10 2023, middleware
-  misconfigurations, AuthN/AuthZ flaws, supply chain CVEs, and 25+ Go-specific
-  vulnerability classes. Generates patches with build-gated apply and includes Go-specific
-  active testing. Use when auditing, hardening, or fixing security issues in Go API projects."
+description: "Security lifecycle for Go 1.25+ REST APIs (Gin/Fiber). Auto-detects framework, audits OWASP API Top 10 2023, middleware misconfigs, AuthN/Z flaws, supply chain CVEs, 25+ Go-specific vuln classes. Build-gated patches + active testing."
 source: ValarMindSkills
 ---
 

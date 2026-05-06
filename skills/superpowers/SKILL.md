@@ -1,6 +1,6 @@
 ---
 name: superpowers
-description: "Use when the user asks to enable disciplined engineering posture, activate superpowers, enforce TDD or the seven-stage workflow, ask the agent to scan skills before replying, or ship plan-first / evidence-first work. Trigger phrases: 'superpowers mode', 'enable superpowers', 'ative superpowers', 'modo superpowers', 'discipline mode', 'plan-first mode', '/superpowers', '/superpowers on', '/superpowers off'. Output is an activated engineering-discipline posture that scans skills before each reply (1% rule), follows the user > skills > defaults hierarchy, refuses twelve rationalizations, applies four pillars (TDD, systematic, complexity reduction, evidence), and walks the seven-stage workflow when scope warrants it. Defaults OFF; the user opts in per session or persistently."
+description: "Disciplined engineering posture: scans skills (1% rule), user > skills > defaults hierarchy, refuses twelve rationalizations, four pillars (TDD, systematic, complexity reduction, evidence), seven-stage workflow when scope warrants. Default OFF, user opts in. Triggers: 'superpowers mode', 'modo superpowers', 'plan-first mode', '/superpowers'."
 source: https://github.com/obra/superpowers
 ---
 

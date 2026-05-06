@@ -1,6 +1,6 @@
 ---
 name: nextjs-optimization-pro
-description: "Performance optimization specialist for Next.js 16.2.x applications. Focused on Server Components, rendering strategies, and structuring Client/Server boundaries, with specific guidelines on using img tags."
+description: "Performance optimization for Next.js 16.2.x. Server Components, rendering strategies, Client/Server boundaries, img tag rules."
 source: ValarMindSkills
 ---
 

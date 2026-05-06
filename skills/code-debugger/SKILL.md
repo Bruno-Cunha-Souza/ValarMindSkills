@@ -1,6 +1,6 @@
 ---
 name: code-debugger
-description: "Lifecycle debugging skill for runtime errors, test failures, panics, races, deadlocks, leaks, and unexpected behavior across Go, Rust, and TypeScript projects. Walks the user from symptom → reproduction → isolation → hypothesis → instrumentation → root cause → minimal fix → regression test, with strict evidence requirements (every claim cites command output, log line, or stack frame). Designed to suppress hallucinations: never claims a test passes without command output, never invents stack frames, never proposes fixes without first quoting the failing code. Use when debugging an error, investigating a test failure, analyzing a panic or stack trace, hunting a flaky test, tracking a memory leak, or diagnosing unexpected production behavior. Trigger phrases: 'debug', 'depurar', 'investigar erro', 'investigate error', 'root cause', 'analisar stack trace', 'analyze stack trace', 'why is this failing', 'porque está falhando', '/code-debugger', '/valarmindskills:code-debugger'."
+description: "Lifecycle debugging for Go, Rust, TypeScript: symptom → reproduction → root cause → minimal fix → regression test. Evidence-first (every claim cites command output or stack frame). Use for runtime errors, test failures, panics, races, leaks, flaky tests. Triggers: 'debug', 'depurar', 'root cause', 'analisar stack trace', '/code-debugger'."
 source: ValarMindSkills
 ---
 

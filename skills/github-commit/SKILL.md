@@ -1,6 +1,6 @@
 ---
 name: github-commit
-description: Use this skill when I ask to commit, create a commit, write a commit message, or save my changes with a conventional commit.
+description: "Generate Conventional Commit from staged changes. Triggers: 'commit', 'create commit', 'commit message'."
 source: ValarMind Skills
 ---
 

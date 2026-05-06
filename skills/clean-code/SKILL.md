@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: "Use when writing, reviewing, or refactoring code to ensure clean code principles — naming, functions, DRY, code smells, safe refactoring."
+description: "Clean code principles for writing, reviewing, or refactoring — naming, functions, DRY, code smells, safe refactoring."
 source: ValarMindSkills
 ---
 

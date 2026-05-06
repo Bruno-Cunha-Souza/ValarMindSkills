@@ -1,6 +1,6 @@
 ---
 name: github-pr-review
-description: "Use this skill when the user asks for a structured, full-detail code review of a GitHub Pull Request — correctness, security, performance, maintainability — with severity-ranked findings and a verdict. For terse one-line-per-finding output use @caveman-review; for lifecycle code-review methodology not specific to GitHub PRs use @code-review. Trigger phrases: 'review PR', 'analyze pull request', 'PR review', 'check PR', 'revisar PR', 'analisar pull request', 'revisar pull request', 'feedback PR', 'avaliar PR', '/github-pr-review', '/valarmindskills:github-pr-review'."
+description: "Structured GitHub PR review — correctness, security, performance, maintainability. Severity-ranked findings + verdict (Approve/Request Changes/Comment). For terse output use @caveman-review; for non-PR methodology use @code-review. Triggers: 'review PR', 'revisar PR', 'analisar pull request', '/github-pr-review'."
 source: ValarMindSkills
 ---
 

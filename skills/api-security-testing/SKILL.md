@@ -1,9 +1,6 @@
 ---
 name: api-security-testing
-description: "Standalone security testing workflow for REST and GraphQL APIs in Python
-  (FastAPI), Go (Gin/Fiber), and TypeScript (Bun/Elysia). Covers OWASP API Top 10
-  2023 test cases, authentication bypass, BOLA/IDOR, injection, rate limit testing,
-  and supply chain auditing."
+description: "Security testing for REST/GraphQL APIs in FastAPI, Gin/Fiber, Bun/Elysia. OWASP API Top 10 2023, auth bypass, BOLA/IDOR, injection, rate limit, supply chain audit."
 source: ValarMindSkills
 ---
 

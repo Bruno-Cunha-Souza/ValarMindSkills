@@ -1,8 +1,6 @@
 ---
 name: api-security-best-practices
-description: "Implement secure API design for REST and GraphQL APIs in Python (FastAPI),
-  Go (Gin/Fiber), and TypeScript (Bun/Elysia). Covers authentication, authorization,
-  input validation, rate limiting, supply chain security, and OWASP API Top 10 2023."
+description: "Secure API design for REST/GraphQL in FastAPI, Gin/Fiber, Bun/Elysia. AuthN/Z, input validation, rate limiting, supply chain, OWASP API Top 10 2023."
 source: ValarMindSkills
 ---
 

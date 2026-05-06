@@ -1,6 +1,6 @@
 ---
 name: caveman-commit
-description: "Use when the user asks for a terse, caveman-style commit message, a compressed conventional commit, or a one-line commit. Trigger phrases: 'caveman commit', 'terse commit', 'compressed commit', 'commit caveman', 'commit curto', '/caveman-commit'. Output is a Conventional Commit with a subject ≤ 50 chars in imperative mood, an optional short body only when the 'why' is not obvious, and the repository's standard trailer. For full-detail commits use @github-commit instead."
+description: "Terse Conventional Commit: subject ≤50 chars imperative, body only when 'why' non-obvious, standard trailer. For full-detail use @github-commit. Triggers: 'caveman commit', 'terse commit', 'commit curto', '/caveman-commit'."
 source: https://github.com/JuliusBrussee/caveman/tree/main
 ---
 
