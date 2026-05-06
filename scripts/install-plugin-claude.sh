@@ -108,8 +108,14 @@ else
         current_cmd=$(jq -r '.statusLine.command // ""' "$SETTINGS_FILE")
         if [ "$current_cmd" = "$STATUSLINE_CMD" ]; then
           echo "  Statusline already configured — no changes."
-        elif [[ "$current_cmd" == *"$REPO_DIR/hooks/"*"statusline"* ]] \
-          || [[ "$current_cmd" == *"$REPO_DIR/hooks/caveman/caveman-statusline.sh"* ]]; then
+        # Match any prior ValarMind statusline regardless of where it was
+        # originally installed from (dev clone path, curl-install path, or
+        # the legacy caveman path). Without this, migrating between install
+        # locations would leave the statusLine pointing at the old path.
+        elif [[ "$current_cmd" == *"ValarMindSkills/hooks/statusline/statusline.sh"* ]] \
+          || [[ "$current_cmd" == *".valarmindskills/hooks/statusline/statusline.sh"* ]] \
+          || [[ "$current_cmd" == *"ValarMindSkills/hooks/caveman/caveman-statusline.sh"* ]] \
+          || [[ "$current_cmd" == *".valarmindskills/hooks/caveman/caveman-statusline.sh"* ]]; then
           backup="$SETTINGS_FILE.bak.$(date +%Y%m%d%H%M%S)"
           cp "$SETTINGS_FILE" "$backup"
           tmp=$(mktemp)
