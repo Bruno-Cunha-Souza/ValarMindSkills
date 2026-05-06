@@ -19,7 +19,7 @@
 ## Quick sweep
 
 ```bash
-# Type & lint
+# Static sweep from the touched package/workspace root
 bunx tsc --noEmit                              # or: npx tsc --noEmit
 bunx biome check .                             # or: bunx eslint .
 
@@ -33,11 +33,13 @@ bun audit                                      # or: npm audit --omit=dev
 # SAST
 semgrep --config=auto
 
-# Test
+# Optional verification only
 bun test                                       # or: npx vitest run
 ```
 
-## Findings catalog — 25 patterns to scan
+## Findings catalog — 25+ patterns to scan
+
+Run patterns against changed TypeScript files through the [Diff Scope Contract](../SKILL.md#01-diff-scope-contract), then open matching files before filing a finding.
 
 ### 1. `any` in a public signature
 
@@ -84,7 +86,7 @@ Severity floor: **Low**. Often a refactor smell — function returns a `Promise`
 ### 6. `await` inside a loop (sequential when parallel is fine)
 
 ```bash
-rg -n -B 2 'for .*\{' --type ts --type tsx | grep -A 2 'await'
+rg -n -C 3 'for .*\{|await\b' --type ts --type tsx
 ```
 
 Severity floor: **Medium**. Use `Promise.all` / `for await ... of` (with concurrency limit) when iterations are independent.
@@ -141,7 +143,7 @@ Severity floor: **Critical** if used for tokens / IDs / CSRF / session. Use `cry
 ### 13. `process.env` read at module top-level
 
 ```bash
-rg -n -B 0 -A 0 'process\.env\.\w+' --type ts --type tsx | grep -v 'function'
+rg -n 'process\.env\.\w+' --type ts --type tsx    # manually verify module top-level vs function scope
 ```
 
 Severity floor: **Low**. Promote to **Medium** when the value drives security-sensitive behavior — read inside a function so tests can override.
@@ -162,6 +164,23 @@ rg -n "(express\(\)|fastify\(\))" --type ts --type tsx
 ```
 
 If found, check that `helmet` (or equivalent) is wired up. Severity floor: **Medium** when missing.
+
+### 15a. API route without schema validation
+
+```bash
+rg -n '(app\.(get|post|put|patch|delete)|router\.(get|post|put|patch|delete)|new Elysia|Hono\()' --type ts --type tsx
+rg -n '(z\.object|v\.object|Type\.Object|schema|validator|parse\(|safeParse\()' --type ts --type tsx
+```
+
+Severity floor: **Medium** for new public endpoints that read body/query/params without a schema boundary. Promote to **High** when the unchecked input controls auth, money movement, file paths, outbound URLs, SQL filters, or shell args.
+
+### 15b. ORM raw query escape hatch
+
+```bash
+rg -n '(\$queryRawUnsafe|\$executeRawUnsafe|sql\.raw|db\.execute\(sql\.raw|unsafeSql|raw\()' --type ts --type tsx
+```
+
+Severity floor: **High** when user input can reach the raw string. **Critical** when direct interpolation builds SQL.
 
 ### 16. `Buffer.allocUnsafe` without overwrite
 
@@ -230,7 +249,7 @@ Severity floor: **High** unless wrapped by an explicit sanitizer (`DOMPurify`).
 ### 25. `npm` lockfile mismatch
 
 ```bash
-git diff origin/main...HEAD -- package.json package-lock.json bun.lockb pnpm-lock.yaml
+git diff "$DIFF_RANGE" -- package.json package-lock.json bun.lockb pnpm-lock.yaml yarn.lock
 ```
 
 Severity floor: **Low**. Confirm the lockfile updates match the manifest changes; mismatch indicates an incomplete commit.
@@ -259,13 +278,13 @@ rg -n 'console\.log' --glob '**/*.{spec,test}.{ts,tsx}'
 
 ```bash
 # `await` in a loop (see #6)
-rg -n -B 2 'for .*\{' --type ts | grep -A 2 'await'
+rg -n -C 3 'for .*\{|await\b' --type ts --type tsx
 
 # Sync FS in handlers
 rg -n '(readFileSync|writeFileSync|statSync|existsSync)' --type ts --type tsx
 
 # Large `JSON.stringify` on hot paths
-rg -n 'JSON\.stringify\(' --type ts --type tsx | grep -v test
+rg -n 'JSON\.stringify\(' --type ts --type tsx --glob '!**/*test*'
 
 # React: unstable inline object/function as prop
 rg -n '<\w+\s+\w+=\{\{' --type tsx     # candidate; manual review needed

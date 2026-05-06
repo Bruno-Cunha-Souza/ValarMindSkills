@@ -20,20 +20,23 @@
 ## Quick sweep
 
 ```bash
-# Full toolchain sweep on the diff
-golangci-lint run --new-from-rev=origin/main ./...
+# Static toolchain sweep from the touched Go module root
+golangci-lint run --new-from-rev="$BASE_SHA" ./...
 staticcheck ./...
 go vet -all ./...
 gosec -severity medium ./...
 govulncheck ./...
 gocyclo -over 15 .
 deadcode ./...
-go test -race -count=1 ./...
+
+# Optional verification only
+go test -count=1 ./...
+go test -race -count=1 ./...    # concurrency findings or explicit request
 ```
 
 ## Findings catalog — 25 patterns to scan
 
-Each row: detection (`rg`), severity floor, why it matters, suggested fix.
+Each row: detection (`rg`), severity floor, why it matters, suggested fix. Run patterns against changed Go files through the [Diff Scope Contract](../SKILL.md#01-diff-scope-contract), then open matching files before filing a finding.
 
 ### 1. Unchecked error from a non-trivial call
 
@@ -79,7 +82,7 @@ Severity floor: **Critical**. CWE-89. Always use placeholder binding (`$1`, `?`)
 
 ```bash
 rg -n '\bfunc\s+\w+\s*\([^)]*\b(interface\{\}|any)\b' --type go
-rg -n '^func [A-Z]\w*' --type go | xargs rg 'interface\{\}|any\b'
+rg -n '^func [A-Z]\w*.*\b(interface\{\}|any)\b' --type go
 ```
 
 Severity floor: **Low** by default. Promote to **Medium** if the function is exported and the type can be expressed as a generic constraint or a concrete interface.
@@ -184,7 +187,7 @@ Severity floor: **Medium**. Each copy has its own zero-state mutex; locking does
 ### 18. `sync.WaitGroup.Add` inside the goroutine
 
 ```bash
-rg -n -B 1 -A 4 'go\s+func' --type go | grep -A 4 'wg\.Add'
+rg -n -C 4 'go\s+func|wg\.Add' --type go
 ```
 
 Severity floor: **Medium**. Race between `Add` and `Wait`. `Add` must happen before the `go`.
@@ -196,7 +199,7 @@ Severity floor: **High**. Sender owns the close. Closing on the receiver side ri
 ### 20. `defer` inside a loop
 
 ```bash
-rg -n -B 2 'for ' --type go | grep -A 2 '^\s*defer'
+rg -n -C 3 '^\s*defer\b|for ' --type go
 ```
 
 Severity floor: **Medium**. Defers stack up until function exit, holding resources (file handles, locks).
@@ -216,7 +219,7 @@ Severity floor: **Medium**. Go map iteration is randomized. If order matters, so
 ### 24. `http.Server` without timeouts
 
 ```bash
-rg -n 'http\.Server\{' --type go -A 10 | grep -v -E '(Read|Write|Idle)Timeout'
+rg -n -A 12 'http\.Server\{' --type go    # manually verify Read/Write/Idle timeouts
 ```
 
 Severity floor: **High**. Slowloris exposure (CWE-400).
@@ -249,7 +252,8 @@ rg -n '^var ' --glob '**/*_test.go'
 
 ```bash
 # Allocations in hot loops (manual read after this list)
-rg -n 'for .*\{' --type go -A 30 | grep -E '(make\(|append\(|\+=|fmt\.Sprintf)'
+rg -n -A 30 'for .*\{' --type go
+rg -n '(make\(|append\(|\+=|fmt\.Sprintf)' --type go
 
 # Unbounded reads
 rg -n 'io\.ReadAll\(' --type go    # check that input is bounded

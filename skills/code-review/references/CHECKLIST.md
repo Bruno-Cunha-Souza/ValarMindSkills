@@ -5,8 +5,10 @@
 ## Phase 0 — Setup
 
 - [ ] Diff is fetched locally (`gh pr checkout <#>` or `git fetch origin <branch>`)
+- [ ] `$BASE_REF`, `$BASE_SHA`, and `$DIFF_RANGE` are captured from PR metadata or local merge-base
 - [ ] Diff size ≤ 50 files / 1500 lines (otherwise ask to split)
 - [ ] Language detected (`$LANG`); per-language reference loaded
+- [ ] Monorepo/workspace roots mapped for every changed file
 - [ ] PR description matches the diff (no scope creep)
 - [ ] CI is green or the failures are understood (do not review on top of unknown CI failures)
 
@@ -18,6 +20,7 @@
 - [ ] Duplication scan (`jscpd`) ran if diff > 200 lines
 - [ ] Each automated finding is captured with tool + version
 - [ ] Each automated finding starts at **Medium** severity (calibration)
+- [ ] Tests/runtime verification skipped unless requested or needed to confirm a finding
 
 ## Phase 2 — Manual Read-Through
 
@@ -63,6 +66,7 @@ For each new or changed function:
 ## Phase 5 — Tests & Maintainability
 
 - [ ] New code path has a test
+- [ ] Existing tests were searched before filing a missing-test finding
 - [ ] Tests assert behavior, not implementation
 - [ ] Negative paths covered (errors, edge inputs, timeouts)
 - [ ] Concurrent code has race / loom / property test
@@ -81,6 +85,7 @@ For each new or changed function:
 - [ ] CVE references map back to scanner output of this run
 - [ ] Cross-links to dedicated skills present where applicable
 - [ ] Tool versions captured in the report header
+- [ ] Optional verification commands reported separately from static tools
 - [ ] Summary lists blocking-merge findings explicitly
 
 ## Quick blocking-merge gate

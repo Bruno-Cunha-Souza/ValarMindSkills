@@ -27,12 +27,12 @@ The skill exists because LLM reviewers tend to hallucinate findings: invented fu
 - The user wants a **commit message** or **release notes** — use `@github-commit` or `@github-release-note`.
 - The change is a single typo, comment edit, or trivial rename — review overhead exceeds the value; tell the user and stop.
 - The change is in a language the skill cannot detect (not Go, Rust, TypeScript, or covered by an explicit `@<lang>` skill). Surface the gap and ask whether the user wants a generic pass.
-- The user wants to **run tests** or **execute** the code — this skill is static; it reads, it does not run. Use `@code-debugger` for runtime triage.
+- The user's primary ask is to **run tests**, reproduce a failure, or debug runtime behavior — use `@code-debugger`. This skill may run optional verification commands only when they are explicitly requested or needed to validate a review finding.
 - The diff is on infrastructure (Terraform, Kubernetes manifests) — use `@nextjs-security-pro`, `@golang-api-security`, or `@ci-cd-generator` for those domains.
 
 ## Prerequisites
 
-Install before starting a review. Each tool's absence is logged and the related Phase is degraded but never silently skipped.
+Install before starting a review. Each tool's absence is logged and the related Phase is degraded but never silently skipped. The default mode is **static review**: read diffs, run linters, type checks, SAST, and dependency audit. Tests and runtime commands are **optional verification**, not part of the default review.
 
 | Tool | Purpose |
 | --- | --- |
@@ -52,18 +52,20 @@ Install before starting a review. Each tool's absence is logged and the related 
 | `eslint` / `biome` | TypeScript linter |
 | `knip` | Find unused TS exports/files/deps |
 | `npm audit` / `bun audit` | Node/Bun CVE scan |
+| Test runners (`go test`, `cargo test`, `bun test`, `vitest`) | Optional verification only |
 
 Required access:
 
 - [ ] Read access to the repository and the diff (locally or via `gh pr diff`)
-- [ ] Permission to invoke linters and `--noEmit` compilations on the host (no execution beyond static analysis)
+- [ ] Permission to invoke linters, type checks, and dependency scanners on the host
+- [ ] Explicit permission or user request before running tests or other runtime verification
 - [ ] If the review targets a private dependency: read access to that module
 
 The skill does **not** require write access. It never commits, never pushes, never edits source files.
 
 ## Phase 0 — Project & Scope Detection
 
-Detect language, package manager, and review scope before sweeping anything. Run the steps in order; stop at the first conclusive match per axis.
+Detect language, package manager, review scope, and diff range before sweeping anything. Run the steps in order; stop at the first conclusive match per axis.
 
 ```bash
 # Step 1 — language at the repo root
@@ -78,17 +80,21 @@ test -f pnpm-lock.yaml    && echo "runtime: node, pm: pnpm"
 test -f yarn.lock         && echo "runtime: node, pm: yarn"
 test -f package-lock.json && echo "runtime: node, pm: npm"
 
-# Step 3 — review scope
-git rev-parse --abbrev-ref HEAD                         # current branch
-git diff --name-only origin/main...HEAD | wc -l         # files changed
-git diff --shortstat origin/main...HEAD                 # additions/deletions
-gh pr view --json number,title,baseRefName 2>/dev/null  # PR context if any
+# Step 3 — review scope and base branch
+git rev-parse --abbrev-ref HEAD
+gh pr view --json number,title,baseRefName,headRefName 2>/dev/null
+BASE_REF="$(gh pr view --json baseRefName --jq .baseRefName 2>/dev/null || git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@' || echo main)"
+BASE_REMOTE="origin/$BASE_REF"
+BASE_SHA="$(git merge-base "$BASE_REMOTE" HEAD 2>/dev/null || git merge-base "$BASE_REF" HEAD)"
+DIFF_RANGE="$BASE_SHA...HEAD"
+git diff --name-only "$DIFF_RANGE" | wc -l
+git diff --shortstat "$DIFF_RANGE"
 
 # Step 4 — polyglot or monorepo
-fd -t f -d 3 '(go.mod|Cargo.toml|package.json)$' .      # multiple roots → monorepo
+fd -t f -d 5 '^(go.mod|Cargo.toml|package.json)$' .      # multiple roots → monorepo
 ```
 
-Persist as `$LANG ∈ {go, rust, typescript, polyglot, other}`, plus the diff range `$BASE..$HEAD`.
+Persist as `$LANG ∈ {go, rust, typescript, polyglot, other}`, `$BASE_REF`, `$BASE_SHA`, and `$DIFF_RANGE`.
 
 | `$LANG` | Reference to load | Primary linter |
 | --- | --- | --- |
@@ -100,9 +106,31 @@ Persist as `$LANG ∈ {go, rust, typescript, polyglot, other}`, plus the diff ra
 
 If the diff exceeds **50 files** or **1500 lines**, ask the user to split the review or to scope it to a subset before proceeding. Large reviews dilute attention and amplify hallucination risk.
 
+### 0.1 Diff Scope Contract
+
+Default to the diff. A finding is in scope only when the changed line is in `$DIFF_RANGE` or the changed code makes an existing line newly reachable, newly exposed, or newly unsafe. Issues outside the diff are reported as `Out-of-scope observation` unless the user explicitly requested a baseline audit.
+
+Use null-delimited file lists when passing changed files between tools. The loop is portable across empty diffs and file names with spaces:
+
+```bash
+git diff --name-only -z "$DIFF_RANGE" -- '*.go' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
+git diff --name-only -z "$DIFF_RANGE" -- '*.rs' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
+git diff --name-only -z "$DIFF_RANGE" -- '*.ts' '*.tsx' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
+```
+
+### 0.2 Monorepo / Workspace Handling
+
+When multiple `go.mod`, `Cargo.toml`, or `package.json` files are present, map each changed file to the nearest owning root before running toolchains. Run Phase 1–5 per touched root, not from the repository root unless the project convention requires it.
+
+| Root type | Ownership rule | Static command root |
+| --- | --- | --- |
+| Go module | nearest ancestor `go.mod` | run Go tools from that module |
+| Cargo workspace | workspace root if `workspace` exists; otherwise crate root | run Cargo tools with package filters when available |
+| npm/pnpm/yarn/bun workspace | nearest package or workspace root from lockfile config | run package scripts in touched package first |
+
 ## Phase 1 — Static Analysis Sweep
 
-Run the toolchain first; treat results as **leads**, never as conclusions. Calibration: every linter has known false-positive classes — start each automated finding at **Medium** severity and only promote to **High** with manual confirmation in Phase 2.
+Run the static toolchain first; treat results as **leads**, never as conclusions. Calibration: every linter has known false-positive classes — start each automated finding at **Medium** severity and only promote to **High** with manual confirmation in Phase 2.
 
 ### 1.1 Automated Toolchain
 
@@ -133,14 +161,26 @@ npx jscpd --min-lines 5 --min-tokens 50 ./
 
 For each tool, capture the raw output and keep the version (`<tool> --version`) in the findings report. A finding without a tool version is not reproducible.
 
+### 1.1.1 Optional Verification Commands
+
+Run tests only when the user asks, CI output is unavailable, or a finding needs confirmation. Label them separately from static tools in the report.
+
+```bash
+go test ./...                 # add -race only for concurrency findings or explicit request
+cargo test --all-features
+bun test                      # or: npx vitest run
+```
+
+Never claim pass/fail unless the command and relevant output are shown in the report.
+
 ### 1.2 Pattern Sweep — language-agnostic
 
-For each category below, run the grep across the diff only (`git diff --name-only origin/main...HEAD | xargs rg ...`) and read the matching files for context.
+For each category below, run the grep across changed files only using `$DIFF_RANGE` and null-delimited file lists, then read the matching files for context.
 
 | # | Category | Detection |
 | --- | --- | --- |
 | 1 | **Hardcoded secrets** | `rg -i '(password\|secret\|api[_-]?key\|token\|bearer)\s*[:=]\s*["\x27][A-Za-z0-9/+=_-]{8,}["\x27]'` |
-| 2 | **TODO/FIXME/XXX** | `rg -n '\b(TODO\|FIXME\|XXX\|HACK)\b'` (each is a finding when shipping to main) |
+| 2 | **TODO/FIXME/XXX** | `rg -n '\b(TODO\|FIXME\|XXX\|HACK)\b'` (finding only when newly introduced, shipping to main, and not linked to an issue) |
 | 3 | **Stack trace exposure** | `rg -n '(stack\|stacktrace\|traceback\|panic)' --type-add 'web:*.{go,ts,tsx,rs}' --type web` |
 | 4 | **Unbounded loops / collections** | `rg -n 'for\s*\(\s*;;\s*\)\|while\s*\(true\)\|loop\s*\{' ` |
 | 5 | **Disabled error handling** | `rg -n '_ =\|catch\s*\(\s*_\s*\)\|\.unwrap\(\)\|\.expect\(\|\.ok\(\)\.unwrap\('` |
@@ -222,7 +262,7 @@ Performance findings have the lowest hallucination tolerance — the LLM cannot 
 
 | # | Anti-pattern | Sweep |
 | --- | --- | --- |
-| 1 | **N+1 queries** | Loop body containing a DB call (`rg -n -B1 'for .*\{' --type go \| grep -A1 -E '(db\.\|tx\.\|repo\.)'`) |
+| 1 | **N+1 queries** | Loop body containing a DB call (`rg -n -C 3 'for .*\{|db\.|tx\.|repo\.' --type go`) |
 | 2 | **Missing index hint** | New WHERE/JOIN on a column not in any migration in the diff |
 | 3 | **Sync I/O on hot path** | Blocking call inside a request handler (e.g. `time.Sleep`, `fs.readFileSync`, `block_on`) |
 | 4 | **Unbounded buffering** | `bufio.Scanner` without `Buffer()`; `Vec::new()` then unbounded `push`; `for await ... of stream` without limit |
@@ -239,11 +279,13 @@ Every finding must cite a file:line and quote the exact code; "this might be slo
 
 ### 5.1 Tests
 
-- New code path → new test? If not, severity at least **Medium** unless covered by an existing test that the diff also exercises.
+- New behavior path → new or existing test? If not, severity is usually **Medium** unless the change is type-only, generated, config-only, unreachable without a future feature flag, or covered by existing tests that the diff exercises.
 - Test asserts **behavior** (output, side effect) or **implementation** (mock call count)? Behavior tests are durable; implementation tests are smells unless justified.
 - Negative paths covered: error propagation, edge inputs, timeouts, cancellation.
 - Race detector / property-based tests for concurrent code (Go `-race`, Rust `loom`, TypeScript `fast-check`).
 - Test names readable as sentences (`TestServer_RejectsUnauthenticatedRequest`).
+
+Do not file "missing test" as a finding until you have searched for existing coverage in the touched package. If coverage exists but does not cover the changed branch, cite the missing branch precisely.
 
 ### 5.2 Maintainability (overlap with `@clean-code`)
 
@@ -296,7 +338,7 @@ If `Confidence=Low` **and** `Severity ≥ High`, escalate explicitly: state "nee
 
 - **Never edit code.** This skill is a reviewer, not an editor. Suggestions are diffs in the report, never `Edit`/`Write` calls.
 - **Never invent a file path, function name, or symbol.** Every reference must be copied from the diff or the repo. If you do not know, say "not in diff — please confirm".
-- **Never claim a test passes / fails without showing the command and its output.** This skill does not run tests; if test results are needed, ask the user to run them and paste output.
+- **Never claim a test passes / fails without showing the command and its output.** Tests are optional verification, not default review. If results are needed and you cannot run them, ask the user to run them and paste output.
 - **Never invent a CVE.** Cite only CVEs that appear in `govulncheck`, `cargo audit`, `npm audit`, or `semgrep` output of this run.
 - **Never quote a line you did not read.** Open the file at the cited line; the quote in the report must match byte-for-byte.
 - **Never inflate severity to look thorough.** Inflated severity erodes trust. Use the rubric.
@@ -314,15 +356,18 @@ Print verbatim after every successful run. The report is the deliverable.
 ```text
 code-review: <branch / PR# / commit range>
   language(s):     <go | rust | typescript | polyglot>
+  mode:            <static review | static + optional verification>
+  base:            <base ref> @ <merge-base sha>
   scope:           <files changed> files / <lines added>+ / <lines deleted>-
   tools:           semgrep <ver>, golangci-lint <ver>, ...
+  verification:    <not run | go test ./...: pass | cargo test: fail | ...>
   duration:        Phase 0–6 walked
 
 Findings (ranked by severity, then by file):
 
 | ID  | Sev      | Conf   | Risk     | File:Line                | Title                              |
 | --- | -------- | ------ | -------- | ------------------------ | ---------------------------------- |
-| R001 | Critical | High   | REVIEW   | api/handlers/order.go:42 | BOLA — missing user_id check       |
+| R001 | High     | High   | REVIEW   | api/handlers/order.go:42 | BOLA — missing user_id check       |
 | R002 | High     | Medium | SAFE     | api/store/db.go:118      | Unbounded SELECT without LIMIT     |
 | R003 | Medium   | High   | SAFE     | api/util/log.go:7        | Logs Authorization header verbatim |
 | R004 | Low      | High   | SAFE     | api/handlers/order.go:8  | Stuttering name OrderOrder         |
@@ -356,7 +401,7 @@ Detailed findings:
   ... (one block per finding) ...
 
 Summary:
-  Critical: 1   High: 1   Medium: 1   Low: 1   Info: 0
+  Critical: 0   High: 2   Medium: 1   Low: 1   Info: 0
   Blocking-merge findings: 2 (R001, R002)
   Suggested next step:
     1. Author addresses R001 and R002 before re-request.
@@ -366,7 +411,25 @@ Summary:
 Skill version: code-review @ <git rev of SKILL.md>
 ```
 
-When there are zero findings, print the same skeleton with `(no findings)` rows and a one-line summary `LGTM — no blocking issues found in scope.` followed by any Info-level observations.
+When there are zero findings, print this shape instead of inventing minor findings:
+
+```text
+Findings (ranked by severity, then by file):
+
+| ID | Sev | Conf | Risk | File:Line | Title |
+| -- | --- | ---- | ---- | --------- | ----- |
+| (no findings) | | | | | |
+
+Detailed findings:
+  (none)
+
+Summary:
+  Critical: 0   High: 0   Medium: 0   Low: 0   Info: 0
+  Blocking-merge findings: 0
+  LGTM — no blocking issues found in scope.
+```
+
+Info-level observations are allowed after the LGTM only when grounded in exact files read during the review.
 
 ## Related Skills
 

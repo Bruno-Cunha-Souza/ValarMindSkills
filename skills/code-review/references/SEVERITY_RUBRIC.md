@@ -75,6 +75,8 @@ The risk tag describes the **fix**, not the finding.
 
 The "default severity floor" is the **lowest** severity a confirmed finding in this category may receive. A Critical-floor finding never demotes to Medium even if the LLM thinks the impact is small.
 
+Promote BOLA from **High** to **Critical** only when the changed path exposes admin-only data, bulk data export, cross-tenant access, or another catastrophic impact. A single-resource authenticated IDOR usually remains **High** unless the affected object is highly sensitive.
+
 ## Per-tool false-positive calibration
 
 Each automated tool has known FP-prone rules. Start at **Medium** and only promote with manual confirmation.
@@ -116,6 +118,7 @@ The following habits inflate severity or invent findings. Refuse them at the rep
 - **"This might leak memory"** without a code path showing the unreleased reference.
 - **"This is vulnerable to X"** without an OWASP/CWE link **and** a `file:line` showing the pattern.
 - **"Tests should be added"** as a finding when tests already exist for the path — verify by reading the test file before flagging.
+- **"Missing tests"** as a Medium finding for type-only, generated, config-only, or dead-code changes where behavior did not change.
 - **"This violates SOLID"** without naming which letter and which pattern would actually fix it.
 - **"This won't scale"** without naming the bound that breaks (rows, requests/sec, memory).
 - **Citations to a CVE not present** in this run's `govulncheck` / `cargo audit` / `npm audit` / `semgrep` output.

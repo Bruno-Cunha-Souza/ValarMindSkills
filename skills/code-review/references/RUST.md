@@ -19,16 +19,21 @@
 ## Quick sweep
 
 ```bash
+# Static toolchain sweep from the touched crate/workspace root
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings -W clippy::pedantic
 cargo audit
 cargo deny check
 cargo machete
 cargo geiger        # for crates that allow unsafe
+
+# Optional verification only
 cargo test --all-features
 ```
 
 ## Findings catalog — 25 patterns to scan
+
+Run patterns against changed Rust files through the [Diff Scope Contract](../SKILL.md#01-diff-scope-contract), then open matching files before filing a finding.
 
 ### 1. `.unwrap()` / `.expect()` in non-test code
 
@@ -57,7 +62,7 @@ Severity floor: **High**. Same blast radius as Go panics. `unreachable!` is acce
 ### 3. `unsafe` block without a `// SAFETY:` comment
 
 ```bash
-rg -n -B 1 'unsafe\s*\{' --type rust | rg -B 1 -v '// SAFETY:'
+rg -n -B 1 'unsafe\s*\{' --type rust    # manually verify a preceding `// SAFETY:` invariant
 ```
 
 Severity floor: **Critical**. The Rust convention is mandatory. Without the comment, the invariants are unverifiable. CWE-119/120/125/787.
@@ -90,7 +95,7 @@ Severity floor: **Low** (performance). Promote to **Medium** if the lock is on a
 ### 7. `clone()` in a hot loop
 
 ```bash
-rg -n -A 1 'for .* in ' --type rust | grep '\.clone\(\)'
+rg -n -C 3 'for .* in |\.clone\(\)' --type rust
 ```
 
 Severity floor: **Low**. Promote to **Medium** if the type is large (`String`, `Vec`, `HashMap`).
@@ -222,7 +227,7 @@ Severity floor: **High**.
 ### 25. `Cargo.toml` git deps without `tag` / `rev`
 
 ```bash
-rg -n 'git\s*=' Cargo.toml | rg -v '(tag\s*=|rev\s*=)'
+rg -n 'git\s*=' --glob Cargo.toml    # manually verify tag/rev pinning
 ```
 
 Severity floor: **Medium**. CWE-829. Floating git dependency.
@@ -231,7 +236,7 @@ Severity floor: **Medium**. CWE-829. Floating git dependency.
 
 ```bash
 # Tests with `unwrap` everywhere — fine, but check for actual assertions
-rg -n 'assert' --type rust --glob '**/*test*' | wc -l
+rg -n 'assert' --type rust --glob '**/*test*'
 
 # `#[ignore]` without a reason
 rg -n -B 1 '#\[ignore\]' --type rust
@@ -247,7 +252,8 @@ rg -n 'thread::spawn' --type rust --glob '**/*test*'
 rg -n 'Box::pin\(' --type rust
 
 # Allocations in hot loops
-rg -n -A 5 'for .* in ' --type rust | grep -E '(String::new|Vec::new|to_string|to_vec)'
+rg -n -A 5 'for .* in ' --type rust
+rg -n '(String::new|Vec::new|to_string|to_vec)' --type rust
 
 # Unbounded `read_to_string`
 rg -n 'read_to_string' --type rust

@@ -47,7 +47,8 @@ Tool versions captured:
 | `gosec` | 2.21.4 | 1 finding (G104) |
 | `govulncheck` | 1.1.4 | clean |
 | `go vet` | bundled | clean |
-| `go test -race` | bundled | passes locally |
+
+Optional verification was not run; CI was already green on the PR branch.
 
 All linter findings start at **Medium** severity per [SEVERITY_RUBRIC.md](references/SEVERITY_RUBRIC.md). Manual confirmation in Phase 2.
 
@@ -82,25 +83,28 @@ The `SELECT * FROM orders WHERE user_id = $1` has no `LIMIT`. Pattern #2 in Phas
 ```text
 code-review: PR #248 — feat(orders): list my orders
   language(s):     go
+  mode:            static review
+  base:            main @ 9f4c2a1
   scope:           4 files / 78+ / 11-
   tools:           golangci-lint 1.62.0, staticcheck 2024.1.1, gosec 2.21.4,
-                   govulncheck 1.1.4, go vet (bundled), go test -race (bundled)
+                   govulncheck 1.1.4, go vet (bundled)
+  verification:    not run (CI green)
   duration:        Phase 0–6 walked
 
 Findings (ranked by severity, then by file):
 
 | ID   | Sev      | Conf   | Risk     | File:Line                    | Title                                    |
 | ---- | -------- | ------ | -------- | ---------------------------- | ---------------------------------------- |
-| R001 | Critical | High   | REVIEW   | api/handlers/order.go:54     | BOLA — user_id taken from URL, not JWT   |
+| R001 | High     | High   | REVIEW   | api/handlers/order.go:54     | BOLA — user_id taken from URL, not JWT   |
 | R002 | High     | High   | SAFE     | api/middleware/auth.go:31    | Authorization header logged verbatim     |
 | R003 | Medium   | High   | SAFE     | api/store/orders.go:22       | Unbounded SELECT (no LIMIT)              |
-| R004 | Medium   | Medium | SAFE     | api/handlers/order_test.go   | Missing BOLA negative test               |
+| R004 | Medium   | Medium | SAFE     | api/handlers/order_test.go:14 | Missing BOLA negative test               |
 | R005 | Low      | High   | SAFE     | api/handlers/order.go:48     | Stuttering name OrderOrderHandler        |
 | I001 | Info     | High   | SAFE     | api/handlers/order.go:38-79  | Handler 41 lines — consider extracting   |
 
 Detailed findings:
 
-  R001 — BOLA — user_id taken from URL, not JWT  (Severity: Critical, Confidence: High, Risk: REVIEW)
+  R001 — BOLA — user_id taken from URL, not JWT  (Severity: High, Confidence: High, Risk: REVIEW)
     File:        api/handlers/order.go:54
     Code:
       | userID := c.Param("user_id")
@@ -158,8 +162,10 @@ Detailed findings:
                   verifies the response carries at most `limit` rows.
 
   R004 — Missing BOLA negative test  (Severity: Medium, Confidence: Medium, Risk: SAFE)
-    File:        api/handlers/order_test.go
-    Code:        (no test asserts that user A cannot list user B's orders)
+    File:        api/handlers/order_test.go:14
+    Code:
+      | func TestListOrders_HappyPath(t *testing.T) { ... }
+      | func TestListOrders_NotFound(t *testing.T) { ... }
     Impact:      The fix to R001 has no regression test. A future refactor
                  can re-introduce the BOLA without CI failure.
     Suggested fix (SAFE): add Test_ListMyOrders_RejectsOtherUser —
@@ -179,7 +185,7 @@ Detailed findings:
                  reuse across endpoints.
 
 Summary:
-  Critical: 1   High: 1   Medium: 2   Low: 1   Info: 1
+  Critical: 0   High: 2   Medium: 2   Low: 1   Info: 1
   Blocking-merge findings: 2 (R001, R002)
   Suggested next steps:
     1. Author addresses R001 (REVIEW: middleware change) and R002 (SAFE).
@@ -195,7 +201,7 @@ Skill version: code-review @ HEAD
 ## What this example demonstrates
 
 - Every finding has `path:line`, an exact code quote, an impact, a fix, a risk tag, and a confidence tag.
-- Severity is calibrated by the rubric, not invented (R001 is Critical because BOLA Critical is the floor; R002 is High because CWE-532 + sensitive header).
+- Severity is calibrated by the rubric, not invented (R001 is High because single-resource BOLA has a High floor; R002 is High because CWE-532 + sensitive header).
 - The skill **never** edits the code — the report contains diffs, but they are suggestions for the author.
 - Cross-links steer the author to the dedicated skill (`@golang-api-security`) for follow-on work.
 - Tool versions are captured so the review is reproducible.
