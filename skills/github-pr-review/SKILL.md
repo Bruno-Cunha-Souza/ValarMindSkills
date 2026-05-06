@@ -1,6 +1,6 @@
 ---
 name: github-pr-review
-description: "Structured GitHub PR review — correctness, security, performance, maintainability. Severity-ranked findings + verdict (Approve/Request Changes/Comment). For terse output use @caveman-review; for non-PR methodology use @code-review. Triggers: 'review PR', 'revisar PR', 'analisar pull request', '/github-pr-review'."
+description: "Structured GitHub PR review — correctness, security, performance, maintainability. Severity-ranked findings + verdict (Approve/Request Changes/Comment). Terse: @caveman-review. Non-PR: @code-review. Triggers: 'review PR', 'revisar PR', 'analisar pull request', '/github-pr-review'."
 source: ValarMindSkills
 ---
 

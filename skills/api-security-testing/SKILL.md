@@ -1,6 +1,6 @@
 ---
 name: api-security-testing
-description: "Security testing for REST/GraphQL APIs in FastAPI, Gin/Fiber, Bun/Elysia. OWASP API Top 10 2023, auth bypass, BOLA/IDOR, injection, rate limit, supply chain audit."
+description: "Security testing REST/GraphQL — FastAPI, Gin/Fiber, Bun/Elysia. OWASP API Top 10 2023, auth bypass, BOLA/IDOR, injection, rate limit, supply chain audit."
 source: ValarMindSkills
 ---
 

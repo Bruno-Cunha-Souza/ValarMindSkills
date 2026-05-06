@@ -1,6 +1,6 @@
 ---
 name: code-debugger
-description: "Lifecycle debugging for Go, Rust, TypeScript: symptom → reproduction → root cause → minimal fix → regression test. Evidence-first (every claim cites command output or stack frame). Use for runtime errors, test failures, panics, races, leaks, flaky tests. Triggers: 'debug', 'depurar', 'root cause', 'analisar stack trace', '/code-debugger'."
+description: "Lifecycle debug Go/Rust/TS — symptom→reproduction→root cause→fix→regression test. Evidence-first (cites cmd output or stack frame). For runtime errors, test failures, panics, races, leaks, flaky tests. Triggers: 'debug', 'depurar', 'root cause', '/code-debugger'."
 source: ValarMindSkills
 ---
 

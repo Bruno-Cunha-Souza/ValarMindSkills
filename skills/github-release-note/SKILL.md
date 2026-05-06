@@ -1,6 +1,6 @@
 ---
 name: github-release-note
-description: "Generate GitHub Release notes / changelog from a tag range. Triggers: 'release notes', 'changelog', 'version notes'."
+description: "Generate GitHub Release notes / changelog from tag range. Triggers: 'release notes', 'changelog', 'version notes'."
 source: ValarMind Skills
 ---
 

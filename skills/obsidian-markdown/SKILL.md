@@ -1,6 +1,6 @@
 ---
 name: obsidian-markdown
-description: "Create and edit Obsidian Flavored Markdown — wikilinks, embeds, callouts, properties, tags, frontmatter. Use for .md files in Obsidian."
+description: "Create/edit Obsidian Flavored Markdown — wikilinks, embeds, callouts, properties, tags, frontmatter. For .md files in Obsidian."
 source: https://github.com/kepano/obsidian-skills
 ---
 

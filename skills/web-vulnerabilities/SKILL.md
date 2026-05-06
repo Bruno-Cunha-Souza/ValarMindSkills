@@ -1,6 +1,6 @@
 ---
 name: web-vulnerabilities
-description: "Reference for 100 web app vulnerabilities by category (injection, auth, access control, etc.). Use to identify vulnerabilities, explain security flaws, or guide remediation."
+description: "Reference — 100 web app vulnerabilities by category (injection, auth, access control). Identify vulnerabilities, explain flaws, guide remediation."
 source: community
 ---
 

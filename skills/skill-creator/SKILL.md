@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: "Scaffold new ValarMindSkills following project conventions. Builds SKILL.md, references/, EXAMPLE files. Triggers: 'criar skill', 'nova skill', 'scaffold skill', 'create skill'."
+description: "Scaffold new ValarMindSkills per project conventions. Builds SKILL.md, references/, EXAMPLE files. Triggers: 'criar skill', 'nova skill', 'scaffold skill', 'create skill'."
 source: ValarMindSkills
 ---
 

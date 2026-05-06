@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Lifecycle code review for Go, Rust, TypeScript. Auto-detects toolchain, runs static analysis, emits severity-ranked findings with file:line evidence, suggested diffs, risk tags (SAFE/REVIEW/BREAKING). Covers OWASP Top 10, perf anti-patterns, test quality. Read-only — every finding cites real file:line. Triggers: 'review code', 'revisar código', 'auditar código', '/code-review'."
+description: "Lifecycle code review Go/Rust/TS. Auto-detects toolchain, runs static analysis, emits severity-ranked findings + file:line evidence, diffs, risk tags (SAFE/REVIEW/BREAKING). Covers OWASP Top 10, perf anti-patterns, test quality. Read-only — every finding cites file:line. Triggers: 'review code', 'revisar código', 'auditar código', '/code-review'."
 source: ValarMindSkills
 ---
 

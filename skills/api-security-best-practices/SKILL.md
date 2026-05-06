@@ -1,6 +1,6 @@
 ---
 name: api-security-best-practices
-description: "Secure API design for REST/GraphQL in FastAPI, Gin/Fiber, Bun/Elysia. AuthN/Z, input validation, rate limiting, supply chain, OWASP API Top 10 2023."
+description: "Secure API design REST/GraphQL — FastAPI, Gin/Fiber, Bun/Elysia. AuthN/Z, validation, rate limit, supply chain, OWASP API Top 10 2023."
 source: ValarMindSkills
 ---
 

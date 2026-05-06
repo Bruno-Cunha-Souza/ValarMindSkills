@@ -1,6 +1,6 @@
 ---
 name: caveman-commit
-description: "Terse Conventional Commit: subject ≤50 chars imperative, body only when 'why' non-obvious, standard trailer. For full-detail use @github-commit. Triggers: 'caveman commit', 'terse commit', 'commit curto', '/caveman-commit'."
+description: "Terse Conventional Commit — subject ≤50 chars imperative, body only when 'why' non-obvious. Full-detail: @github-commit. Triggers: 'caveman commit', 'terse commit', 'commit curto', '/caveman-commit'."
 source: https://github.com/JuliusBrussee/caveman/tree/main
 ---
 

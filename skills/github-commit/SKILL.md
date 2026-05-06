@@ -1,6 +1,6 @@
 ---
 name: github-commit
-description: "Generate Conventional Commit from staged changes. Triggers: 'commit', 'create commit', 'commit message'."
+description: "Generate Conventional Commit from staged diff. Triggers: 'commit', 'create commit', 'commit message'."
 source: ValarMind Skills
 ---
 

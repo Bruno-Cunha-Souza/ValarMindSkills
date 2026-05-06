@@ -1,6 +1,6 @@
 ---
 name: caveman
-description: "Terse response posture — drops articles, filler, pleasantries, hedging. Keeps technical substance, code blocks, error strings exact. Not for onboarding, pedagogy, or security warnings. Triggers: 'caveman mode', 'modo caveman', 'be terse', 'economize tokens', '/caveman lite|full|ultra'."
+description: "Terse posture — drop articles/filler/pleasantries/hedging. Keep technical substance, code blocks, errors exact. Not for onboarding, pedagogy, security warnings. Triggers: 'caveman mode', 'modo caveman', 'be terse', '/caveman lite|full|ultra'."
 source: https://github.com/JuliusBrussee/caveman/tree/mainValarMindSkills
 ---
 

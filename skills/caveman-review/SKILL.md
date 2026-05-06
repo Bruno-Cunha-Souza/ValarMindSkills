@@ -1,6 +1,6 @@
 ---
 name: caveman-review
-description: "Terse PR review: each finding 'path:line — problem. fix.' grouped by severity, two-sentence summary + verdict. For full-detail use @github-pr-review. Triggers: 'caveman review', 'terse review', 'revisar PR caveman', '/caveman-review'."
+description: "Terse PR review — finding = 'path:line — problem. fix.' by severity, 2-sentence summary + verdict. Full-detail: @github-pr-review. Triggers: 'caveman review', 'terse review', 'revisar PR caveman', '/caveman-review'."
 source: https://github.com/JuliusBrussee/caveman/tree/main
 ---
 

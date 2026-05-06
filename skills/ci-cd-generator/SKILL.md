@@ -1,6 +1,6 @@
 ---
 name: ci-cd-generator
-description: "Scaffold or audit GitHub Actions CI/CD for Go, Rust, TypeScript. Generation emits workflows with coverage gates (60–80%), security scans (CodeQL/Semgrep, SCA, SBOM, gitleaks), N+1/race/leak/load tests. Audit reviews existing pipelines with severity-ranked findings + diff fixes. Triggers: 'criar CI', 'gerar pipeline', 'auditar pipeline', 'set up CI/CD', '/ci-cd-generator'."
+description: "Scaffold/audit GitHub Actions CI/CD — Go/Rust/TS. Generation: workflows + coverage gates (60–80%), security scans (CodeQL/Semgrep, SCA, SBOM, gitleaks), N+1/race/leak/load tests. Audit: severity-ranked findings + diff fixes. Triggers: 'criar CI', 'gerar pipeline', 'auditar pipeline', '/ci-cd-generator'."
 source: ValarMindSkills
 ---
 

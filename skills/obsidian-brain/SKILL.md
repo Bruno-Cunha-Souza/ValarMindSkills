@@ -1,6 +1,6 @@
 ---
 name: obsidian-brain
-description: "Project memory layer for projects whose CLAUDE.md or AGENTS.md references an Obsidian vault. Maintains <vault>/brain/<slug>-brain.md index + atomic notes (sessions/topics/decisions). Complements built-in auto-memory. Triggers: 'obsidian brain', 'memória do projeto', 'project brain', '/obsidian-brain'."
+description: "Project memory — projects whose CLAUDE.md/AGENTS.md references Obsidian vault. Maintains <vault>/brain/<slug>-brain.md index + atomic notes (sessions/topics/decisions). Complements auto-memory. Triggers: 'obsidian brain', 'memória do projeto', 'project brain', '/obsidian-brain'."
 source: ValarMindSkills
 ---
 

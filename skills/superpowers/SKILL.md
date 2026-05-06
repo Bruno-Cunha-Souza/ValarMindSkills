@@ -1,6 +1,6 @@
 ---
 name: superpowers
-description: "Disciplined engineering posture: scans skills (1% rule), user > skills > defaults hierarchy, refuses twelve rationalizations, four pillars (TDD, systematic, complexity reduction, evidence), seven-stage workflow when scope warrants. Default OFF, user opts in. Triggers: 'superpowers mode', 'modo superpowers', 'plan-first mode', '/superpowers'."
+description: "Disciplined engineering posture — scans skills (1% rule), user > skills > defaults hierarchy, refuses 12 rationalizations, 4 pillars (TDD, systematic, complexity reduction, evidence), 7-stage workflow when scope warrants. Default OFF. Triggers: 'superpowers mode', 'modo superpowers', 'plan-first mode', '/superpowers'."
 source: https://github.com/obra/superpowers
 ---
 
