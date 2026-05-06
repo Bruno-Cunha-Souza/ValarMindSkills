@@ -40,7 +40,7 @@ bash install.sh
 | `caveman` | Terse response mode — drops articles, filler, hedging. Intensity levels: lite / full / ultra |
 | `caveman-commit` | Ultra-compressed Conventional Commit. Subject ≤ 50 chars; body only when the *why* is non-obvious |
 | `caveman-review` | One-line PR review comments in the shape `path:line — problem. fix.`, grouped by severity |
-| `ci-cd-generator` | Generates a complete GitHub Actions CI/CD pipeline for Go, Rust, or TypeScript projects. Auto-detects language and package manager; encodes opinionated defaults (coverage gates, N+1 detection, race condition PBT, memory leak detection, optional load testing); wires SAST/SCA/secret scan/container scan/SBOM by security level (`minimal` / `standard` / `strict`) |
+| `ci-cd-generator` | GitHub Actions CI/CD generator for Go/Rust/TS — auto-detects language, encodes coverage/race/leak gates, wires SAST/SCA/secret/container/SBOM scans by security level |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
 | `code-review` | Elite code review expert specializing in modern AI-powered code |
@@ -53,12 +53,12 @@ bash install.sh
 | `nextjs-optimization-pro` | Performance optimization specialist for Next.js 16.2.x — Server Components, rendering, client/server boundaries |
 | `nextjs-security-pro` | Complete security lifecycle for Next.js 16.2.x App Router — audit, patch, validate, OWASP Top 10 |
 | `obsidian-bases` | Create and edit Obsidian Bases (.base files) with views, filters, formulas, and summaries |
-| `obsidian-brain` | Token-efficient session-memory for projects whose CLAUDE.md/AGENTS.md references an Obsidian vault — auto-detects, bootstraps `<vault>/brain/`, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when a vault is detected; the statusline shows a roxo `[OBSIDIAN-BRAIN]` badge while active |
+| `obsidian-brain` | Token-efficient session-memory for Obsidian-vault projects — auto-detects, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when vault detected |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
-| `prompt-engineering` | Lifecycle skill that audits, hardens, translates, and rewrites LLM prompts. Primary targets: skill prompts (`SKILL.md`), RAG prompts, agent tool descriptions, and **agent base / system prompts**. Detects clarity / hallucination / token-waste gaps; preserves safety rules; emits `LGTM` and stops if the prompt is sound (no fabricated findings); outputs original verbatim, severity-ranked findings (Critical/Major/Minor) with risk tags (SAFE/REVIEW/BREAKING), rewritten prompt, and token delta |
+| `prompt-engineering` | Audits, hardens, and rewrites LLM prompts (`SKILL.md`, RAG, tool descriptions, agent base prompts) — severity-ranked findings with risk tags, rewritten prompt, token delta |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
-| `superpowers` | Engineering-discipline posture — 1% skill-scan rule, four pillars (TDD, systematic, complexity reduction, evidence), twelve red flags, seven-stage workflow. **OFF by default**; opt in per session or persistently |
+| `superpowers` | Engineering-discipline posture — 1% skill-scan, four pillars (TDD, systematic, complexity, evidence), seven-stage workflow. **OFF by default** |
 
 ## Installation on Claude Code CLI
 
