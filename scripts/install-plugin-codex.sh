@@ -37,7 +37,30 @@ for skill_dir in "$SOURCE_SKILLS"/*/; do
   installed_skills+=("$slug")
 done
 
+# Prune stale skills no longer present in source (e.g. removed/renamed in newer release).
+pruned_skills=()
+if [ -d "$SKILLS_TARGET" ]; then
+  for existing_dir in "$SKILLS_TARGET"/*/; do
+    [ -d "$existing_dir" ] || continue
+    existing_slug="$(basename "$existing_dir")"
+    found=0
+    for installed in "${installed_skills[@]}"; do
+      if [ "$installed" = "$existing_slug" ]; then
+        found=1
+        break
+      fi
+    done
+    if [ "$found" -eq 0 ]; then
+      rm -rf "$existing_dir"
+      pruned_skills+=("$existing_slug")
+    fi
+  done
+fi
+
 echo "Installed ${#installed_skills[@]} skills → $SKILLS_TARGET"
+if [ "${#pruned_skills[@]}" -gt 0 ]; then
+  echo "Pruned ${#pruned_skills[@]} stale skill(s): ${pruned_skills[*]}"
+fi
 
 # ──────────────────────────────────────────────────────────────
 # Step 2/3 — Hooks (via config.toml [[hooks]])
