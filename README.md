@@ -33,6 +33,8 @@ less install.sh
 bash install.sh
 ```
 
+---
+
 ## Available skills
 
 | Skill | Description |
@@ -59,6 +61,8 @@ bash install.sh
 | `prompt-engineering` | Audits, hardens, and rewrites LLM prompts (`SKILL.md`, RAG, tool descriptions, agent base prompts) — severity-ranked findings with risk tags, rewritten prompt, token delta |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
 | `superpowers` | Engineering-discipline posture — 1% skill-scan, four pillars (TDD, systematic, complexity, evidence), seven-stage workflow. **OFF by default** |
+
+---
 
 ## Installation on Claude Code CLI
 
@@ -136,6 +140,8 @@ The plugin ships a composable statusline that combines three optional badges wit
 
 The statusline is built from independent segments under `hooks/statusline/segments/` — additional segments can be added there without touching the Caveman plugin.
 
+---
+
 ## Installation on Antigravity IDE
 
 > **Note:** Antigravity does not load symlinks. Skills must be copied as real files.
@@ -171,6 +177,8 @@ mkdir -p .agent/skills
 cp -r ValarMindSkills/skills/* .agent/skills/
 ```
 
+---
+
 ## Installation on Codex CLI
 
 ### Plugin install (recommended)
@@ -194,6 +202,8 @@ bash scripts/install-codex.sh
 ```
 
 Restart Codex CLI after either script so the new skills and hooks are picked up.
+
+---
 
 ## Project structure
 
@@ -235,6 +245,7 @@ install.sh                  <- curl-bash bootstrap (downloads latest release, ru
 
 Each directory under `skills/` represents a skill. The directory slug is the identifier used as a slash command.
 
+---
 ## Skill format
 
 Each `SKILL.md` follows this format:
@@ -255,12 +266,16 @@ Followed by Markdown sections:
 - **Constraints** — limits and rules
 - **Output format** — how results should be presented
 
+---
+
 ## Contributing
 
 1. Create a directory under `skills/` with the new skill's slug
 2. Add a `SKILL.md` file following the format above
 3. Write instructions in English
 4. Open a pull request
+
+---
 
 ## License
 
