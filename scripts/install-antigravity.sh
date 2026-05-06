@@ -18,7 +18,11 @@ for skill_dir in "$SOURCE_DIR"/*/; do
   [ -f "$skill_file" ] || continue
 
   slug="$(basename "$skill_dir")"
-  cp -R "$skill_dir" "$TARGET_DIR/$slug"
+  dest="$TARGET_DIR/$slug"
+  # Remove pre-existing dest first — `cp -R src/ dest` on macOS BSD copies INTO
+  # an existing directory, producing nested $dest/$slug on re-runs.
+  rm -rf "$dest"
+  cp -R "$skill_dir" "$dest"
   installed+=("$slug")
 done
 
