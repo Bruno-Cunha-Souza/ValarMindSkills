@@ -1,6 +1,6 @@
 ---
 name: obsidian-cli
-description: "Obsidian CLI — read/create/search notes, manage tasks/properties; plugin/theme dev (reload plugins, run JS, capture errors, screenshots, DOM inspect)."
+description: "Obsidian CLI — read/create/search notes, properties, tasks; plugin dev (reload, JS eval, screenshot, DOM)."
 source: https://github.com/kepano/obsidian-skills
 ---
 

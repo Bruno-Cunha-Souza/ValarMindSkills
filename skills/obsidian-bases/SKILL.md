@@ -1,6 +1,6 @@
 ---
 name: obsidian-bases
-description: "Create/edit Obsidian Bases (.base files) — views, filters, formulas, summaries. For .base files or database-like note views."
+description: "Create/edit Obsidian .base files — views, filters, formulas, summaries."
 source: https://github.com/kepano/obsidian-skills
 ---
 
