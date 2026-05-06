@@ -3,7 +3,7 @@
 # Cut a new ValarMindSkills release.
 #
 # Usage:
-#   bash scripts/release.sh <version> [--draft]
+#   bash .github/scripts/release.sh <version> [--draft]
 #
 # <version> may be "v0.1.3" or "0.1.3" — both are accepted.
 #
@@ -44,7 +44,8 @@ if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
-REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# Script lives at <repo>/.github/scripts/release.sh — climb two levels.
+REPO_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_DIR"
 
 # --------------------------------------------------------------------
