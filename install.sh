@@ -45,16 +45,22 @@ if [ "$VERSION" = "latest" ]; then
   log "resolving latest release for $REPO"
   api_url="https://api.github.com/repos/$REPO/releases/latest"
 
-  auth_header=()
+  # Bash 3.2 (macOS default) treats empty arrays as unset under `set -u`,
+  # so split the call instead of expanding an empty auth_header array.
   if [ -n "${GITHUB_TOKEN:-}" ]; then
-    auth_header=(-H "Authorization: Bearer $GITHUB_TOKEN")
+    resolved=$(curl -fsSL \
+      -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "Accept: application/vnd.github+json" \
+      "$api_url" \
+      | grep -m1 '"tag_name"' \
+      | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+  else
+    resolved=$(curl -fsSL \
+      -H "Accept: application/vnd.github+json" \
+      "$api_url" \
+      | grep -m1 '"tag_name"' \
+      | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
   fi
-
-  resolved=$(curl -fsSL "${auth_header[@]}" \
-    -H "Accept: application/vnd.github+json" \
-    "$api_url" \
-    | grep -m1 '"tag_name"' \
-    | sed -E 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
 
   if [ -z "$resolved" ]; then
     err "could not resolve latest release tag from $api_url"
