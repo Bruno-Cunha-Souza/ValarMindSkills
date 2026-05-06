@@ -104,7 +104,7 @@ When you catch yourself thinking one of these, stop. Go back to the 1% rule and 
 
 When multiple skills apply, *process* skills win over *implementation* skills. `@code-debugger` and `@skill-creator` come before `@github-commit`. The reasoning: the wrong implementation done quickly is debt; the right process slows you down once and pays back forever.
 
-**Security never yields.** `@*-security-*` skills and `@web-vulnerabilities` outrank process skills — they always run when their triggers fire, and they are never skipped for speed. Full priority resolution lives in [references/SKILL_MAP.md](references/SKILL_MAP.md) §3.
+**Security never yields.** `@*-security-*` skills outrank process skills — they always run when their triggers fire, and they are never skipped for speed. Full priority resolution lives in [references/SKILL_MAP.md](references/SKILL_MAP.md) §3.
 
 ## Persistence
 

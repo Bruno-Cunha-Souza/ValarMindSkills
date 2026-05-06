@@ -309,8 +309,7 @@ Next: review the diff, then `/valarmindskills:github-commit`.
 - `@clean-code` — apply principles to the YAML (consistent naming, no duplication across jobs)
 - `@golang-api-security` — deeper Go security audit; the CI pipeline can call its tooling directly
 - `@nextjs-security-pro` — Next.js-specific security checks for TS projects under Next.js
-- `@code-security-review` — language-agnostic API security review job (active testing via `references/TESTING_PHASES.md`, run nightly via the load testing slot)
-- `@web-vulnerabilities` — catalog used when the user wants the pipeline to spell out which vulnerability classes each gate addresses
+- `@code-security-review` — language-agnostic API security review job (active testing via `references/TESTING_PHASES.md`, run nightly via the load testing slot; 100-vuln class catalog via `references/WEB_VULNERABILITIES.md` when the pipeline must spell out which classes each gate addresses)
 - `@code-debugger` — diagnosing a failing generated workflow before reporting it as broken
 
 ## References

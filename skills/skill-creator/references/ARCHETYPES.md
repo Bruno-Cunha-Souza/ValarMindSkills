@@ -174,7 +174,6 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 - `skills/obsidian-bases/` (498 lines + 1 reference `FUNCTIONS_REFERENCE.md`) — schema-first reference for `.base` files.
 - `skills/obsidian-markdown/` (197 lines + 3 references `CALLOUTS.md`, `EMBEDS.md`, `PROPERTIES.md`) — Obsidian Flavored Markdown reference.
 - `skills/obsidian-cli/` (114 lines, no references) — compact CLI reference.
-- `skills/web-vulnerabilities/` (604 lines, no references) — a catalog of 100 web vulnerabilities grouped by phase.
 
 **Warning.** Reference skills drift easily into outdated content. Include the upstream spec version and link back to it.
 

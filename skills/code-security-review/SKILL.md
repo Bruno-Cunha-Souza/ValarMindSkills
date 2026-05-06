@@ -1,6 +1,6 @@
 ---
 name: code-security-review
-description: "Security lifecycle REST/GraphQL — FastAPI, Gin/Fiber, Bun/Elysia. Design (AuthN/Z, validation, rate limit, CORS, supply chain) + active testing (BOLA/IDOR, JWT, injection). OWASP API Top 10 2023."
+description: "Web+API security lifecycle. Design + active testing (BOLA, JWT, injection) + 100-vuln catalog (XSS, CSRF, SSRF). FastAPI/Gin/Fiber/Elysia. OWASP API Top 10 2023."
 source: ValarMindSkills
 ---
 
@@ -19,6 +19,7 @@ Use this skill when:
 - Implementing or auditing **AuthN/AuthZ** (JWT, OAuth 2.1, DPoP, API keys, RBAC/ABAC)
 - Adding **rate limiting**, **input validation**, **CORS**, or **security headers**
 - **Reporting** findings — use the standardized template in `references/REPORT_TEMPLATE.md`
+- Consulting the **catalog of 100 web vulnerabilities** by category (→ `references/WEB_VULNERABILITIES.md`)
 
 This skill is **fully standalone** — every payload, snippet, and checklist needed lives in this directory.
 
@@ -30,6 +31,7 @@ This skill is **fully standalone** — every payload, snippet, and checklist nee
 | `references/DESIGN_CONTROLS.md` | Implementing or reviewing controls (proactive) |
 | `references/TESTING_PHASES.md` | Running 7-phase active testing workflow (reactive) |
 | `references/REPORT_TEMPLATE.md` | Documenting findings with consistent severity rubric |
+| `references/WEB_VULNERABILITIES.md` | Reference catalog of 100 web vulnerabilities by category (XSS, CSRF, deserialization, mobile/IoT, etc.) |
 | `scripts/` | Executable probes — automate Phase 0–7 against a live target. See `scripts/README.md`. |
 
 ## Security Foundations (Core Principles)
@@ -147,7 +149,6 @@ Each phase from `TESTING_PHASES.md` has a script counterpart that emits findings
 
 ## Related Skills
 
-- `@web-vulnerabilities` — reference for 100 web vulnerabilities including injection, XSS, CSRF
 - `@golang-api-security` — Go-specific lifecycle (Gin/Fiber) that delegates language-agnostic phases to this skill
 - `@nextjs-security-pro` — Next.js App Router security audit; complements with this skill for backend API surface
 - `@code-review` — broader code-quality review that pairs with this skill for security-specific concerns

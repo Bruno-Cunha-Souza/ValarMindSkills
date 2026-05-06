@@ -48,8 +48,7 @@ bash install.sh
 | `github-release-note` | Generates release notes from a git tag range |
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
-| `web-vulnerabilities` | Reference of 100 common web vulnerabilities |
-| `code-security-review` | Security lifecycle for REST/GraphQL APIs (FastAPI, Gin, Fiber, Elysia) — design controls + active testing, OWASP API Top 10 2023 |
+| `code-security-review` | Web+API security lifecycle (FastAPI, Gin, Fiber, Elysia) — design controls + active testing + 100-vuln catalog, OWASP API Top 10 2023 |
 | `golang-api-security` | Complete security lifecycle for Go 1.25+ APIs (Gin/Fiber) — auto-detect, audit, patch, validate, OWASP API Top 10 2023 |
 | `nextjs-optimization-pro` | Performance optimization specialist for Next.js 16.2.x — Server Components, rendering, client/server boundaries |
 | `nextjs-security-pro` | Complete security lifecycle for Next.js 16.2.x App Router — audit, patch, validate, OWASP Top 10 |

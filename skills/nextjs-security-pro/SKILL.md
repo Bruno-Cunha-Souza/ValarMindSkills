@@ -8,7 +8,7 @@ source: ValarMindSkills
 
 ## Pre-Requisite
 
-> **IMPORTANT:** Before answering any request with this skill, execute the `/web-vulnerabilities` skill command or ensure the `web-vulnerabilities` skill is loaded in context. All `Phase X (Vuln Y)` references in this document depend on that baseline catalog.
+> **IMPORTANT:** Before answering any request with this skill, execute the `/code-security-review` skill command or ensure the `code-security-review` skill is loaded in context. All `Phase X (Vuln Y)` references in this document depend on its 100-vuln baseline catalog (`references/WEB_VULNERABILITIES.md`).
 
 ## When to Use
 
@@ -21,11 +21,11 @@ Use this skill when:
 - Mapping a Next.js codebase against the **OWASP Web Top 10 2021** and **OWASP API Top 10 2023**
 - Applying or validating fixes for Next.js-specific issues (RSC leakage, cache poisoning, Server Action auth bypass, image optimizer SSRF)
 
-This skill is **Next.js-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For the generic vulnerability catalog, complement with `@web-vulnerabilities`. For language-agnostic API security review (design + active testing), complement with `@code-security-review`.
+This skill is **Next.js-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For the generic vulnerability catalog and language-agnostic API security review (design + active testing), complement with `@code-security-review` (catalog in `references/WEB_VULNERABILITIES.md`).
 
 **Out of scope:**
 - **Pages Router projects** (`pages/` directory without `app/`) — the skill hard-aborts in Phase 0.
-- Raw React without Next.js (use `@web-vulnerabilities` directly).
+- Raw React without Next.js (use `@code-security-review` directly — see `references/WEB_VULNERABILITIES.md`).
 - Non-Next.js meta-frameworks (Remix, SvelteKit, Nuxt).
 
 ## Prerequisites
@@ -62,7 +62,7 @@ Detect the project's Next.js version, router, auth library, and deploy target be
 # Hard abort if the project is Pages Router only.
 if [ ! -d app ] && [ -d pages ]; then
     echo "ERROR: Pages Router detected. This skill only supports App Router."
-    echo "Use @web-vulnerabilities directly for legacy pages/ projects."
+    echo "Use @code-security-review directly for legacy pages/ projects (see references/WEB_VULNERABILITIES.md)."
     exit 1
 fi
 test -d app/ || { echo "ERROR: neither app/ nor pages/ detected — not a Next.js project."; exit 1; }
@@ -677,8 +677,7 @@ Run before every release:
 
 ## Related Skills
 
-- `@web-vulnerabilities` — base catalog of 100+ web vulnerability classes (mandatory prerequisite — load before using this skill)
+- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`, delegated to in Phase 7) + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`, **mandatory prerequisite — load before using this skill**) — covers FastAPI, Gin, Fiber, Elysia
 - `@nextjs-optimization-pro` — performance specialist for Next.js 16.2.x (sibling skill)
-- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`, delegated to in Phase 7) — covers FastAPI, Gin, Fiber, Elysia
 - `@golang-api-security` — sibling skill: structural template for this skill
 - `@code-review` — security-aware PR review

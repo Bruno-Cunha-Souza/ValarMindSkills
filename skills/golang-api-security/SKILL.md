@@ -481,6 +481,5 @@ Run before every release:
 
 ## Related Skills
 
-- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`) — covers FastAPI, Gin, Fiber, Elysia
-- `@web-vulnerabilities` — base catalog of 100+ web vulnerability classes
+- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`) + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) — covers FastAPI, Gin, Fiber, Elysia
 - `@code-review` — security-aware code review for PRs

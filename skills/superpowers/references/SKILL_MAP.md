@@ -15,7 +15,7 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
 | 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review`, `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
 | 5. TDD + debugging | `@code-debugger` (when red/error) | `@code-security-review` (API under test) |
-| 6. Request review | `@code-review` *or* `@github-pr-review` | `@caveman-review` (terse preference); `@nextjs-security-pro`, `@golang-api-security`, `@web-vulnerabilities` (security-sensitive diff) |
+| 6. Request review | `@code-review` *or* `@github-pr-review` | `@caveman-review` (terse preference); `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review` (security-sensitive diff) |
 | 7. Finish branch | `@github-commit` *or* `@caveman-commit` | `@github-release-note` (tag/release in scope) |
 
 Notes:
@@ -47,12 +47,12 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 - `IF` `.github/workflows/` is missing or empty AND project root has `go.mod` / `Cargo.toml` / `package.json`, OR task is "set up CI/CD", "create GitHub Actions workflow", "add CI pipeline", "scaffold pipeline", "criar CI", "gerar pipeline", "configurar CI/CD"
   → `@ci-cd-generator` (phased GitHub Actions generation with documented heuristics: coverage gates, N+1 detection, race condition PBT, memory leak detection, optional load testing — plus SAST/SCA/secret/container/SBOM gates per chosen security level)
 - `IF` editing an existing workflow with security-sensitive content (secrets, third-party actions without SHA pin, `pull_request_target`, broad `permissions:`)
-  → `@ci-cd-generator` (refactor toward safer defaults) + `@web-vulnerabilities` (catalog of supply-chain attack classes)
+  → `@ci-cd-generator` (refactor toward safer defaults) + `@code-security-review` (catalog of supply-chain attack classes via `references/WEB_VULNERABILITIES.md`)
 
 ### Generic web vulnerabilities
 
 - `IF` task is "review for vulnerabilities" without a specific framework, or the user asks about vulnerability categories
-  → `@web-vulnerabilities` (catalog + assessment guide)
+  → `@code-security-review` (catalog via `references/WEB_VULNERABILITIES.md` + assessment guide via `references/TESTING_PHASES.md`)
 
 ### Obsidian
 
@@ -89,7 +89,7 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 
 When multiple skills apply, resolve in this order:
 
-1. **Safety / security never yields.** `@*-security-*`, `@web-vulnerabilities`, and destructive-action confirmations always run before anything else. Process-skills never override security-skills for "speed".
+1. **Safety / security never yields.** `@*-security-*` and destructive-action confirmations always run before anything else. Process-skills never override security-skills for "speed".
 2. **Process > implementation.** `@code-debugger`, `@skill-creator`, and review skills come before commit skills. The wrong implementation done quickly is debt.
 3. **Explicit user preference wins.** If the user said "be terse" or activated caveman, use `@caveman-*` variants. If the user said "no plan", honor it (user-instruction tier of the hierarchy).
 4. **Domain skills coexist with process skills.** Stage 4 can run `@clean-code` + `@nextjs-optimization-pro` + `@nextjs-security-pro` together — they cover different concerns and do not compete.

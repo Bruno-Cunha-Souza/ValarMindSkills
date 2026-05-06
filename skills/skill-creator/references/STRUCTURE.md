@@ -57,7 +57,7 @@ Skip `EXAMPLE.md` when:
 
 You will frequently want to mention another skill. Pick the right mechanism:
 
-- **Mentioning a sibling skill in prose** — use `@<slug>`: "Before running this, load `@web-vulnerabilities`."
+- **Mentioning a sibling skill in prose** — use `@<slug>`: "Before running this, load `@code-security-review`."
 - **Pointing at a canonical example** — use a relative path rooted at the repository top: `skills/github-commit/SKILL.md`.
 - **Linking inside your own skill** — use a relative path: `[ARCHETYPES](references/ARCHETYPES.md)`.
 
