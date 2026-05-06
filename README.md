@@ -2,6 +2,37 @@
 
 A library of reusable skills for AI agents. Each skill is a Markdown file with YAML frontmatter that can be invoked as a slash command within Claude Code CLI or Antigravity IDE.
 
+## Quick install (recommended)
+
+One-liner that downloads the latest GitHub release into `~/.valarmindskills` and runs the unified installer for Claude Code CLI, Codex CLI, and Antigravity. Re-run any time to upgrade in place — the underlying scripts are idempotent (skill folders are replaced, managed config blocks in `~/.codex/config.toml` and `AGENTS.md` are wrapped in `# >>> VALARMIND BEGIN/END` markers and rewritten).
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh | bash
+```
+
+Each target is independent: a missing CLI is skipped (with an error message), the others still install.
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `VALARMIND_VERSION` | `latest` | Install a specific tag (e.g. `v0.1.0`) instead of the latest GitHub release |
+| `VALARMIND_INSTALL_DIR` | `~/.valarmindskills` | Where the source tree is extracted |
+| `VALARMIND_REPO` | `Bruno-Cunha-Souza/ValarMindSkills` | Repository override (forks) |
+| `VALARMIND_SKIP_INSTALL` | `0` | If `1`, only download the source — skip running `scripts/install-all.sh` |
+| `VALARMIND_SKIP_STATUSLINE` | `0` | If `1`, do not touch `~/.claude/settings.json` for the statusline |
+| `GITHUB_TOKEN` | — | Authenticated calls to the GitHub API to avoid rate limits |
+
+Examples:
+
+```bash
+# Pin a specific release
+VALARMIND_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh | bash
+
+# Inspect before running
+curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh -o install.sh
+less install.sh
+bash install.sh
+```
+
 ## Available skills
 
 | Skill | Description |
@@ -33,7 +64,7 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ## Installation on Claude Code CLI
 
-### Plugin install (recommended)
+### Plugin install (manual, from source)
 
 Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 24 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
@@ -43,7 +74,7 @@ cd ValarMindSkills
 bash scripts/install-plugin-claude.sh
 ```
 
-To install in both Claude Code CLI and Antigravity in one command, use the unified installer:
+To install in Claude Code CLI, Codex CLI, and Antigravity in one command, use the unified installer:
 
 ```bash
 bash scripts/install-all.sh
@@ -121,7 +152,7 @@ cd ValarMindSkills
 bash scripts/install-antigravity.sh
 ```
 
-To install in both Claude Code CLI and Antigravity in one command, use the unified installer:
+To install in Claude Code CLI, Codex CLI, and Antigravity in one command, use the unified installer:
 
 ```bash
 bash scripts/install-all.sh
@@ -141,6 +172,30 @@ To limit skills to a specific project, copy them into the project root:
 mkdir -p .agent/skills
 cp -r ValarMindSkills/skills/* .agent/skills/
 ```
+
+## Installation on Codex CLI
+
+### Plugin install (recommended)
+
+Copies all skills to `~/.codex/skills/`, copies the caveman / superpowers / obsidian-brain hook scripts to `~/.codex/hooks/`, and injects the corresponding `[[hooks.SessionStart]]` and `[[hooks.UserPromptSubmit]]` entries into `~/.codex/config.toml`. Also writes the matching postures into `~/.codex/AGENTS.md`. Both the `config.toml` block and the `AGENTS.md` block are wrapped in `# >>> VALARMIND BEGIN/END` (or `<!-- VALARMIND BEGIN/END -->`) markers, so re-running the installer rewrites the managed block in place without duplicating entries.
+
+```bash
+git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
+cd ValarMindSkills
+bash scripts/install-plugin-codex.sh
+```
+
+Override the target home with `CODEX_HOME=/custom/path bash scripts/install-plugin-codex.sh`.
+
+### Skills-only install (lite)
+
+For a setup without hooks or `AGENTS.md` postures (just the slash-command surface):
+
+```bash
+bash scripts/install-codex.sh
+```
+
+Restart Codex CLI after either script so the new skills and hooks are picked up.
 
 ## Project structure
 
@@ -173,8 +228,11 @@ skills/
     SKILL.md                <- skill definition (YAML frontmatter + Markdown instructions)
 scripts/
   install-plugin-claude.sh  <- persistent plugin install for Claude Code CLI
+  install-plugin-codex.sh   <- full plugin install for Codex CLI (skills + hooks + AGENTS.md)
+  install-codex.sh          <- skills-only install for Codex CLI (no hooks)
   install-antigravity.sh    <- copies skills to Antigravity global directory
-  install-all.sh            <- runs install-plugin-claude.sh and install-antigravity.sh
+  install-all.sh            <- runs the three plugin installers (Claude + Codex + Antigravity)
+install.sh                  <- curl-bash bootstrap (downloads latest release, runs install-all.sh)
 ```
 
 Each directory under `skills/` represents a skill. The directory slug is the identifier used as a slash command.
