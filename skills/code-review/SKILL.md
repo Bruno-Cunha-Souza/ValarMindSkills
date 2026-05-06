@@ -34,24 +34,24 @@ The skill exists because LLM reviewers tend to hallucinate findings: invented fu
 
 Install before starting a review. Each tool's absence is logged and the related Phase is degraded but never silently skipped.
 
-| Tool | Purpose | Install |
-| --- | --- | --- |
-| `git` | Diff and blame inspection | system package |
-| `gh` (GitHub CLI) | Pull request metadata, review comments | `brew install gh` then `gh auth login` |
-| `rg` (ripgrep) | Pattern sweep across the diff | `brew install ripgrep` / `apt install ripgrep` |
-| `fd` | Fast file finder | `brew install fd` / `apt install fd-find` |
-| `jscpd` | Multi-language clone detection | `npm install -g jscpd` |
-| `semgrep` | Polyglot SAST with rules per language | `brew install semgrep` / `pip install semgrep` |
-| `golangci-lint` | Go meta-linter (50+ linters) | `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest` |
-| `staticcheck` | Go advanced static analysis | `go install honnef.co/go/tools/cmd/staticcheck@latest` |
-| `govulncheck` | Go CVE scan | `go install golang.org/x/vuln/cmd/govulncheck@latest` |
-| `cargo clippy` | Rust idiomatic linter | `rustup component add clippy` |
-| `cargo audit` | Rust CVE scan | `cargo install cargo-audit` |
-| `cargo deny` | Rust dependency policy | `cargo install cargo-deny` |
-| `tsc` | TypeScript compiler (`--noEmit`) | per-project |
-| `eslint` / `biome` | TypeScript linter | per-project |
-| `knip` | Find unused TS exports/files/deps | `bunx knip` / `npx knip` |
-| `npm audit` / `bun audit` | Node/Bun CVE scan | bundled with package manager |
+| Tool | Purpose |
+| --- | --- |
+| `git` | Diff and blame inspection |
+| `gh` (GitHub CLI) | Pull request metadata, review comments |
+| `rg` (ripgrep) | Pattern sweep across the diff |
+| `fd` | Fast file finder |
+| `jscpd` | Multi-language clone detection |
+| `semgrep` | Polyglot SAST with rules per language |
+| `golangci-lint` | Go meta-linter (50+ linters) |
+| `staticcheck` | Go advanced static analysis |
+| `govulncheck` | Go CVE scan |
+| `cargo clippy` | Rust idiomatic linter |
+| `cargo audit` | Rust CVE scan |
+| `cargo deny` | Rust dependency policy |
+| `tsc` | TypeScript compiler (`--noEmit`) |
+| `eslint` / `biome` | TypeScript linter |
+| `knip` | Find unused TS exports/files/deps |
+| `npm audit` / `bun audit` | Node/Bun CVE scan |
 
 Required access:
 

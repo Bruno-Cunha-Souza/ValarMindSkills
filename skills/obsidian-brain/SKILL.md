@@ -17,8 +17,6 @@ Operates as a knowledge graph **per project**, complementing — never duplicati
 - The hook `hooks/obsidian-brain/obsidian-brain-activate.js` injected the activation system-reminder at session start.
 - A relevant change was made (architecture, decision, refactor, gotcha) and you need to record it for the next session.
 
-The statusline renders a roxo `[OBSIDIAN-BRAIN]` badge while the skill is active in this session, and a dim cinza `[OBSIDIAN-BRAIN]` badge when no vault is detected or when the user opted out via `/valarmindskills:obsidian-brain off` — paralelo ao `[SUPERPOWERS]`.
-
 ## Do not use when
 
 - No `CLAUDE.md` or `AGENTS.md` exists in the cwd or any ancestor up to the repo root.
