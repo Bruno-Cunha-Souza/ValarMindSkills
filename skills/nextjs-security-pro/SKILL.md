@@ -21,7 +21,7 @@ Use this skill when:
 - Mapping a Next.js codebase against the **OWASP Web Top 10 2021** and **OWASP API Top 10 2023**
 - Applying or validating fixes for Next.js-specific issues (RSC leakage, cache poisoning, Server Action auth bypass, image optimizer SSRF)
 
-This skill is **Next.js-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For the generic vulnerability catalog, complement with `@web-vulnerabilities`. For language-agnostic API testing, complement with `@api-security-testing`.
+This skill is **Next.js-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For the generic vulnerability catalog, complement with `@web-vulnerabilities`. For language-agnostic API security review (design + active testing), complement with `@code-security-review`.
 
 **Out of scope:**
 - **Pages Router projects** (`pages/` directory without `app/`) — the skill hard-aborts in Phase 0.
@@ -463,7 +463,7 @@ The skill must report any patch that introduced new findings or test failures an
 
 ## Phase 7 — Active Testing
 
-For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, JWT confusion, CORS reflection, rate-limit bypass), **delegate to `@api-security-testing` Phases 1–7**. Do not duplicate them here.
+For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, JWT confusion, CORS reflection, rate-limit bypass), **delegate to `@code-security-review` (`references/TESTING_PHASES.md`) Phases 1–7**. Do not duplicate them here.
 
 This phase covers **Next.js-specific** attacks not covered by the generic skill. All payloads live in [references/TESTING_PAYLOADS.md](references/TESTING_PAYLOADS.md):
 
@@ -679,7 +679,6 @@ Run before every release:
 
 - `@web-vulnerabilities` — base catalog of 100+ web vulnerability classes (mandatory prerequisite — load before using this skill)
 - `@nextjs-optimization-pro` — performance specialist for Next.js 16.2.x (sibling skill)
-- `@api-security-testing` — language-agnostic active testing workflow (Phases 1–7 of generic OWASP attacks — delegated to in Phase 7)
-- `@api-security-best-practices` — multi-language secure design patterns (FastAPI, Gin, Fiber, Elysia)
+- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`, delegated to in Phase 7) — covers FastAPI, Gin, Fiber, Elysia
 - `@golang-api-security` — sibling skill: structural template for this skill
 - `@code-review` — security-aware PR review

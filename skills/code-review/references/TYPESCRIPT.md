@@ -293,7 +293,6 @@ rg -n '<\w+\s+\w+=\{\{' --type tsx     # candidate; manual review needed
 ## Hand-off triggers
 
 - Next.js App Router code (RSC, Server Actions, Route Handlers) → `@nextjs-security-pro` + `@nextjs-optimization-pro`.
-- API security audit → `@api-security-best-practices` (TypeScript Bun/Elysia patterns).
-- Active runtime API testing → `@api-security-testing`.
+- API security review (design + active testing) → `@code-security-review` (TypeScript Bun/Elysia patterns).
 - Refactor / clean-code → `@clean-code` with [TYPESCRIPT reference](../../clean-code/references/TYPESCRIPT.md) or [BUN reference](../../clean-code/references/BUN.md).
 - Runtime exception, memory leak, EventLoop stall → `@code-debugger`.

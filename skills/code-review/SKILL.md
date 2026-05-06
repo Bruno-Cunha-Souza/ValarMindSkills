@@ -438,8 +438,7 @@ Info-level observations are allowed after the LGTM only when grounded in exact f
 - `@golang-api-security` — deeper Go REST API security audit (Gin, Fiber).
 - `@nextjs-security-pro` — Next.js App Router security audit.
 - `@nextjs-optimization-pro` — Next.js performance and rendering review.
-- `@api-security-best-practices` — multi-language secure API design patterns.
-- `@api-security-testing` — active (runtime) API security testing.
+- `@code-security-review` — multi-language API security lifecycle: design patterns + active runtime testing.
 - `@web-vulnerabilities` — vulnerability catalog for cross-linking findings.
 - `@github-pr-review` — GitHub-flavored PR review (posts comments via `gh`).
 - `@github-commit` — when the author wants help drafting the fix commit.

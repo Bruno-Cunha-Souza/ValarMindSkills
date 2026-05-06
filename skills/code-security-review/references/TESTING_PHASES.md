@@ -1,22 +1,10 @@
----
-name: api-security-testing
-description: "Security testing REST/GraphQL — FastAPI, Gin/Fiber, Bun/Elysia. OWASP API Top 10 2023, auth bypass, BOLA/IDOR, injection, rate limit, supply chain audit."
-source: ValarMindSkills
----
+# Testing Phases
 
-# API Security Testing Workflow
+Active security testing workflow for REST/GraphQL APIs. Seven phases of probes with concrete payloads.
 
-## When to Use
-
-Use this skill when:
-
-- Testing a **FastAPI**, **Gin**, **Fiber**, or **Elysia** API for security issues
-- Performing a pre-release security assessment
-- Running a bug bounty engagement on an API target
-- Verifying that security controls from `@api-security-best-practices` are effective
-- Auditing a third-party or internal API before integration
-
-This skill is **fully standalone** — it requires no other skills and contains all commands, payloads, and test cases needed.
+> Companion: `DESIGN_CONTROLS.md` documents the controls these phases validate. `REPORT_TEMPLATE.md` provides the standardized finding format.
+>
+> **Automation:** every phase in this document has an executable counterpart in `../scripts/` (e.g. Phase 1 → `scripts/01-auth-probes.sh`, Phase 2 → `scripts/03-bola-probes.sh`, Phase 3 → `scripts/04-injection-probes.sh`). The orchestrator `scripts/run-all.sh` runs all phases and writes findings to `scripts/out/findings.jsonl`. See `scripts/README.md`.
 
 ## Testing Tools Setup
 
@@ -230,7 +218,7 @@ httpx POST https://target/api/fetch -d '{"url": "https://attacker.com/redirect-t
 
 ### 3.5 Framework-Specific Injection Checks
 
-### FastAPI / Pydantic (CVE-2024-3772 ReDoS)
+#### FastAPI / Pydantic (CVE-2024-3772 ReDoS)
 
 ```bash
 # Test with a crafted long email string — pydantic < 2.4.0 hangs on this
@@ -239,7 +227,7 @@ python3 -c "print('a' * 200 + '@' + 'b' * 200 + '.c' * 50)"
 # Submit as email field — measure response time; timeout suggests vulnerable version
 ```
 
-### Elysia / TypeBox — strict mode check
+#### Elysia / TypeBox — strict mode check
 
 ```bash
 # Send extra fields not in the schema
@@ -512,34 +500,3 @@ grep -r "@elysiajs/bearer\|bearer()" . --include="*.ts"
 grep -r "additionalProperties" . --include="*.ts"
 # t.Object schemas should include { additionalProperties: false }
 ```
-
-## Test Report Template
-
-For each finding, document:
-
-| Field | Content |
-| --- | --- |
-| **Vulnerability ID** | VULN-001 (sequential) |
-| **Severity** | Critical / High / Medium / Low / Informational |
-| **OWASP Category** | e.g., API1:2023 BOLA, API4:2023 Unrestricted Resource Consumption |
-| **Affected Endpoint** | `POST /api/auth/login` |
-| **HTTP Method** | POST |
-| **Evidence** | Request + Response (sanitize sensitive data) |
-| **Impact** | What an attacker can achieve |
-| **Remediation** | Specific fix for the framework in use |
-| **References** | CVE, CWE, OWASP link |
-
-### Severity Reference
-
-| Severity | CVSS Range | Example |
-| --- | --- | --- |
-| **Critical** | 9.0–10.0 | BOLA returning any user's data, auth bypass |
-| **High** | 7.0–8.9 | SQLi, SSRF reaching internal services, missing auth on endpoints |
-| **Medium** | 4.0–6.9 | Missing rate limiting, CORS misconfiguration, sensitive fields in response |
-| **Low** | 1.0–3.9 | Version disclosure, missing security headers |
-| **Informational** | N/A | Docs exposed in staging, debug logs |
-
-## Related Skills
-
-- `@api-security-best-practices` — security controls to implement based on findings from this testing workflow
-- `@web-vulnerabilities` — reference for injection, XSS, CSRF, and other web vulnerabilities

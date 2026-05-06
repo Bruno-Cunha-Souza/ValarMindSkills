@@ -13,8 +13,8 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 1. Brainstorm | — | `@skill-creator` (task is "create/edit a skill") |
 | 2. Worktree | — | — (handled by harness `EnterWorktree`) |
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
-| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@api-security-best-practices`, `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
-| 5. TDD + debugging | `@code-debugger` (when red/error) | `@api-security-testing` (API under test) |
+| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review`, `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
+| 5. TDD + debugging | `@code-debugger` (when red/error) | `@code-security-review` (API under test) |
 | 6. Request review | `@code-review` *or* `@github-pr-review` | `@caveman-review` (terse preference); `@nextjs-security-pro`, `@golang-api-security`, `@web-vulnerabilities` (security-sensitive diff) |
 | 7. Finish branch | `@github-commit` *or* `@caveman-commit` | `@github-release-note` (tag/release in scope) |
 
@@ -38,9 +38,9 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 - `IF` Go module + Gin or Fiber detected (`go.mod` mentions `gin-gonic/gin` or `gofiber/fiber`)
   → `@golang-api-security` (full lifecycle audit)
 - `IF` new or modified REST/GraphQL endpoint, regardless of language
-  → `@api-security-best-practices` (design phase) + `@api-security-testing` (validation phase)
+  → `@code-security-review` (design phase via `DESIGN_CONTROLS.md` + validation phase via `TESTING_PHASES.md`)
 - `IF` API in FastAPI / Bun+Elysia / Gin / Fiber and security focus is "find issues now"
-  → `@api-security-testing` (active OWASP API Top 10 2023 tests)
+  → `@code-security-review` (active OWASP API Top 10 2023 tests via `TESTING_PHASES.md`)
 
 ### CI/CD / GitHub Actions
 

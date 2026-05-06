@@ -232,4 +232,4 @@ clinic bubbleprof -- node dist/index.js
 
 - Next.js App Router runtime bug (Server Component, Server Action, Route Handler) → `@nextjs-security-pro` (security) or `@nextjs-optimization-pro` (performance).
 - Refactor-class root cause → `@clean-code` with [TYPESCRIPT reference](../../clean-code/references/TYPESCRIPT.md) or [BUN reference](../../clean-code/references/BUN.md).
-- API runtime issue with security implication → `@api-security-testing`.
+- API runtime issue with security implication → `@code-security-review`.

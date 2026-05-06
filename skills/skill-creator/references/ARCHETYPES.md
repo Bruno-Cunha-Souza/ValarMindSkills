@@ -11,7 +11,7 @@ Five archetypes cover every skill in the repository. Pick one before writing a l
 | Deterministic artifact from a trigger | Procedural | "Given X, produce Y", numbered steps, single output format | Ongoing audit, multi-phase revisiting | `skills/github-commit/` | 80–550 lines | Rarely |
 | Multi-phase audit, hardening, or refactor | Lifecycle | Distinct phases (discovery → audit → patch → validate), framework branching | Linear one-shot flow | `skills/clean-code/` | 290–700 lines | Always |
 | Persona, capabilities, behavioral traits | Expert Profile | Role definition, response posture, "acts as" | Step-by-step procedure | `skills/code-review/` | 150–250 lines | Optional |
-| Principles, heuristics, and worked examples | Best Practices | Teaches how to think, not what to do | Mechanical procedure | `skills/api-security-best-practices/` | 70–650 lines | Optional |
+| Principles, heuristics, and worked examples | Best Practices | Teaches how to think, not what to do | Mechanical procedure | `skills/context-optimization/` | 70–650 lines | Optional |
 | Catalog, schema, or spec reference | Reference | Exhaustive enumeration, schema, tables | Decision-making required | `skills/obsidian-bases/` | 110–600 lines | Usually |
 
 If two archetypes seem to fit, pick the more specific one. If nothing fits, default to **Procedural** and extract generalizations later.
@@ -45,7 +45,6 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 - `skills/github-commit/` (131 lines) — the canonical minimal Procedural, with `EXAMPLE.md`.
 - `skills/github-pr-review/` (135 lines) — Procedural with a worked `EXAMPLE.md`.
 - `skills/github-release-note/` (84 lines) — smallest Procedural, no `references/`.
-- `skills/api-security-testing/` (548 lines) — Procedural that scales large; stays Procedural because phases do not branch and share the same prerequisites.
 
 **Promotion rule.** If you find yourself writing a Phase 0 that detects a framework and routes into different prerequisite tables per phase, stop and promote to Lifecycle.
 
@@ -76,6 +75,7 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 
 - `skills/clean-code/` (293 lines + 6 references) — Lifecycle with multi-language branching via per-language references (`GOLANG.md`, `TYPESCRIPT.md`, `RUST.md`, `BUN.md`, plus `PRINCIPLES.md` and `PATTERNS.md`).
 - `skills/golang-api-security/` (491 lines + 4 references) — Lifecycle with a single target language and framework auto-detect (Gin / Fiber / stdlib).
+- `skills/code-security-review/` (~200 lines + 3 references) — Lifecycle that splits proactive design (`DESIGN_CONTROLS.md`) and reactive testing (`TESTING_PHASES.md`) into mode-specific references rather than phase-by-phase branching.
 - `skills/nextjs-security-pro/` (691 lines + 4 references) — the largest Lifecycle in the repo; hard-aborts if Pages Router is detected.
 
 **Demotion rule.** If all phases share the same tools and there is no branching, the skill is probably Procedural with phase labels.
@@ -141,7 +141,6 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 
 **Examples in the repo.**
 
-- `skills/api-security-best-practices/` (647 lines, no references) — large monolithic Best Practices, heavy on tables and cross-language code.
 - `skills/context-optimization/` (189 lines, no references) — compact Best Practices, imported from external source.
 - `skills/nextjs-optimization-pro/` (69 lines, no references) — smallest Best Practices, a tight cheat sheet.
 

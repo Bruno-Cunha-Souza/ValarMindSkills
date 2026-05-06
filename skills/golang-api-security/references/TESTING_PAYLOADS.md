@@ -1,6 +1,6 @@
 # Go-Specific Active Testing Payloads
 
-Active attack payloads that exercise vulnerabilities unique to Go's runtime, standard library, or framework defaults. For generic OWASP API Top 10 payloads (SQLi, BOLA, JWT confusion, CORS reflection, rate limit bypass), use `@api-security-testing` Phases 1–7 instead.
+Active attack payloads that exercise vulnerabilities unique to Go's runtime, standard library, or framework defaults. For generic OWASP API Top 10 payloads (SQLi, BOLA, JWT confusion, CORS reflection, rate limit bypass), use `@code-security-review` (`references/TESTING_PHASES.md`) Phases 1–7 instead.
 
 > **Authorization required.** Run these only against systems you own or have explicit written permission to test.
 

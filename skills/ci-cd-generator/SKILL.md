@@ -26,7 +26,7 @@ The skill has two operating modes — **generation** (the default, walks Phase 0
 - Pre-release gate: confirm the workflows match the security level the team thinks they are running at
 - The user explicitly asks for "auditar pipeline", "audit CI pipeline", "review existing workflow"
 
-This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For language-agnostic API tests run from a CI pipeline, complement with `@api-security-testing`. For deeper Go security audits in the CI workflow, complement with `@golang-api-security`. For Next.js-specific CI, see `@nextjs-security-pro` and `@nextjs-optimization-pro`.
+This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For language-agnostic API security review (design + active testing) run from a CI pipeline, complement with `@code-security-review`. For deeper Go security audits in the CI workflow, complement with `@golang-api-security`. For Next.js-specific CI, see `@nextjs-security-pro` and `@nextjs-optimization-pro`.
 
 ## Do not use when
 
@@ -309,7 +309,7 @@ Next: review the diff, then `/valarmindskills:github-commit`.
 - `@clean-code` — apply principles to the YAML (consistent naming, no duplication across jobs)
 - `@golang-api-security` — deeper Go security audit; the CI pipeline can call its tooling directly
 - `@nextjs-security-pro` — Next.js-specific security checks for TS projects under Next.js
-- `@api-security-testing` — language-agnostic active testing job (run nightly via the load testing slot)
+- `@code-security-review` — language-agnostic API security review job (active testing via `references/TESTING_PHASES.md`, run nightly via the load testing slot)
 - `@web-vulnerabilities` — catalog used when the user wants the pipeline to spell out which vulnerability classes each gate addresses
 - `@code-debugger` — diagnosing a failing generated workflow before reporting it as broken
 

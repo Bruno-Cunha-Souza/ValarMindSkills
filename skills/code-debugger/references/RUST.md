@@ -208,5 +208,5 @@ tokio-console
 ## Hand-off triggers
 
 - Refactor-class root cause → `@clean-code` with [RUST reference](../../clean-code/references/RUST.md).
-- API security findings touched during the debug → `@api-security-best-practices`.
+- API security findings touched during the debug → `@code-security-review`.
 - The fix touches `unsafe` → recommend `@code-review` and `cargo geiger` audit.

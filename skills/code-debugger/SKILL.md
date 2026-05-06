@@ -325,7 +325,7 @@ Optional but valuable: propose a lint rule, a test helper, or a CI check that wo
 - **Never expand scope.** The fix targets the root cause of **the reported bug**. Other smells encountered are listed as Info, not patched.
 - **Always provide a regression test.** A fix without a regression test is rejected.
 - **Always include the tool versions used** (`go version`, `cargo --version`, `node --version` / `bun --version`).
-- **Always cross-link to the dedicated skill** when the root cause belongs to its domain (`@code-review`, `@clean-code`, `@golang-api-security`, `@nextjs-security-pro`, `@nextjs-optimization-pro`, `@api-security-testing`).
+- **Always cross-link to the dedicated skill** when the root cause belongs to its domain (`@code-review`, `@clean-code`, `@golang-api-security`, `@nextjs-security-pro`, `@nextjs-optimization-pro`, `@code-security-review`).
 - **Must drop a hypothesis the moment evidence-against arrives.** Do not hold onto a theory because it would be elegant.
 - **Must escalate when stuck.** After three falsified hypotheses without progress, summarize the state and ask the user (more telemetry, second pair of eyes).
 
@@ -404,7 +404,7 @@ When the skill cannot reach root cause, print the same skeleton truncated at the
 - `@golang-api-security` — when the root cause has a security dimension on a Go API.
 - `@nextjs-security-pro` — Next.js App Router security-driven runtime bugs.
 - `@nextjs-optimization-pro` — Next.js performance regressions.
-- `@api-security-testing` — when the bug is in the API surface and active testing helps.
+- `@code-security-review` — when the bug is in the API surface and security review (design + active testing) helps.
 - `@github-commit` — when the user wants help drafting the fix commit.
 - `@superpowers` — engineering posture (TDD, evidence-first) for the user fixing more bugs of the same class.
 - `@ci-cd-generator` — to add the lint / test that would have caught this class of bug to the pipeline.

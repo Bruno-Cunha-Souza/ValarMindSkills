@@ -261,6 +261,6 @@ rg -n 'read_to_string' --type rust
 
 ## Hand-off triggers
 
-- API security findings → `@api-security-best-practices` (Rust patterns covered there).
+- API security findings → `@code-security-review` (FastAPI/Gin/Fiber/Elysia patterns; Rust analogues by inference).
 - Refactor / smell density → `@clean-code` with [RUST reference](../../clean-code/references/RUST.md).
 - Runtime panic, deadlock, leak → `@code-debugger`.

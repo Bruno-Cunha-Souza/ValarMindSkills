@@ -1,33 +1,8 @@
----
-name: api-security-best-practices
-description: "Secure REST/GraphQL design — FastAPI, Gin, Fiber, Elysia. AuthN/Z, validation, rate limit, OWASP API Top 10 2023."
-source: ValarMindSkills
----
+# Design Controls
 
-# API Security Best Practices
+Proactive controls to implement when building or hardening REST/GraphQL APIs in **FastAPI**, **Gin**, **Fiber**, or **Elysia**.
 
-## When to Use
-
-Use this skill when:
-
-- Designing new API endpoints in **FastAPI**, **Gin**, **Fiber**, or **Elysia**
-- Reviewing existing APIs for security weaknesses
-- Implementing authentication (JWT, OAuth 2.1, API keys) and authorization (RBAC, ABAC)
-- Adding rate limiting, input validation, or security headers
-- Preparing for a security audit or compliance review
-- Responding to a vulnerability report or CVE affecting your stack
-
-## Security Foundations (Core Principles)
-
-These principles are language and framework agnostic:
-
-| Principle | Meaning |
-| --- | --- |
-| **Defence in Depth** | Multiple independent security layers — one failure should not compromise the system |
-| **Least Privilege** | Every component and user gets only the minimum access needed |
-| **Zero Trust** | Never assume a request is safe because it originates inside the network |
-| **Shift Left** | Embed security checks in development and CI, not only in production monitoring |
-| **Fail Secure** | On error, deny access rather than allow it |
+> Companion: `TESTING_PHASES.md` validates these controls with active probes.
 
 ## Authentication & Authorization
 
@@ -600,46 +575,3 @@ if token_count > MAX_INPUT_TOKENS:
 ### Compliance Note
 
 **EU AI Act** enforcement begins **August 2, 2026** for high-risk AI systems. APIs that make consequential decisions (credit, hiring, healthcare) must implement risk assessment, human oversight mechanisms, and audit logging.
-
-## OWASP API Security Top 10 (2023)
-
-This is the **2023 list** — the 2019 list is obsolete.
-
-| # | Vulnerability | Key Risk |
-| --- | --- | --- |
-| **API1** | Broken Object Level Authorization (BOLA) | Attacker accesses another user's resources by changing an ID |
-| **API2** | Broken Authentication | Weak tokens, missing expiry, no brute force protection |
-| **API3** | Broken Object Property Level Authorization | Over-fetching (returning private fields) or mass assignment (accepting unexpected fields) |
-| **API4** | Unrestricted Resource Consumption | No rate limiting — DoS, cost amplification, brute force |
-| **API5** | Broken Function Level Authorization (BFLA) | Regular users can call admin functions |
-| **API6** | Unrestricted Access to Sensitive Business Flows | Automated abuse of checkout, account creation, voting |
-| **API7** | Server-Side Request Forgery (SSRF) | *New in 2023* — server makes requests to attacker-controlled URLs |
-| **API8** | Security Misconfiguration | Debug mode in prod, permissive CORS, missing headers, default creds |
-| **API9** | Improper Inventory Management | Shadow APIs, deprecated versions, undocumented endpoints |
-| **API10** | Unsafe Consumption of APIs | *New in 2023* — trusting third-party API responses without validation |
-
-### Changes from 2019
-
-- **Removed as separate items**: "Excessive Data Exposure" and "Mass Assignment" — merged into API3 (Broken Object Property Level Authorization)
-- **Renamed**: "Lack of Resources and Rate Limiting" → API4 "Unrestricted Resource Consumption"
-- **Added**: API7 SSRF and API10 Unsafe Consumption of APIs
-
-## Quick Audit Cheat Sheet
-
-Run these checks before deploying any API:
-
-- [ ] **Auth required**: every non-public endpoint returns `401` without a valid token
-- [ ] **Authorization checked**: resource ownership verified before returning or modifying data (BOLA)
-- [ ] **CORS explicit**: no `allow_origins=["*"]` + `allow_credentials=True` combination
-- [ ] **Input validated**: all request bodies/params validated against a schema with strict types
-- [ ] **Parameterized queries**: no string concatenation in SQL/database calls
-- [ ] **Rate limiting active**: auth endpoints ≤ 5 req/15 min; general API ≤ 100 req/min
-- [ ] **Error messages generic**: no stack traces or internal details in `4xx`/`5xx` responses
-- [ ] **Security headers present**: `HSTS`, `X-Content-Type-Options`, `X-Frame-Options`, `CSP`
-- [ ] **Dependencies audited**: `pip-audit` / `govulncheck` / `bun audit` passing in CI
-- [ ] **No debug mode in production**: FastAPI `app = FastAPI(docs_url=None)`, Gin `gin.SetMode(gin.ReleaseMode)`, Fiber `app := fiber.New()`
-
-## Related Skills
-
-- `@web-vulnerabilities` — reference for 100 web vulnerabilities including injection, XSS, and CSRF
-- `@api-security-testing` — standalone testing workflow to verify the controls defined here

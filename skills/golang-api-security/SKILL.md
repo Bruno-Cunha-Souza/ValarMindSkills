@@ -17,7 +17,7 @@ Use this skill when:
 - Applying or validating fixes for Go-specific issues (race conditions, goroutine leaks, slowloris, ServeMux conflicts)
 - Mapping a Go codebase against the **OWASP API Security Top 10 (2023)**
 
-This skill is **Go-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For language-agnostic API testing, complement with `@api-security-testing`. For multi-language design patterns, see `@api-security-best-practices`. Both are referenced explicitly in the relevant phases below.
+This skill is **Go-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For language-agnostic API security review, complement with `@code-security-review` — covers both multi-language design patterns (`references/DESIGN_CONTROLS.md`) and active testing Phases 1–7 (`references/TESTING_PHASES.md`). Referenced explicitly in the relevant phases below.
 
 Out of scope: gRPC, graphql-go, and non-Go services. The skill assumes a Gin or Fiber HTTP API; pure `net/http` projects work with most checks but framework-specific phases are best-effort.
 
@@ -329,7 +329,7 @@ The skill must report any patch that introduced new findings or test failures an
 
 ## Phase 7 — Active Testing
 
-For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, mass assignment, rate limit bypass, CORS reflection, JWT confusion), **delegate to `@api-security-testing`** Phases 1–7. Do not duplicate them here.
+For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, mass assignment, rate limit bypass, CORS reflection, JWT confusion), **delegate to `@code-security-review` (`references/TESTING_PHASES.md`)** Phases 1–7. Do not duplicate them here.
 
 Return to this phase for **Go-specific** attacks not covered by the generic skill. All payloads live in [references/TESTING_PAYLOADS.md](references/TESTING_PAYLOADS.md):
 
@@ -481,7 +481,6 @@ Run before every release:
 
 ## Related Skills
 
-- `@api-security-testing` — language-agnostic active testing workflow (Phases 1–7 of generic OWASP attacks)
-- `@api-security-best-practices` — multi-language secure design patterns (FastAPI, Gin, Fiber, Elysia)
+- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`) — covers FastAPI, Gin, Fiber, Elysia
 - `@web-vulnerabilities` — base catalog of 100+ web vulnerability classes
 - `@code-review` — security-aware code review for PRs
