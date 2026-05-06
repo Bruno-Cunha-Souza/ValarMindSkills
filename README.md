@@ -49,7 +49,7 @@ bash install.sh
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
 | `web-vulnerabilities` | Reference of 100 common web vulnerabilities |
-| `api-security-best-practices` | Secure API design for REST/GraphQL (FastAPI, Gin, Fiber, Elysia) — OWASP API Top 10 2023 |
+| `api-security-best-practices` | Secure REST/GraphQL design (FastAPI, Gin, Fiber, Elysia) — OWASP API Top 10 2023 |
 | `api-security-testing` | Security testing workflow for APIs with real tools and payloads |
 | `golang-api-security` | Complete security lifecycle for Go 1.25+ APIs (Gin/Fiber) — auto-detect, audit, patch, validate, OWASP API Top 10 2023 |
 | `nextjs-optimization-pro` | Performance optimization specialist for Next.js 16.2.x — Server Components, rendering, client/server boundaries |
