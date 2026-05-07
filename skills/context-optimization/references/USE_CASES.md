@@ -31,15 +31,14 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Canonical optimization skeleton
 
-```text
-1. Cache layer — system prompt + tool defs + schema marked cache_control: ephemeral
-   (or trust automatic prefix caching on Codex / OpenAI).
-2. Ordering layer — stable parts first; cache breakpoint; dynamic parts last (§9).
-3. Compaction policy — manual trigger at 70-80% utilization (§13 harness command).
-4. Masking policy — observations from 3+ turns ago folded to [Obs:N] references (§3).
-5. Summarization policy (optional) — for sessions > 60 turns, rolling summary updated
-   per W turns (§4). For < 60 turns, single compaction (§2) is cheaper.
-6. Citation discipline — quote-bound text uses verbatim deletion (§6), not summary.
+```toon
+skeleton_long_conv[6]{step,description,technique}:
+  1	Cache layer — system prompt + tool defs + schema marked cache_control ephemeral (or trust automatic prefix caching on Codex / OpenAI)	§1
+  2	Ordering layer — stable parts first; cache breakpoint; dynamic parts last	§9
+  3	Compaction policy — manual trigger at 70-80% utilization	§13
+  4	Masking policy — observations from 3+ turns ago folded to [Obs:N] references	§3
+  5	Summarization policy (optional) — sessions > 60 turns, rolling summary per W turns; < 60 turns single compaction is cheaper	§4
+  6	Citation discipline — quote-bound text uses verbatim deletion, not summary	§6
 ```
 
 ### Smell tests
@@ -50,14 +49,15 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Findings to look for
 
-| Smell                                               | Fix                                                                  |
-| --------------------------------------------------- | -------------------------------------------------------------------- |
-| `cache_control` absent on system prompt             | Add `cache_control: { type: "ephemeral" }` (Anthropic) — see §1     |
-| System prompt + dynamic content interleaved         | Reorder per §9; cache breakpoint between stable and dynamic         |
-| Session > 80% utilization, no compaction            | Insert harness `/compact` (or equivalent — see §13) at 70-80%       |
-| Tool outputs > 50% of context                       | Add §3 observation masking for outputs older than 3 turns            |
-| Sessions > 60 turns with single compaction cycle    | Switch to §4 rolling summarization                                   |
-| Citation-bound chunks paraphrased in compaction     | Use §6 verbatim deletion instead — preserves exact quotes            |
+```toon
+findings_long_conv[6]{smell,fix}:
+  cache_control absent on system prompt	Add cache_control { type ephemeral } (Anthropic) — see §1
+  System prompt + dynamic content interleaved	Reorder per §9; cache breakpoint between stable and dynamic
+  Session > 80% utilization, no compaction	Insert harness /compact (or equivalent — see §13) at 70-80%
+  Tool outputs > 50% of context	Add §3 observation masking for outputs older than 3 turns
+  Sessions > 60 turns with single compaction cycle	Switch to §4 rolling summarization
+  Citation-bound chunks paraphrased in compaction	Use §6 verbatim deletion instead — preserves exact quotes
+```
 
 ---
 
@@ -77,18 +77,16 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Canonical optimization skeleton
 
-```text
-1. Cache layer — system prompt (role + citation rule + injection guard) cached.
-2. Retrieval pipeline:
-   a. Vector top-K (K = 30, generous initial cast).
-   b. Dedup via §10 (drop > 85% similar chunks).
-   c. Re-rank via cross-encoder or cheap LLM-as-judge (§11 routing).
-   d. Threshold filter (score > 0.7).
-   e. Cap N (= 5-8 final chunks).
-3. Ordering layer — system prompt → schema → refusal hooks → §9 breakpoint →
-   {retrieved chunks} → {user_question}.
-4. Quote-back verification (per `prompt-engineering` §3 + §12) — every cited
-   chunk_id must produce a verbatim substring; §6 ensures source preservation.
+```toon
+skeleton_rag[8]{step,description,technique}:
+  1	Cache layer — system prompt (role + citation rule + injection guard) cached	§1
+  2a	Retrieval — vector top-K (K = 30, generous initial cast)	—
+  2b	Retrieval — dedup (drop > 85% similar chunks)	§10
+  2c	Retrieval — re-rank via cross-encoder or cheap LLM-as-judge	§8 + §11
+  2d	Retrieval — threshold filter (score > 0.7)	§8
+  2e	Retrieval — cap N (= 5-8 final chunks)	§8
+  3	Ordering — system prompt -> schema -> refusal hooks -> breakpoint -> {retrieved} -> {user_question}	§9
+  4	Quote-back verification — every cited chunk_id produces verbatim substring; source preservation	§6 + cross-link prompt-engineering §3 + §12
 ```
 
 ### Smell tests
@@ -99,14 +97,15 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Findings to look for
 
-| Smell                                               | Fix                                                                  |
-| --------------------------------------------------- | -------------------------------------------------------------------- |
-| Top-K > 10 with no re-rank                          | Add re-rank step + threshold (§8)                                    |
-| Identical / near-identical chunks observed          | Add SimHash dedup before LLM call (§10)                              |
-| No empty-retrieval refusal                          | Cross-link `@prompt-engineering` §7 refusal hooks                    |
-| Chunk text not labeled as "data, not instructions"  | Cross-link `@prompt-engineering` §13 prompt-injection guard          |
-| Top-tier model used for re-ranking                  | Route reranker to cheap model (§11)                                  |
-| Cache hit rate < 50% on stable system prompt        | Apply §1 + §9                                                        |
+```toon
+findings_rag[6]{smell,fix}:
+  Top-K > 10 with no re-rank	Add re-rank step + threshold (§8)
+  Identical / near-identical chunks observed	Add SimHash dedup before LLM call (§10)
+  No empty-retrieval refusal	Cross-link @prompt-engineering §7 refusal hooks
+  Chunk text not labeled as "data, not instructions"	Cross-link @prompt-engineering §13 prompt-injection guard
+  Top-tier model used for re-ranking	Route reranker to cheap model (§11)
+  Cache hit rate < 50% on stable system prompt	Apply §1 + §9
+```
 
 ---
 
@@ -126,21 +125,16 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Canonical optimization skeleton
 
-```text
-1. Parent coordinator:
-   - Holds task plan + N child summaries + open threads.
-   - Per Phase 5.3: parent ≤ 30k.
-   - Cache_control on parent system prompt.
-2. Each sub-agent (child):
-   - Clean window — does NOT inherit parent context.
-   - Receives task spec + minimal grounding (≤ 5k seed) + budget (≤ 30k).
-   - Cache_control on child system prompt (cached separately from parent).
-3. Aggregation pattern:
-   - Each child returns structured summary (≤ 1k tokens) + raw artifact reference.
-   - Parent merges summaries; raw artifacts addressable on demand.
-4. Routing:
-   - Triage / classification children on cheap tier (§11).
-   - Reasoning / generation children on capable tier.
+```toon
+skeleton_subagent[8]{step,description,technique}:
+  1a	Parent — holds task plan + N child summaries + open threads	§7
+  1b	Parent — Phase 5.3 budget: parent <= 30k	§7
+  1c	Parent — cache_control on system prompt	§1
+  2a	Child — clean window; does NOT inherit parent context	§7
+  2b	Child — receives task spec + minimal grounding (<= 5k seed) + budget (<= 30k)	§7
+  2c	Child — cache_control on child system prompt (cached separately from parent)	§1
+  3	Aggregation — each child returns structured summary (<= 1k tokens) + raw artifact reference	§7
+  4	Routing — triage children on cheap tier; reasoning children on capable tier	§11
 ```
 
 ### Smell tests
@@ -151,13 +145,14 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Findings to look for
 
-| Smell                                               | Fix                                                                  |
-| --------------------------------------------------- | -------------------------------------------------------------------- |
-| Sub-agent inherits parent history                   | Enforce isolation; pass only task spec + minimal grounding (§7)      |
-| Per-child budget unbounded                          | Set Phase 5.3 ceiling (≤ 30k per child)                              |
-| All children on top-tier model                      | Add §11 routing matrix                                                |
-| Parent merges raw outputs (not summaries)           | Children return structured summary + artifact reference              |
-| `Use when` rule missing per sub-agent in tool map   | Cross-link `@prompt-engineering` §11                                  |
+```toon
+findings_subagent[5]{smell,fix}:
+  Sub-agent inherits parent history	Enforce isolation; pass only task spec + minimal grounding (§7)
+  Per-child budget unbounded	Set Phase 5.3 ceiling (<= 30k per child)
+  All children on top-tier model	Add §11 routing matrix
+  Parent merges raw outputs (not summaries)	Children return structured summary + artifact reference
+  Use when rule missing per sub-agent in tool map	Cross-link @prompt-engineering §11
+```
 
 ---
 
@@ -177,20 +172,16 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Canonical optimization skeleton
 
-```text
-1. Cache the document — load once with cache_control: ephemeral, ttl: "1h"
-   if reused over hours; default 5min if reused within minutes.
-2. Map step (per chunk):
-   - Split doc into N chunks (≤ 30k each per §7).
-   - Cheap-model extract per chunk (§11).
-   - Each chunk's analysis cached separately for reuse.
-3. Reduce step:
-   - Capable-model synthesis over the map outputs.
-   - Cross-doc reasoning happens here.
-4. If N docs:
-   - Batch the map step (§12) → 50% cost reduction, 24h SLA.
-5. If doc is noisy / high-redundancy:
-   - LLMLingua pre-process (§5) before chunking.
+```toon
+skeleton_largedoc[8]{step,description,technique}:
+  1	Cache the document — load once with cache_control ephemeral; ttl 1h if reused over hours, default 5min if reused within minutes	§1
+  2a	Map — split doc into N chunks (<= 30k each)	§7
+  2b	Map — cheap-model extract per chunk	§11
+  2c	Map — each chunk analysis cached separately for reuse	§1
+  3a	Reduce — capable-model synthesis over the map outputs	§11
+  3b	Reduce — cross-doc reasoning happens here	—
+  4	Optional batching — if N docs, batch the map step for 50% cost reduction, 24h SLA	§12
+  5	Optional pruning — if doc is noisy / high-redundancy, LLMLingua pre-process before chunking	§5
 ```
 
 ### Smell tests
@@ -201,13 +192,14 @@ Each class has different failure modes and a different canonical optimization or
 
 ### Findings to look for
 
-| Smell                                               | Fix                                                                  |
-| --------------------------------------------------- | -------------------------------------------------------------------- |
-| Doc loaded as single chunk past 100k                | Apply §7 partitioning + map-reduce                                   |
-| Same doc analyzed N times no caching                | Add cache_control with appropriate TTL (§1)                          |
-| Cheap-extractable analysis run on top-tier model    | Add §11 routing for map step                                         |
-| Bulk N-doc workflow on interactive API              | Migrate to batch (§12)                                                |
-| Output-token cap clips synthesis                    | Increase max_output_tokens; or split synthesis into multiple calls   |
+```toon
+findings_largedoc[5]{smell,fix}:
+  Doc loaded as single chunk past 100k	Apply §7 partitioning + map-reduce
+  Same doc analyzed N times no caching	Add cache_control with appropriate TTL (§1)
+  Cheap-extractable analysis run on top-tier model	Add §11 routing for map step
+  Bulk N-doc workflow on interactive API	Migrate to batch (§12)
+  Output-token cap clips synthesis	Increase max_output_tokens; or split synthesis into multiple calls
+```
 
 ---
 

@@ -6,12 +6,13 @@ Per-harness primitives for compaction, caching, session inspection, and limitati
 
 ## Matrix overview
 
-| Harness | Auto-compaction | Manual compaction | Cache primitive | Session inspection | Window default |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Claude Code** | Yes — since 2025-Q4 at ~95% | `/compact` slash command | `cache_control: ephemeral` (Anthropic API native) | `~/.claude/projects/<hash>/*.jsonl` | Per model (Sonnet 4.6: 1M; Opus 4.7: 1M) |
-| **Codex CLI** | No (default) | `session.compaction` CLI | OpenAI prompt caching (automatic, no flag needed) | `~/.codex/sessions/` | Per model (GPT-5: 200k; o3: 200k) |
-| **OpenCode** | Configurable per project | `session.compact` | Provider-dependent (mirror upstream) | Project session dir | Per model |
-| **Antigravity (Gemini)** | None native | Manual UI re-prompt | Vertex AI context cache (server-managed) | (no direct CLI inspection) | Per model (Gemini 2.5 Pro: 2M) |
+```toon
+harness_overview[4]{harness,auto_compaction,manual_compaction,cache_primitive,session_inspection,window_default}:
+  Claude Code	Yes — since 2025-Q4 at ~95%	/compact slash command	cache_control ephemeral (Anthropic API native)	~/.claude/projects/<hash>/*.jsonl	Per model (Sonnet 4.6 1M; Opus 4.7 1M)
+  Codex CLI	No (default)	session.compaction CLI	OpenAI prompt caching (automatic, no flag needed)	~/.codex/sessions/	Per model (GPT-5 200k; o3 200k)
+  OpenCode	Configurable per project	session.compact	Provider-dependent (mirror upstream)	Project session dir	Per model
+  Antigravity (Gemini)	None native	Manual UI re-prompt	Vertex AI context cache (server-managed)	(no direct CLI inspection)	Per model (Gemini 2.5 Pro 2M)
+```
 
 ---
 

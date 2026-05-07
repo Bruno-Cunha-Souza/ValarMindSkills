@@ -355,13 +355,14 @@ User asked: {query}.
 
 **Pattern.** Route by task class: small/cheap model for triage and structured extraction; large/expensive model for reasoning and generation. Implement as explicit `route(task) → model_id` step before each call. Use cost-tier matrix:
 
-| Task class | Suggested model |
-| :--- | :--- |
-| Classification (closed enum) | Haiku / GPT-4o-mini |
-| Extraction (structured) | Haiku / GPT-4o-mini |
-| Reasoning (multi-step, chain-of-thought) | Sonnet / GPT-4o |
-| Code generation (production) | Opus / GPT-4 |
-| Long-form writing | Sonnet / Opus |
+```toon
+routing[5]{task_class,suggested_model}:
+  Classification (closed enum)	Haiku / GPT-4o-mini
+  Extraction (structured)	Haiku / GPT-4o-mini
+  Reasoning (multi-step, chain-of-thought)	Sonnet / GPT-4o
+  Code generation (production)	Opus / GPT-4
+  Long-form writing	Sonnet / Opus
+```
 
 **When to apply.** Production agents with measurable task taxonomy. Pipelines with clear branch points (extract → reason → generate).
 
@@ -412,12 +413,13 @@ batch_id = client.messages.batches.create(requests=[
 
 **Pattern.** Detect harness in Phase 0.1; emit harness-specific command in Block 3 plan. See [HARNESS_NOTES.md](HARNESS_NOTES.md) for the full primitive matrix.
 
-| Harness | Manual compaction | Auto-compaction | Session inspection |
-| :--- | :--- | :--- | :--- |
-| Claude Code | `/compact` | Since 2025-Q4 at ~95% | `~/.claude/projects/<hash>/*.jsonl` |
-| Codex | `session.compaction` CLI | No auto by default | `~/.codex/sessions/` |
-| OpenCode | `session.compact` | Configurable | Session dir |
-| Antigravity | (manual UI re-prompt) | None native | (no direct inspection) |
+```toon
+harness_cmds[4]{harness,manual_compaction,auto_compaction,session_inspection}:
+  Claude Code	/compact	Since 2025-Q4 at ~95%	~/.claude/projects/<hash>/*.jsonl
+  Codex	session.compaction CLI	No auto by default	~/.codex/sessions/
+  OpenCode	session.compact	Configurable	Session dir
+  Antigravity	(manual UI re-prompt)	None native	(no direct inspection)
+```
 
 **When to apply.** Mandatory in Block 3 when harness ≠ `agnostic` and use case = `long-conv-agent` or `sub-agent-orchestrator`. The user needs the **command**, not just the **concept**.
 
@@ -431,16 +433,17 @@ batch_id = client.messages.batches.create(requests=[
 
 Quick-detection table for Phase 2 audits — each row is a heuristic smell + fix. Each smell is a finding with quote/category-cite + fix + risk tag.
 
-| Smell | Detection | Fix |
-| --- | --- | --- |
-| Tool outputs > 50% of context | Inventory by category | Apply §3 observation masking |
-| Identical chunks retrieved 2× | Hash compare in retrieval log | Apply §10 dedup before LLM call |
-| System prompt re-sent each turn | Trace shows full prefix every call | Apply §1 prompt caching + §9 ordering |
-| Conversation > 50 turns no compaction | Session length + lack of summary | Apply §2 compaction or §4 summarization |
-| Single agent handling 4+ subtasks | Task plan shows distinct phases | Apply §7 partitioning |
-| All calls use top-tier model | Cost report by model | Apply §11 routing |
-| Bulk eval running interactive API | Job pattern + latency tolerance | Apply §12 batch mode |
-| Skill says "use compaction" without command | Block 3 missing harness primitive | Apply §13 (cite `/compact` etc.) |
+```toon
+smells[8]{smell,detection,fix}:
+  Tool outputs > 50% of context	Inventory by category	Apply §3 observation masking
+  Identical chunks retrieved 2x	Hash compare in retrieval log	Apply §10 dedup before LLM call
+  System prompt re-sent each turn	Trace shows full prefix every call	Apply §1 prompt caching + §9 ordering
+  Conversation > 50 turns no compaction	Session length + lack of summary	Apply §2 compaction or §4 summarization
+  Single agent handling 4+ subtasks	Task plan shows distinct phases	Apply §7 partitioning
+  All calls use top-tier model	Cost report by model	Apply §11 routing
+  Bulk eval running interactive API	Job pattern + latency tolerance	Apply §12 batch mode
+  Skill says use compaction without command	Block 3 missing harness primitive	Apply §13 (cite /compact etc.)
+```
 
 ---
 
@@ -450,12 +453,13 @@ Phase 3 walks the prompt-or-context against §1–§13 in order. Each technique 
 
 A single context rarely needs all 13 techniques. The audit picks the **subset required by the use case** declared in Phase 0.2:
 
-| Use case               | Techniques usually required                                      |
-| :--------------------- | :--------------------------------------------------------------- |
-| `long-conv-agent`      | §1, §2, §3, §4, §6, §9, §13                                       |
-| `rag-pipeline`         | §1, §3, §6, §8, §9, §10, §11                                      |
-| `sub-agent-orchestrator` | §1, §7, §9, §11                                                 |
-| `large-doc`            | §1, §5, §7, §9, §11, §12                                          |
-| `skill-prompt`         | (cross-link to `@prompt-engineering` — context-optimization handles whole-context, not single-prompt audit) |
+```toon
+mapping[5]{use_case,required_techniques}:
+  long-conv-agent	§1, §2, §3, §4, §6, §9, §13
+  rag-pipeline	§1, §3, §6, §8, §9, §10, §11
+  sub-agent-orchestrator	§1, §7, §9, §11
+  large-doc	§1, §5, §7, §9, §11, §12
+  skill-prompt	cross-link @prompt-engineering — context-optimization handles whole-context, not single-prompt audit
+```
 
 For prompts that **mix use cases** (e.g., a long-conv agent embedding a RAG sub-pipeline), audit each subset separately and combine the techniques in the plan.

@@ -15,6 +15,9 @@ HOOKS_TARGET="$CODEX_HOME/hooks"
 CONFIG_TOML="$CODEX_HOME/config.toml"
 AGENTS_MD="$CODEX_HOME/AGENTS.md"
 
+# shellcheck source=_lib/ensure-rust.sh
+source "$SCRIPT_DIR/_lib/ensure-rust.sh"
+
 echo "Installing ValarMindSkills plugin in Codex CLI..."
 echo "CODEX_HOME: $CODEX_HOME"
 echo ""
@@ -23,6 +26,11 @@ echo ""
 # Step 1/3 — Skills
 # ──────────────────────────────────────────────────────────────
 echo "=== Step 1/3: Skills ==="
+
+# Build any Rust crates inside skills/ before copying — the destination receives
+# a freshly-compiled binary alongside the source files.
+build_all_skill_binaries "$SOURCE_SKILLS"
+
 mkdir -p "$SKILLS_TARGET"
 
 installed_skills=()

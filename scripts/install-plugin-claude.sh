@@ -15,6 +15,9 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 MARKETPLACE_NAME="valarmindskills"
 PLUGIN_REF="valarmindskills@valarmindskills"
 
+# shellcheck source=_lib/ensure-rust.sh
+source "$SCRIPT_DIR/_lib/ensure-rust.sh"
+
 echo "========================================"
 echo " ValarMindSkills — Plugin Install"
 echo "========================================"
@@ -33,6 +36,10 @@ for f in ".claude-plugin/plugin.json" ".claude-plugin/marketplace.json"; do
     exit 1
   fi
 done
+
+# Build any Rust crates inside skills/ — Claude Code plugin reads from $REPO_DIR/skills/
+# directly, so the freshly-compiled binaries land in scripts/bin/ ready to invoke.
+build_all_skill_binaries "$REPO_DIR/skills"
 
 echo "Step 1/4 — validating manifests"
 claude plugins validate "$REPO_DIR" || {

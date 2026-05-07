@@ -8,9 +8,10 @@ User reports their Claude Code session has degraded after 80 turns of work on a 
 
 ```bash
 bash scripts/run-all.sh ~/.claude/projects/abc123/
+# under the hood: scripts/bin/ctxopt run-all <path> --format toon
 ```
 
-The orchestrator emits findings JSON-Lines and a Markdown report. User pastes the inventory + first findings to the skill:
+The Rust binary `ctxopt` emits `out/findings.toon` (TOON format — 30-60% fewer tokens than JSONL when read by an LLM), `out/summary.{toon,json}`, and `out/report.md`. User pastes the inventory + first findings to the skill:
 
 ```text
 session: dev-api-refactor

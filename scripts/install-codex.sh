@@ -8,7 +8,14 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SOURCE_DIR="$SCRIPT_DIR/../skills"
 TARGET_DIR="$HOME/.codex/skills"
 
+# shellcheck source=_lib/ensure-rust.sh
+source "$SCRIPT_DIR/_lib/ensure-rust.sh"
+
 echo "Installing ValarMindSkills in Codex CLI..."
+
+# Build any Rust crates inside skills/ before copying — the destination receives
+# a freshly-compiled binary alongside the source files.
+build_all_skill_binaries "$SOURCE_DIR"
 
 mkdir -p "$TARGET_DIR"
 

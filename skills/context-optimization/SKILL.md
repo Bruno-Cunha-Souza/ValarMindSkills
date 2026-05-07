@@ -30,10 +30,10 @@ Trigger: user pastes session/RAG template, statusline shows ≥ 80% utilization,
 
 | Input | Required | How to obtain |
 | --- | --- | --- |
-| Context inventory (categories + sizes) | Yes | User pastes, or `bash scripts/run-all.sh <project>` |
+| Context inventory (categories + sizes) | Yes | User pastes, or `bash scripts/run-all.sh <project>` (invokes `ctxopt` Rust binary) |
 | Use case | Yes | long-conv-agent / rag-pipeline / sub-agent-orchestrator / large-doc / skill-prompt |
 | Target harness | No | claude-code / codex / opencode / antigravity / agnostic — drives §13 plan output |
-| Current utilization (%) | No | Estimate via `01-token-count.py` or harness statusline |
+| Current utilization (%) | No | Estimate via `ctxopt count <project>` or harness statusline |
 | Known degradation signal | No | Quality drop, cost spike, latency — focuses the audit |
 
 Skill never sends context to another model. Findings derived from inventory against [TECHNIQUES.md](references/TECHNIQUES.md) catalog.
@@ -56,7 +56,15 @@ Otherwise, proceed to Phase 1.
 
 ## Phase 1 — Inventory
 
-Break inventory into five categories (system prompt · tool defs · message history · retrieved chunks · tool outputs) with token estimate per category. Top category > 50% = top-of-mind finding. Detailed checklist: [CHECKLIST Phase 1](references/CHECKLIST.md).
+Break inventory into five categories (system prompt · tool defs · message history · retrieved chunks · tool outputs) with token estimate per category. Top category > 50% = top-of-mind finding. Evidence-based audit invokes the `ctxopt` Rust binary (built at install time):
+
+```bash
+bash scripts/run-all.sh <project_root>
+# or directly:
+scripts/bin/ctxopt run-all <project_root> --format toon
+```
+
+Outputs `out/findings.toon`, `out/summary.{toon,json}`, `out/report.md`. Detailed checklist: [CHECKLIST Phase 1](references/CHECKLIST.md).
 
 ## Phase 2 — Cost & Quality Audit
 

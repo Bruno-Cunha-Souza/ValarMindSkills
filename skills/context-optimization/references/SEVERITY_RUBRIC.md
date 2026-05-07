@@ -8,13 +8,34 @@ Severity calibrates how blocking a finding is. Risk tag calibrates how invasive 
 
 Each row is a category (Cost waste, Cache miss, Quality degradation, Token bloat, Architecture risk). Each column is a severity. A finding lands at the cell where its symptom matches.
 
-| Severity     | Cost waste                                              | Cache miss                                                          | Quality degradation                                                       | Token bloat                                  | Architecture risk                                          |
-| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
-| **Critical** | Production agent calling top-tier model on triage tasks ($/M scaling 10×+) | Cache breakpoint after dynamic content → 0% cache hit on multi-turn | Compaction summarizing safety rules / refusal hooks; semantic loss on commitments | Context > 95% capacity with no compaction triggered | Sub-agent partition missing on 4+ subtask workflow producing rate-limit failures |
-| **High**     | Bulk eval running interactive API ignoring batch mode   | Stable content interleaved with dynamic; partial cache hit only       | Verbatim deletion (§6) replaced with paraphrase summarization on citation-bound RAG | Tool outputs > 70% of context, no masking    | Single-context monolith on workflow that should partition  |
-| **Medium**   | Top-tier model used for structured extraction with no routing | System prompt not marked for caching at all                       | Re-rank threshold too aggressive → relevant chunks dropped                 | > 40% redundant chunks (no §10 dedup)        | Coordinator → sub-agent budget unbounded (no Phase 5.3 cap) |
-| **Low**      | Cache TTL `1h` chosen for prompts re-used every 5 minutes (write-cost premium with no payback) | Suboptimal ordering of stable parts (e.g., schema after refusal hook) | Summary loses non-load-bearing back-and-forth without flag                 | > 15% redundancy in retrieved chunks         | Sub-agent boundaries not documented in plan                |
-| **Info**     | "Routing matrix could be tighter"                       | "Could add second cache breakpoint for tool defs"                   | "Could log compaction events for observability"                            | "Filler phrases in system prompt"            | "Consider parallelism on independent sub-agents"           |
+```toon
+severity_matrix[25]{severity,category,description}:
+  critical	cost	Production agent calling top-tier model on triage tasks ($/M scaling 10x+)
+  critical	cache	Cache breakpoint after dynamic content -> 0% cache hit on multi-turn
+  critical	quality	Compaction summarizing safety rules / refusal hooks; semantic loss on commitments
+  critical	bloat	Context > 95% capacity with no compaction triggered
+  critical	architecture	Sub-agent partition missing on 4+ subtask workflow producing rate-limit failures
+  high	cost	Bulk eval running interactive API ignoring batch mode
+  high	cache	Stable content interleaved with dynamic; partial cache hit only
+  high	quality	Verbatim deletion (§6) replaced with paraphrase summarization on citation-bound RAG
+  high	bloat	Tool outputs > 70% of context, no masking
+  high	architecture	Single-context monolith on workflow that should partition
+  medium	cost	Top-tier model used for structured extraction with no routing
+  medium	cache	System prompt not marked for caching at all
+  medium	quality	Re-rank threshold too aggressive -> relevant chunks dropped
+  medium	bloat	> 40% redundant chunks (no §10 dedup)
+  medium	architecture	Coordinator -> sub-agent budget unbounded (no Phase 5.3 cap)
+  low	cost	Cache TTL 1h chosen for prompts re-used every 5 minutes (write-cost premium with no payback)
+  low	cache	Suboptimal ordering of stable parts (e.g. schema after refusal hook)
+  low	quality	Summary loses non-load-bearing back-and-forth without flag
+  low	bloat	> 15% redundancy in retrieved chunks
+  low	architecture	Sub-agent boundaries not documented in plan
+  info	cost	Routing matrix could be tighter
+  info	cache	Could add second cache breakpoint for tool defs
+  info	quality	Could log compaction events for observability
+  info	bloat	Filler phrases in system prompt
+  info	architecture	Consider parallelism on independent sub-agents
+```
 
 A single context can have findings across multiple categories. Aggregate **at the highest single-finding severity**, not by counting.
 
@@ -22,24 +43,32 @@ A single context can have findings across multiple categories. Aggregate **at th
 
 When use case = `long-conv-agent`, the dominant failure modes are compaction timing and cache misses. When use case = `rag-pipeline`, dedup + chunk-pruning + injection-guard dominate. Apply this table only for the noted use cases; for others, read the matrix above.
 
-| Pattern                                                          | Severity   | Use case        | Reasoning                                                                       |
-| ---------------------------------------------------------------- | ---------- | --------------- | ------------------------------------------------------------------------------- |
-| No compaction trigger documented above 80% capacity              | Critical   | long-conv-agent | Quality cliff at ~95%; auto-compaction is implementation-dependent              |
-| `cache_control` absent on system prompt                          | High       | long-conv-agent | 90% of cache savings forgone on every turn                                      |
-| Re-rank step missing on RAG with > 10 chunks                     | High       | rag-pipeline    | Quality drops past 8 chunks without re-rank; cost grows linearly                |
-| Dedup absent on RAG with overlapping sources                     | Medium     | rag-pipeline    | 15-40% wasted tokens                                                            |
-| Sub-agent budget per Phase 5.3 unbounded                         | High       | sub-agent-orchestrator | Single child can blow window; aggregation produces oversized parent context  |
-| Large doc loaded as single chunk with no map-reduce              | High       | large-doc       | Quality degrades past ~100k; partition / map-reduce mandatory                   |
+```toon
+use_case_severity[6]{pattern,severity,use_case,reasoning}:
+  No compaction trigger documented above 80% capacity	critical	long-conv-agent	Quality cliff at ~95%; auto-compaction is implementation-dependent
+  cache_control absent on system prompt	high	long-conv-agent	90% of cache savings forgone on every turn
+  Re-rank step missing on RAG with > 10 chunks	high	rag-pipeline	Quality drops past 8 chunks without re-rank; cost grows linearly
+  Dedup absent on RAG with overlapping sources	medium	rag-pipeline	15-40% wasted tokens
+  Sub-agent budget per Phase 5.3 unbounded	high	sub-agent-orchestrator	Single child can blow window; aggregation produces oversized parent context
+  Large doc loaded as single chunk with no map-reduce	high	large-doc	Quality degrades past ~100k; partition / map-reduce mandatory
+```
 
 ## Calibration aids — Impact × Likelihood
 
 For findings whose category placement is borderline, score **impact** (what happens if the bloat / miss / drift continues) against **likelihood** (how often this gap will trigger in the context's actual use case):
 
-| Impact / Likelihood | **Low (rare)** | **Medium (frequent)** | **High (every run)** |
-| ------------------- | -------------- | --------------------- | -------------------- |
-| **Low** (cosmetic, ≤ 5% cost / quality drift) | Low | Low                  | Medium               |
-| **Medium** (10-30% cost spike or measurable quality drop) | Low | Medium      | High                 |
-| **High** (window overflow, tool fail, escalating cost) | Medium | High       | Critical             |
+```toon
+impact_likelihood[9]{impact,likelihood,severity}:
+  low	low	low
+  low	medium	low
+  low	high	medium
+  medium	low	low
+  medium	medium	medium
+  medium	high	high
+  high	low	medium
+  high	medium	high
+  high	high	critical
+```
 
 A cache miss that triggers on every run with high impact (production multi-turn agent at scale, no §1 caching) is **Critical**. A token-economy gap with low impact and rare trigger is **Low**.
 
@@ -47,25 +76,27 @@ A cache miss that triggers on every run with high impact (production multi-turn 
 
 Tag every fix so the user knows how invasive adoption is.
 
-| Tag        | Meaning                                                                                                                                       | Example                                                                                                       |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `SAFE`     | The fix is a reword, reordering, or pure addition that does not change observed behavior; the same inputs still produce the same outputs more cheaply / cached. | Add `cache_control: ephemeral`; reorder stable-then-dynamic per §9; deduplicate overlapping retrieval chunks per §10. |
-| `REVIEW`   | The fix changes which inputs survive: compaction summarizes earlier turns, masking elides observations, re-rank drops chunks. Some inputs are handled differently. | Apply §2 compaction at 70% threshold; apply §3 masking after 3 turns; apply §8 re-rank dropping low-score chunks. |
-| `BREAKING` | The fix restructures the architecture: partitioning across N sub-agents, switching to batch mode, changing output schema for a routed model. | Switch from monolith to §7 sub-agent partitioning; route triage steps to a smaller model (§11) with different tool format; move bulk path to §12 batch API. |
+```toon
+risk_tags[3]{tag,meaning,example}:
+  SAFE	Reword, reordering, or pure addition that does not change observed behavior; same inputs still produce same outputs more cheaply / cached	Add cache_control ephemeral; reorder stable-then-dynamic per §9; deduplicate overlapping retrieval chunks per §10
+  REVIEW	Changes which inputs survive: compaction summarizes earlier turns, masking elides observations, re-rank drops chunks; some inputs handled differently	Apply §2 compaction at 70% threshold; apply §3 masking after 3 turns; apply §8 re-rank dropping low-score chunks
+  BREAKING	Restructures the architecture: partitioning across N sub-agents, switching to batch mode, changing output schema for routed model	Switch from monolith to §7 sub-agent partitioning; route triage steps to smaller model (§11) with different tool format; move bulk path to §12 batch API
+```
 
 A plan usually contains multiple findings of mixed risk. Report the **overall risk tag** as the worst (most invasive) tag among adopted findings.
 
 ## Confidence — by evidence
 
-| Confidence | When                                                                                                                                                                                | Action                                                                          |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **High**   | The gap is mechanical (the technique from [TECHNIQUES.md](TECHNIQUES.md) is provably absent — script-detected via `00-context-scan.sh` / `01-token-count.py` / `02-dedup-detect.sh`), the use case demands it, and the fix is well-known. | Adopt without further review.                                                   |
-| **Medium** | The technique is partially present (e.g., §1 caching enabled but ordering per §9 is wrong), or the use case is ambiguous and the gap may be intentional.                            | Adopt after a one-line confirmation from the user about intent.                 |
-| **Low**    | The auditor would benefit from a second opinion. The harness is unclear, the workload is undocumented, or the technique is on the borderline.                                         | Escalate. If `Severity ≥ High` and `Confidence = Low`, mark `needs human review`. |
+```toon
+confidence[3]{level,when,action}:
+  high	Gap is mechanical (technique from TECHNIQUES.md provably absent — script-detected via ctxopt scan/count/dedup); use case demands it; fix is well-known	Adopt without further review
+  medium	Technique partially present (e.g. §1 caching enabled but ordering per §9 wrong) or use case ambiguous and gap may be intentional	Adopt after one-line confirmation from user about intent
+  low	Auditor would benefit from second opinion; harness unclear, workload undocumented, or technique on borderline	Escalate. If Severity >= High and Confidence = Low, mark needs human review
+```
 
 ## Calibration: heuristic findings start at Medium
 
-Findings derived from absence-detection heuristics (`grep` for `cache_control`, file-size scan, token-count threshold) begin at **Medium** unless the auditor can manually argue for promotion. Promotion to High or Critical requires:
+Findings derived from absence-detection heuristics (`ctxopt scan`, `ctxopt count`, `ctxopt dedup`) begin at **Medium** unless the auditor can manually argue for promotion. Promotion to High or Critical requires:
 
 1. The technique is mandatory for the declared use case (per the [TECHNIQUES.md mapping](TECHNIQUES.md#how-the-skill-uses-this-catalog)).
 2. The reviewer has read the surrounding context and confirmed the gap is not satisfied by an equivalent construct (e.g., custom compaction loop instead of `/compact`).
