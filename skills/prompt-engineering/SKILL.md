@@ -1,6 +1,6 @@
 ---
 name: prompt-engineering
-description: "Lifecycle LLM prompt audit/harden/rewrite. Targets SKILL.md, RAG, agent tool descriptions, system prompts. Phases: capture → translate → clarity → anti-hallucination → structure → token economy. Emits findings (SAFE/REVIEW/BREAKING) + rewritten prompt + token delta — LGTM if sound. Read-only — never auto-applies. Triggers: 'audit prompt', 'auditar prompt', 'engenharia de prompt', '/prompt-engineering'."
+description: "Lifecycle LLM prompt audit/harden/rewrite. Targets SKILL.md, RAG, tool descriptions, system prompts. Emits findings (SAFE/REVIEW/BREAKING) + rewrite + token delta. Read-only — LGTM if sound. Triggers: 'audit prompt', 'auditar prompt', 'engenharia de prompt', '/prompt-engineering'."
 source: ValarMindSkills
 ---
 
