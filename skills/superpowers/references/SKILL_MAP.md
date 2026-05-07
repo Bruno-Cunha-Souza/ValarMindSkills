@@ -15,13 +15,13 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
 | 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review`, `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
 | 5. TDD + debugging | `@code-debugger` (when red/error) | `@code-security-review` (API under test) |
-| 6. Request review | `@code-review` *or* `@github-pr-review` | `@caveman-review` (terse preference); `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review` (security-sensitive diff) |
-| 7. Finish branch | `@github-commit` *or* `@caveman-commit` | `@github-release-note` (tag/release in scope) |
+| 6. Request review | `@code-review` *or* `@github-pr-review` | `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review` (security-sensitive diff) |
+| 7. Finish branch | `@github-commit` | `@github-release-note` (tag/release in scope) |
 
 Notes:
 
-- `@code-review` = full-detail; `@github-pr-review` = PR-shaped; `@caveman-review` = terse one-line findings. Pick by user preference and artifact (local diff vs GitHub PR).
-- `@github-commit` = full conventional commit; `@caveman-commit` = terse subject. Same preference rule.
+- `@code-review` = full-detail (lifecycle); `@github-pr-review` = PR-shaped. Pick by artifact (local diff vs GitHub PR). Caveman posture (`/caveman lite|full|ultra`) compresses prose around either skill.
+- `@github-commit` = conventional commit from staged diff.
 - Stage 2 has no skill — the harness's `EnterWorktree` capability covers it.
 
 ## 2. Context Triggers
@@ -82,8 +82,8 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 
 ### Voice preference
 
-- `IF` user activated caveman (`/valarmindskills:caveman *`) AND a review/commit step is reached
-  → prefer `@caveman-review` / `@caveman-commit` over their full-detail siblings
+- `IF` user activated caveman (`/valarmindskills:caveman *`)
+  → caveman posture compresses the prose surrounding `@github-commit` / `@github-pr-review` output; the skills themselves keep their format (Conventional Commits, severity-ranked findings)
 
 ## 3. Priority resolution
 
@@ -91,7 +91,7 @@ When multiple skills apply, resolve in this order:
 
 1. **Safety / security never yields.** `@*-security-*` and destructive-action confirmations always run before anything else. Process-skills never override security-skills for "speed".
 2. **Process > implementation.** `@code-debugger`, `@skill-creator`, and review skills come before commit skills. The wrong implementation done quickly is debt.
-3. **Explicit user preference wins.** If the user said "be terse" or activated caveman, use `@caveman-*` variants. If the user said "no plan", honor it (user-instruction tier of the hierarchy).
+3. **Explicit user preference wins.** If the user said "be terse" or activated caveman, the prose around skill output compresses; the skills' artifact format stays. If the user said "no plan", honor it (user-instruction tier of the hierarchy).
 4. **Domain skills coexist with process skills.** Stage 4 can run `@clean-code` + `@nextjs-optimization-pro` + `@nextjs-security-pro` together — they cover different concerns and do not compete.
 
 ## 4. Maintenance

@@ -1,6 +1,6 @@
 ---
 name: github-pr-review
-description: "Structured GitHub PR review — correctness, security, performance, maintainability. Severity-ranked findings + verdict (Approve/Request Changes/Comment). Terse: @caveman-review. Non-PR: @code-review. Triggers: 'review PR', 'revisar PR', 'analisar pull request', '/github-pr-review'."
+description: "Structured GitHub PR review — correctness, security, performance, maintainability. Severity-ranked findings + verdict (Approve/Request Changes/Comment). Non-PR: @code-review. Triggers: 'review PR', 'revisar PR', 'analisar pull request', '/github-pr-review'."
 source: ValarMindSkills
 ---
 
@@ -10,7 +10,7 @@ source: ValarMindSkills
 
 ## Goal
 
-Perform a structured, full-detail code review of a GitHub Pull Request — correctness, security, performance, maintainability. Present findings ranked by severity, each tied to a verbatim diff citation, plus a final verdict (Approve / Request Changes / Comment).
+Structured code review of a GitHub Pull Request — correctness, security, performance, maintainability. Findings ranked by severity, each tied to a verbatim diff citation, plus a verdict (Approve / Request Changes / Comment).
 
 ## When to Use
 
@@ -20,7 +20,6 @@ Perform a structured, full-detail code review of a GitHub Pull Request — corre
 
 ## Do not use when
 
-- The user wants a one-line-per-finding terse review → use `@caveman-review`.
 - The user asks about code-review methodology, not a specific GitHub PR → use `@code-review`.
 - The user wants to author a commit or PR description, not review one → use `@github-commit` or `@github-release-note`.
 - The PR contains no code diff (docs only, lockfile bumps, config-only) and the user wants security/perf analysis — refuse with `out of scope: no code diff to analyze` and hand off.
@@ -29,7 +28,7 @@ Perform a structured, full-detail code review of a GitHub Pull Request — corre
 
 | Input | Required | How to obtain |
 | :--- | :--- | :--- |
-| PR identifier | Yes | Number, URL, or branch name — ask the user if missing |
+| PR identifier | Yes | Number, URL, or branch name; ask if missing |
 | Repository | Yes | Infer from current directory; ask if ambiguous |
 | Review depth | No | `quick` (high-level) or `deep` (line-by-line) — default: `deep` |
 
@@ -43,7 +42,7 @@ gh pr view <number> --json title,body,author,baseRefName,headRefName,files,addit
 
 Record: title, author, base/head branch, files changed, lines added/removed, commits, state (open/closed/merged), draft flag.
 
-If `state != "OPEN"` or `isDraft == true`, warn the user and ask whether to continue. Do not refuse outright — historical reviews are valid use cases.
+If `state != "OPEN"` or `isDraft == true`, warn the user and ask whether to continue. Do not refuse — historical reviews are valid use cases.
 
 ### Step 2 — Get the full diff
 
@@ -61,7 +60,7 @@ If the PR has more than 1000 changed lines, inform the user and ask whether to (
 
 ### Step 4 — Analyze the changes
 
-Analyze the diff across four dimensions. Only review code that was changed in the PR — not surrounding unchanged code.
+Analyze the diff across four dimensions. Only review changed code — not surrounding unchanged code.
 
 #### Logic & Correctness
 - Business requirements met?
@@ -105,16 +104,16 @@ Each finding must include `Severity`, `Confidence`, and a verbatim citation:
 | Confidence | Meaning |
 | :--- | :--- |
 | **High**   | Mechanical evidence in the diff; reasoning is deterministic |
-| **Medium** | Pattern matches but intent could plausibly justify it — flag for author |
+| **Medium** | Pattern matches but intent may justify it — flag for author |
 | **Low**    | A second opinion would change the verdict — escalate or downgrade |
 
 **Citation requirement.** Cite `path:line` AND quote the exact code (3–8 lines from the diff). A finding without both is rejected. Never paraphrase the code; never invent paths, line numbers, or function names.
 
 ### Step 6 — Write the executive summary
 
-2–4 sentences containing:
+2–4 sentences with:
 - What the PR does (paraphrased from the diff, not the description).
-- Overall quality assessment.
+- Quality assessment.
 - Key concerns, if any.
 - Verdict: **Approve**, **Request Changes**, or **Comment**.
 
@@ -159,8 +158,8 @@ If any check fails, repair before returning.
 
 ## Constraints
 
-- Only review code that was changed in the PR — do not review surrounding unchanged code.
-- Do not assume context not visible in the diff; read referenced files via `Read` if needed to understand the change, but do not flag them.
+- Only review changed code — do not review surrounding unchanged code.
+- Do not assume context not visible in the diff; read referenced files via `Read` to understand the change, but do not flag them.
 - Be constructive — propose a fix alongside every finding.
 - Prioritize by severity; do not bury Critical issues under Nitpicks.
 - Cite `path:line` AND a verbatim 3–8 line code quote per finding. Never invent paths, line numbers, function names, CVE IDs, or RFC numbers.
@@ -188,7 +187,6 @@ Structured review following the template in [`EXAMPLE.md`](./EXAMPLE.md):
 
 ## Related Skills
 
-- `@caveman-review` — terse, one-line-per-finding PR review. Use when the user wants compressed output (`'review caveman'`, `'revisar PR caveman'`).
 - `@code-review` — lifecycle code-review skill (multi-language Go/Rust/TS). Use when the user wants methodology-driven review not tied to a GitHub PR (audit, pre-merge gate, refactor review).
 - `@code-debugger` — when a finding here uncovers a runtime bug that needs root-cause analysis.
 - `@github-commit` — when the review concludes `Approve` and the user wants to author the merge commit.

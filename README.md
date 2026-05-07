@@ -40,8 +40,6 @@ bash install.sh
 | Skill | Description |
 | --- | --- |
 | `caveman` | Terse response mode — drops articles, filler, hedging. Intensity levels: lite / full / ultra |
-| `caveman-commit` | Ultra-compressed Conventional Commit. Subject ≤ 50 chars; body only when the *why* is non-obvious |
-| `caveman-review` | One-line PR review comments in the shape `path:line — problem. fix.`, grouped by severity |
 | `ci-cd-generator` | GitHub Actions CI/CD generator for Go/Rust/TS — auto-detects language, encodes coverage/race/leak gates, wires SAST/SCA/secret/container/SBOM scans by security level |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
@@ -68,7 +66,7 @@ bash install.sh
 
 ### Plugin install (manual, from source)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 24 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 20 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git

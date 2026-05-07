@@ -1,9 +1,9 @@
 # Pull Request Review Examples
 
-This file ships two canonical templates:
+Two canonical templates:
 
 1. **Request Changes** — a worked review with findings across four severities.
-2. **Approve / LGTM** — the zero-findings template the skill must use when Step 8 verification yields no Critical / Major / Minor findings.
+2. **Approve / LGTM** — zero-findings template used when Step 8 verification yields no Critical / Major / Minor findings.
 
 ---
 
@@ -19,7 +19,7 @@ This file ships two canonical templates:
 
 ### Executive Summary
 
-This PR implements rate limiting on public API endpoints using a token bucket-based middleware with Redis storage. The overall approach is solid and well-structured, but there is a critical issue in the fallback configuration when Redis is unavailable — the middleware silently disables rate limiting, leaving the API unprotected. There are also recommended improvements for header handling and test coverage.
+This PR implements rate limiting on public API endpoints via token-bucket middleware with Redis storage. The approach is solid, but a critical issue in the Redis-down fallback silently disables rate limiting, leaving the API unprotected. Recommended improvements for header handling and test coverage.
 
 > **Verdict:** Request Changes
 
@@ -204,5 +204,5 @@ _None — see verification log below._
 ## Notes for the model
 
 - Pick **Template 1** when at least one Critical / Major / Minor finding survives Step 8 verification.
-- Pick **Template 2** when zero Critical / Major / Minor findings survive — Nitpick-only output also goes here, listed under a `Nitpick` subsection above the `Summary by Severity` table; the verdict remains `Approve · LGTM` if the user explicitly opted to surface Nitpicks.
+- Pick **Template 2** when zero Critical / Major / Minor findings survive — Nitpick-only output also goes here, listed under a `Nitpick` subsection above the `Summary by Severity` table; the verdict remains `Approve · LGTM` if the user opted to surface Nitpicks.
 - Never mix templates. Never invent findings to avoid using Template 2.

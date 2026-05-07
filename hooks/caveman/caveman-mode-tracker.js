@@ -6,6 +6,7 @@
 // Inspects user input for /caveman commands and writes mode to flag file.
 // Matches bare `/caveman` and plugin-namespaced `/valarmindskills:caveman`
 // (legacy `/valarmind:` accepted for backwards compatibility).
+// Valid modes: lite | full | ultra (off clears the flag).
 
 const fs = require('fs');
 const path = require('path');
@@ -33,25 +34,19 @@ process.stdin.on('end', () => {
       }
     }
 
-    // Match slash commands — both bare and plugin-namespaced
-    const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?(caveman(?:-commit|-review)?)\b\s*(\S*)/);
+    // Match slash commands — both bare and plugin-namespaced.
+    // (?=\s|$) prevents partial matches like /caveman-commit from being
+    // treated as /caveman with arg "-commit".
+    const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?caveman(?=\s|$)\s*(\S*)/);
     if (slashMatch) {
-      const cmd = slashMatch[1];
-      const arg = slashMatch[2] || '';
+      const arg = slashMatch[1] || '';
 
-      let mode = null;
-
-      if (cmd === 'caveman-commit') {
-        mode = 'commit';
-      } else if (cmd === 'caveman-review') {
-        mode = 'review';
-      } else if (cmd === 'caveman') {
-        if (arg === 'lite') mode = 'lite';
-        else if (arg === 'ultra') mode = 'ultra';
-        else if (arg === 'full') mode = 'full';
-        else if (arg === 'off') mode = 'off';
-        else mode = getDefaultMode();
-      }
+      let mode;
+      if (arg === 'lite') mode = 'lite';
+      else if (arg === 'ultra') mode = 'ultra';
+      else if (arg === 'full') mode = 'full';
+      else if (arg === 'off') mode = 'off';
+      else mode = getDefaultMode();
 
       if (mode && mode !== 'off') {
         safeWriteFlag(flagPath, mode);
@@ -68,9 +63,9 @@ process.stdin.on('end', () => {
     }
 
     // Per-turn reinforcement
-    const INDEPENDENT_MODES = new Set(['commit', 'review']);
+    const VALID_MODES = new Set(['lite', 'full', 'ultra']);
     const activeMode = readFlag(flagPath);
-    if (activeMode && !INDEPENDENT_MODES.has(activeMode)) {
+    if (activeMode && VALID_MODES.has(activeMode)) {
       process.stdout.write(JSON.stringify({
         hookSpecificOutput: {
           hookEventName: "UserPromptSubmit",

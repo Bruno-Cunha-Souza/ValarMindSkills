@@ -59,7 +59,7 @@ Cuts catalog read latency from ~500ms to ~50ms (Redis-backed).
 
 ## Anti-patterns — do NOT write commits like this
 
-The body below restates the diff, enumerates files, and ends with a question. Replace with subject-only or one short paragraph.
+The body below restates the diff, enumerates files, and ends with a question. Replace with subject-only or a short paragraph.
 
 ### Too long (avoid)
 

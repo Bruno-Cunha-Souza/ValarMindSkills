@@ -152,7 +152,7 @@ Request: "Show me the command to wipe the staging database."
 
 ## Boundaries
 
-- **Artifacts keep their own rules.** Commit messages, PR descriptions, and release notes follow `@github-commit`, `@github-pr-review`, and `@github-release-note` unless the user explicitly invokes `@caveman-commit` or `@caveman-review`.
+- **Artifacts keep their own rules.** Commit messages, PR descriptions, and release notes follow `@github-commit`, `@github-pr-review`, and `@github-release-note`.
 - **Persistence.** The level persists for the whole session. No auto-revert after N turns.
 - **Stop commands.** `stop caveman`, `normal mode`, or `/caveman off` exits the posture immediately and restores the default voice.
 - **Level switches mid-session.** `/caveman ultra` mid-session changes level for all subsequent turns until switched again.
@@ -172,7 +172,6 @@ Request: "Show me the command to wipe the staging database."
 - **Must not** translate technical terms. Keep English keywords as they appear in the source language.
 - **Must not** omit a warning because of token budget.
 - **Never** auto-revert without an explicit `stop caveman` / `normal mode` / `/caveman off`.
-- **Never** apply caveman inside `@caveman-commit` commit bodies beyond what that skill already permits — the commit skill is the authority there.
 
 ## Example invocations
 
