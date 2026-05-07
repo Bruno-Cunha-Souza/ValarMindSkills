@@ -11,7 +11,7 @@ Five archetypes cover every skill in the repository. Pick one before writing a l
 | Deterministic artifact from a trigger | Procedural | "Given X, produce Y", numbered steps, single output format | Ongoing audit, multi-phase revisiting | `skills/github-commit/` | 80–550 lines | Rarely |
 | Multi-phase audit, hardening, or refactor | Lifecycle | Distinct phases (discovery → audit → patch → validate), framework branching | Linear one-shot flow | `skills/clean-code/` | 290–700 lines | Always |
 | Persona, capabilities, behavioral traits | Expert Profile | Role definition, response posture, "acts as" | Step-by-step procedure | `skills/code-review/` | 150–250 lines | Optional |
-| Principles, heuristics, and worked examples | Best Practices | Teaches how to think, not what to do | Mechanical procedure | `skills/context-optimization/` | 70–650 lines | Optional |
+| Principles, heuristics, and worked examples | Best Practices | Teaches how to think, not what to do | Mechanical procedure | (no canonical example currently — see §4) | 70–650 lines | Optional |
 | Catalog, schema, or spec reference | Reference | Exhaustive enumeration, schema, tables | Decision-making required | `skills/obsidian-bases/` | 110–600 lines | Usually |
 
 If two archetypes seem to fit, pick the more specific one. If nothing fits, default to **Procedural** and extract generalizations later.
@@ -75,6 +75,8 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 
 - `skills/clean-code/` (293 lines + 6 references) — Lifecycle with multi-language branching via per-language references (`GOLANG.md`, `TYPESCRIPT.md`, `RUST.md`, `BUN.md`, plus `PRINCIPLES.md` and `PATTERNS.md`).
 - `skills/code-security-review/` (~200 lines + 4 generic references + `references/golang/` + `references/nextjs/` subfolders) — Lifecycle with Phase 0 stack detection that branches into stack-specific reference bundles. The largest Lifecycle in the repo when both stack folders are loaded; sets the precedent for subfolder organization when the Lifecycle covers more than one framework.
+- `skills/prompt-engineering/` (468 lines + 4 references + `EXAMPLE.md`) — Lifecycle with Phase 0..6 audit pipeline (capture → translate → clarity → anti-hallucination → structure → token economy → output). Catalog (`STRATEGIES.md`) + use-case skeletons (`USE_CASES.md`) + checklist (`CHECKLIST.md`) + severity rubric (`SEVERITY_RUBRIC.md`). Sets the precedent for audit-shaped Lifecycle skills with 5-block structured output.
+- `skills/context-optimization/` (~470 lines + 5 references + `EXAMPLE.md` + `scripts/`) — Lifecycle with hybrid Audit + Guide modes. Phase 0..6 audit pipeline + technique catalog (`TECHNIQUES.md` §1..§13). Adds `scripts/` mirroring `code-security-review/scripts/` for evidence-based audit (file-size scan + token count + dedup detection). Sets the precedent for Lifecycle skills with both audit and guide modes.
 
 **Demotion rule.** If all phases share the same tools and there is no branching, the skill is probably Procedural with phase labels.
 
@@ -139,9 +141,9 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 
 **Examples in the repo.**
 
-- `skills/context-optimization/` (189 lines, no references) — compact Best Practices, imported from external source.
+- (No canonical Best Practices skill in the current repo.) The previous example, `skills/context-optimization/`, was promoted to **Lifecycle** in 2026-05 with Phase 0..6 audit pipeline + 5 references + scripts (see §2 Lifecycle examples).
 
-**Promotion rule.** If the skill starts accumulating numbered steps and fixed outputs, convert it to Procedural.
+**Promotion rule.** If the skill starts accumulating numbered steps and fixed outputs, convert it to Procedural. If it accumulates discovery → audit → patch → validate phases, promote to Lifecycle (precedent: `context-optimization` 2026-05).
 
 ## 5. Reference / Catalog
 
