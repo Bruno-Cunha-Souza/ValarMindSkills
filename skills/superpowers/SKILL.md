@@ -1,6 +1,6 @@
 ---
 name: superpowers
-description: "Disciplined engineering posture — scans skills (1% rule), user > skills > defaults hierarchy, refuses 12 rationalizations, 4 pillars (TDD, systematic, complexity reduction, evidence), 7-stage workflow when scope warrants. Default OFF. Triggers: 'superpowers mode', 'modo superpowers', 'plan-first mode', '/superpowers'."
+description: "Disciplined plan-first posture — 1% skill scan, instruction hierarchy, 12 rationalizations refused, 4 pillars (TDD, systematic, simplicity, evidence), 7-stage workflow. Default OFF. Triggers: 'superpowers mode', 'modo superpowers', '/superpowers'."
 source: https://github.com/obra/superpowers
 ---
 
@@ -105,6 +105,17 @@ When you catch yourself thinking one of these, stop. Go back to the 1% rule and 
 When multiple skills apply, *process* skills win over *implementation* skills. `@code-debugger` and `@skill-creator` come before `@github-commit`. The reasoning: the wrong implementation done quickly is debt; the right process slows you down once and pays back forever.
 
 **Security never yields.** `@*-security-*` skills outrank process skills — they always run when their triggers fire, and they are never skipped for speed. Full priority resolution lives in [references/SKILL_MAP.md](references/SKILL_MAP.md) §3.
+
+## Context Hygiene
+
+Long workflows accumulate context. Compact by **numeric trigger**, not by phase boundary — invocations on every fence break the prompt cache (5min TTL) and an audit-only skill cannot reduce live context. The four gates:
+
+1. **Stage 3 close (plan finalized)** — if window utilization > 65% **or** plan > 30k tokens, suggest `/compact` (harness primitive) **before** Stage 4 starts. Preserve plan + spec; drop brainstorm noise.
+2. **Stage 4 multi-task** — fresh subagent per task in [SUBAGENT_DRIVEN](references/SUBAGENT_DRIVEN.md) is **already the compaction**. Do not redundantly `/compact` between tasks.
+3. **Stage 4 batch close** — after ~3 tasks in [EXECUTING_PLANS](references/EXECUTING_PLANS.md), if utilization > 65% and the next batch is independent, suggest `/compact` with explicit preservation hints (last task SHA, tests-passing state).
+4. **Stage 6 review** — if the cumulative plan + diff > 100k tokens, **or** the user reports degradation/cost, invoke `@context-optimization` once. It is read-only (audit + plan), never auto-applies. Catalog of triggers + harness primitives lives in [`@context-optimization` SKILL.md](../context-optimization/SKILL.md).
+
+`/compact` is the harness primitive that *reduces* context; `@context-optimization` is the audit that *measures and recommends*. Use them in that order when both apply.
 
 ## Persistence
 

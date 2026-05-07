@@ -120,6 +120,52 @@ Caveman compresses voice; superpowers enforces process. Both apply at the same t
 
 ---
 
+## Scenario 5 — Closing the loop (Stage 7 with `@github-commit` + brain sync)
+
+### Question
+
+> "Tests are green on the worktree. Wrap it up."
+>
+> *(`OBSIDIAN-BRAIN ACTIVE` was injected at session start; window utilization ~70% after a long Stage 4)*
+
+### Superpowers ON
+
+> Stage 7 — closing branch.
+>
+> 1. **Verify tests** — `npm test` exit 0, 47/47 passing. Evidence captured.
+> 2. **Commit gate** — `git status --porcelain` shows two unstaged files (`src/cache/config.ts`, `src/utils/__tests__/time.test.ts`). Invoking `@github-commit`:
+>
+>    ```
+>    refactor(cache): use parseDuration for TTL strings
+>    ```
+>
+>    Approved → `git commit` executed.
+> 3. **Base branch** — `origin/main` (confirmed via `git merge-base`).
+> 4. **Four options:**
+>
+>    ```
+>    1. Merge locally
+>    2. Push and create PR
+>    3. Keep as-is
+>    4. Discard
+>    ```
+> 5. *(user picks `2`)* — `git push -u origin feat/parse-duration` → `gh pr create` with summary + test plan body.
+> 6. **Cleanup** — worktree kept (option 2 default; user may amend after review).
+> 7. **Brain sync** — SessionStart digest had `OBSIDIAN-BRAIN ACTIVE`. Invoking `@obsidian-brain` Phase 4:
+>    - Append `> [!summary]` callout to `brain/sessions/2026-05-07-parse-duration.md`.
+>    - Refresh **Recent sessions** in `valarmindskills-brain.md` (PR link in prose, no wikilink to project docs — brain stays a closed graph).
+>    - `updated: 2026-05-07` set on touched topics + the index via surgical property update.
+>    - No topic synthesis suggested (no 3+ session cluster).
+>
+> Done. PR open, brain in sync, worktree preserved.
+
+Three context-hygiene checkpoints fired in sequence:
+- Stage 4 batch close did **not** `/compact` (subagent isolation handled it).
+- Stage 6 cumulative diff stayed under 100k → `@context-optimization` not invoked.
+- Stage 7 brain sync ran because the digest signaled an active vault.
+
+---
+
 ## Auto-Clarity (security turn — neither posture loosens)
 
 ### Question

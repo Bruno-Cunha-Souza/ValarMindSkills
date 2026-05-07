@@ -12,6 +12,10 @@ Executing an implementation plan with independent tasks in the current session. 
 
 Never start work on `main` / `master` without explicit user consent.
 
+## Context isolation = compaction
+
+**Fresh subagent per task is the compaction.** A subagent's context is built from its prompt alone — your session history, prior tool results, and earlier task scaffolding never leak in. That isolation gives you the same effect as a `/compact` between tasks, **without** invalidating the parent's prompt cache. Do not redundantly run `/compact` between subagent tasks; reserve it for the cases listed in [SKILL.md § Context Hygiene](../SKILL.md#context-hygiene) (Stage 3 close, Stage 4 batch boundary in [EXECUTING_PLANS](EXECUTING_PLANS.md), Stage 6 review with very large diffs).
+
 ## Procedure
 
 ### Setup

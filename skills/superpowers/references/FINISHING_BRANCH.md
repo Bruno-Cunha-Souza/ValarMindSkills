@@ -13,6 +13,11 @@ Implementation is complete, all tests pass, and the work needs to be integrated.
 - Run the full test suite (see [VERIFICATION](VERIFICATION.md)).
 - If any test fails: **stop**. Refuse to proceed to options. Fix the failure first.
 
+### Step 1.5 — Commit gate
+
+- Run `git status --porcelain`. If the working tree is dirty (uncommitted edits or staged-but-not-committed work), invoke `@github-commit` to capture the remaining diff before presenting options. Refuse to merge or push with a dirty tree — partial work breaks bisect and reverts.
+- If the tree is clean, skip silently.
+
 ### Step 2 — Determine base branch
 
 ```bash
@@ -55,6 +60,23 @@ Wait for the user to pick.
 ```bash
 git worktree remove ".worktrees/<branch>"
 ```
+
+### Step 6 — Brain sync (conditional)
+
+If the SessionStart digest at the start of this session contained the line `OBSIDIAN-BRAIN ACTIVE`, invoke `@obsidian-brain` Phase 4 (end-of-session sync). The skill will:
+
+- Append a `> [!summary]` callout to today's session note in `brain/sessions/`.
+- Refresh the **Recent sessions** list in `<slug>-brain.md` (drop entries older than 10).
+- Surgically update the `updated:` property of touched topics + the index.
+- Suggest a topic synthesis if 3+ recent sessions touched the same topic without a dedicated note.
+
+Skip silently when:
+
+- The digest did **not** contain `OBSIDIAN-BRAIN ACTIVE` (no vault detected).
+- The user disabled the brain in this session (`/valarmindskills:obsidian-brain off`).
+- The session produced nothing worth remembering (trivial fix, informational chat).
+
+The brain is a **closed graph** (per `@obsidian-brain` constraints): never wikilink from the brain to project docs, never from project docs to the brain.
 
 ## Constraints
 

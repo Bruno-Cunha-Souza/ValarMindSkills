@@ -22,7 +22,7 @@ Every step copy-pasteable. Every code block real. Repeat code in tasks even when
 2. **Map file structure.** Which files Create / Modify (with line ranges) / Test. Each file's single responsibility. Files that change together live together. Split by responsibility, not technical layer.
 3. **Header.** Goal in one sentence. Architecture in 2-3 sentences. Tech stack list. Pointer: "Execute with [SUBAGENT_DRIVEN](SUBAGENT_DRIVEN.md) (recommended) or [EXECUTING_PLANS](EXECUTING_PLANS.md)."
 4. **Bite-sized tasks.** Each task = one 2-5 minute action. Steps use checkboxes (`- [ ]`).
-5. **Per task, list:** Files block (Create / Modify / Test), Step 1 failing test (with code), Step 2 run command + expected FAIL, Step 3 minimal impl (with code), Step 4 run + expected PASS, Step 5 git add/commit (with concrete message).
+5. **Per task, list:** Files block (Create / Modify / Test), Step 1 failing test (with code), Step 2 run command + expected FAIL, Step 3 minimal impl (with code), Step 4 run + expected PASS, Step 5 invoke `@github-commit` (skill stages the diff, generates Conventional Commit, waits for user approval — fallback to raw `git add`/`git commit -m` only if the skill is unavailable).
 6. **Self-review.** Coverage of every spec requirement. Placeholder scan. Type/method/property name consistency across tasks. Fix inline.
 7. **Execution handoff.** Ask the user to choose [SUBAGENT_DRIVEN](SUBAGENT_DRIVEN.md) (recommended) or [EXECUTING_PLANS](EXECUTING_PLANS.md). Then invoke that skill.
 
@@ -84,11 +84,14 @@ export function parseDuration(input: string): number {
 
 - [ ] **Step 4** — Run. Expect PASS: `1 passed`.
 
-- [ ] **Step 5** — Commit.
+- [ ] **Step 5** — Commit via `@github-commit`.
 
 ```bash
 git add src/utils/time.ts src/utils/__tests__/time.test.ts
-git commit -m "feat(utils): add parseDuration for h/m strings"
+# then invoke `@github-commit`: it reads the staged diff, drafts a Conventional
+# Commit message, and waits for explicit approval before running `git commit`.
+# Fallback if the skill is unavailable:
+# git commit -m "feat(utils): add parseDuration for h/m strings"
 ```
 ```
 

@@ -25,6 +25,10 @@ You have a written implementation plan to execute in a separate session with rev
 - Run the verifications named in the task (see [VERIFICATION](VERIFICATION.md)).
 - Mark `completed`.
 
+### Step 2.5 — Batch close gate
+
+After every ~3 tasks, check window utilization. If utilization > 65% AND the next batch is independent of the just-finished work, suggest `/compact` (harness primitive) with explicit preservation hints — the active plan, last task SHA, and tests-passing state. Do **not** `/compact` mid-batch (you lose the verification state). The gate is documented at [SKILL.md § Context Hygiene](../SKILL.md#context-hygiene); skip when utilization is below the threshold or batches are coupled.
+
 ### Step 3 — Finish
 
 After all tasks: invoke [FINISHING_BRANCH](FINISHING_BRANCH.md). Required.

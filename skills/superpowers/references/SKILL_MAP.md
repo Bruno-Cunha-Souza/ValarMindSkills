@@ -70,10 +70,25 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 - `IF` test failure, exception in log, unexpected runtime behavior
   → `@code-debugger` (root cause first; iron law: no fixes without investigation)
 
-### Context / cost
+### Context / cost (per-stage gates)
 
-- `IF` context > ~60% of window, conversation has many large tool results, or task is long-running
-  → `@context-optimization` (compaction, masking, KV-cache strategy)
+Compact by **numeric trigger**, not by stage boundary — every fence-line `/compact` breaks the prompt cache (5min TTL), and an audit-only skill cannot reduce live context. See [SKILL.md § Context Hygiene](../SKILL.md#context-hygiene) for the full rationale.
+
+- `IF` Stage 3 closed (plan finalized) AND window utilization > 65% OR plan > 30k tokens
+  → suggest `/compact` (harness primitive) **before** Stage 4 starts. Preserve plan + spec; drop brainstorm noise.
+- `IF` Stage 4 in [SUBAGENT_DRIVEN](SUBAGENT_DRIVEN.md)
+  → fresh subagent per task **is** the compaction. Do **not** `/compact` between tasks.
+- `IF` Stage 4 batch (~3 tasks) closed in [EXECUTING_PLANS](EXECUTING_PLANS.md) AND utilization > 65% AND next batch is independent
+  → suggest `/compact` with explicit preservation hints (last task SHA, tests-passing state).
+- `IF` Stage 6 review AND cumulative plan + diff > 100k tokens, OR user reports degradation / cost spike
+  → invoke `@context-optimization` once (read-only audit + plan; never auto-applies).
+- `IF` general long-running session, many large tool results, RAG pipeline audit
+  → `@context-optimization` (Phase 0..6 lifecycle). User-invoked.
+
+### Brain sync (post-Stage 7)
+
+- `IF` Stage 7 ([FINISHING_BRANCH](FINISHING_BRANCH.md)) completed AND the SessionStart digest contained `OBSIDIAN-BRAIN ACTIVE`
+  → invoke `@obsidian-brain` Phase 4 (end-of-session sync: append session note, refresh index Recent sessions, suggest topic synthesis if 3+ sessions touch the same topic). Skip silently if the brain is `off` or no vault was detected.
 
 ### Skill authoring
 
