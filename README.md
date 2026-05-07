@@ -4,34 +4,37 @@ A library of reusable skills for AI agents. Each skill is a Markdown file with Y
 
 ## Quick install (recommended)
 
-One-liner that downloads the latest GitHub release into `~/.valarmindskills` and runs the unified installer for Claude Code CLI, Codex CLI, and Antigravity. Re-run any time to upgrade in place — the underlying scripts are idempotent (skill folders are replaced, managed config blocks in `~/.codex/config.toml` and `AGENTS.md` are wrapped in `# >>> VALARMIND BEGIN/END` markers and rewritten).
+Run the unified installer to set up skills for Claude Code CLI, Codex CLI, and Antigravity. The script is idempotent, so you can re-run it anytime to upgrade.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh | bash
 ```
 
-Each target is independent: a missing CLI is skipped (with an error message), the others still install.
+---
 
-| Variable | Default | Effect |
-| --- | --- | --- |
-| `VALARMIND_VERSION` | `latest` | Install a specific tag (e.g. `v0.1.0`) instead of the latest GitHub release |
-| `VALARMIND_INSTALL_DIR` | `~/.valarmindskills` | Where the source tree is extracted |
-| `VALARMIND_REPO` | `Bruno-Cunha-Souza/ValarMindSkills` | Repository override (forks) |
-| `VALARMIND_SKIP_INSTALL` | `0` | If `1`, only download the source — skip running `scripts/install-all.sh` |
-| `VALARMIND_SKIP_STATUSLINE` | `0` | If `1`, do not touch `~/.claude/settings.json` for the statusline |
-| `GITHUB_TOKEN` | — | Authenticated calls to the GitHub API to avoid rate limits |
+## Token usage
 
-Examples:
+The following table estimates token consumption per skill/context at session start. Values are approximate.
 
-```bash
-# Pin a specific release
-VALARMIND_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh | bash
+| Component | Tokens |
+| --- | --- |
+| Skill descriptions (17 skills, YAML frontmatter) | ~ 970 |
+| Caveman (SessionStart hook) | ~ 2,000 |
+| Superpowers (SessionStart hook) | ~ 3,400 |
+| Obsidian-brain (SessionStart hook) | ~ 160 |
+| Per-turn reinforcement (UserPromptSubmit) | ~ 90 |
 
-# Inspect before running
-curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh -o install.sh
-less install.sh
-bash install.sh
-```
+### Scenarios
+
+| Scenario | Tokens |
+| --- | --- |
+| Skill descriptions only | ~ 970 |
+| Descriptions + Caveman active | ~ 2,970 |
+| Descriptions + Superpowers active | ~ 4,400 |
+| Descriptions + Obsidian-brain active | ~ 1,130 |
+| All combined | ~ 6,530 |
+
+> **Context impact:** 6,530 tokens ≈ 0.65% of a 1M context window or 2.49% of a 262k window.
 
 ---
 
