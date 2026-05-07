@@ -6,8 +6,6 @@ source: ValarMindSkills
 
 # Prompt Engineering Lifecycle
 
-> "A vague prompt is a coin flip. A clear prompt with a refusal hook is a contract."
-
 This skill audits and rewrites a prompt that will be sent to an LLM. It is **read-only by default** — it never auto-applies the rewrite, it produces a proposal. It is **language-aware** (PT and EN as primary; other inputs are translated to EN with a side-by-side preservation list). It is **lifecycle-driven**: capture → translate → clarity → anti-hallucination → structure → token economy → output.
 
 The skill exists because LLM-facing prompts written by hand drift toward the same failure modes: missing success criteria, undefined output format, no examples, no refusal hooks, no "never invent" floor, and silent assumptions about role. Each of those gaps is a known driver of hallucinated, off-format, or unsafe output. Every guardrail in the Constraints section is there to push the rewrite toward a contract the model can fulfil deterministically — and to keep the skill itself from making the same mistakes.
@@ -117,15 +115,19 @@ Count the prompt size. Long prompts (> 2000 tokens estimated, ~1500 words) usual
 
 ### 0.4 Honest audit pledge
 
-Before producing any finding, commit to:
+Five-rule pledge — cite verbatim · read use-case baseline first · different wording ≠ missing strategy · stop on LGTM · heuristic findings start Medium. Full rationale + reproducibility rule in [CHECKLIST §Skill self-audit](references/CHECKLIST.md#skill-self-audit-the-audit-of-the-audit). Padded reports erode trust faster than missed findings.
 
-1. **Cite verbatim.** Each finding quotes a passage that is **literally absent**, **directly contradictory**, or **demonstrably redundant** in the original. Paraphrase is not evidence.
-2. **Read the use case baseline first.** Open [USE_CASES.md](references/USE_CASES.md) §N for the declared use case and check **every** required strategy against the original before flagging anything as missing.
-3. **Different wording is not a missing strategy.** If a strategy from [STRATEGIES.md](references/STRATEGIES.md) is genuinely present — even with vocabulary unlike the catalog — do not promote it to a finding.
-4. **Stop on LGTM.** If the prompt passes every required strategy for its use case, emit Block 4 with `LGTM — no clarity, hallucination, or token-economy gaps in scope` and stop. Do not promote Minor or speculative observations to fill the report.
-5. **Calibrate confidence.** Findings derived from heuristics (regex, "this looks ambiguous") are `Confidence: Low` or `Medium`. `Confidence: High` requires a verbatim quote of the gap.
+### 0.5 Triage gate
 
-This pledge is the audit's contract with the user. Padded reports erode trust faster than missed findings.
+Drop the audit when **all three** hold:
+
+- Estimated size < 30 tokens (≈ 1 line, ≈ 7 words)
+- Phase 0.2 use case ∉ {`skill`, `rag`, `agent-tool`, `agent-base`}
+- No safety rule (`never`, `must not`, `do not`, `refuse if`) detected in source
+
+→ emit Block 1 (verbatim) + Block 2 row `(out of scope: trivial prompt — audit overhead exceeds value)` + stop. Do **not** produce Block 3 / Block 4.
+
+Otherwise, proceed to Phase 1.
 
 ## Phase 1 — Translate & Normalize
 
@@ -205,51 +207,21 @@ Apply the catalog in [references/STRATEGIES.md](references/STRATEGIES.md). Every
 
 ### 3.1 Strategies expected
 
-| # | Strategy | Required when | Source |
-| --- | --- | --- | --- |
-| 1 | Role grounding | Always | [STRATEGIES §1](references/STRATEGIES.md#1-role-grounding) |
-| 2 | Output schema pinning | Format matters | [STRATEGIES §2](references/STRATEGIES.md#2-output-schema-pinning) |
-| 3 | Citation requirement | Factual / extraction tasks | [STRATEGIES §3](references/STRATEGIES.md#3-citation-requirement) |
-| 4 | Calibrated confidence | Factual / classification tasks | [STRATEGIES §4](references/STRATEGIES.md#4-calibrated-confidence) |
-| 5 | Never-invent floor | Always for factual tasks | [STRATEGIES §5](references/STRATEGIES.md#5-never-invent-floor) |
-| 6 | Few-shot examples | Non-trivial format or judgment | [STRATEGIES §6](references/STRATEGIES.md#6-few-shot-examples) |
-| 7 | Refusal hooks | Safety-relevant or scope-bounded | [STRATEGIES §7](references/STRATEGIES.md#7-refusal-hooks) |
-| 8 | Structured input parsing | Any prompt with multiple inputs | [STRATEGIES §8](references/STRATEGIES.md#8-structured-input-parsing) |
-| 9 | Step-by-step decomposition | Multi-step reasoning / agents | [STRATEGIES §9](references/STRATEGIES.md#9-step-by-step-decomposition) |
-| 10 | Counter-examples | High ambiguity | [STRATEGIES §10](references/STRATEGIES.md#10-counter-examples) |
-| 11 | Skill / tool map | Agent prompts with tools | [STRATEGIES §11](references/STRATEGIES.md#11-skill--tool-map) |
-| 12 | Verification step | Long tasks where the model can self-check | [STRATEGIES §12](references/STRATEGIES.md#12-verification-step) |
+Walk §1–§13 of [STRATEGIES.md](references/STRATEGIES.md), but only the subset required by the declared use case — see [STRATEGIES §How the skill uses this catalog](references/STRATEGIES.md#how-the-skill-uses-this-catalog) for the per-use-case row.
 
 Calibrate findings: heuristic findings (regex, simple absence) start at **Medium** severity. Promotion to High or Critical requires manual confirmation that the gap is exploitable for hallucination in the prompt's actual use case.
 
 ### 3.2 Common hallucination smells
 
-| Smell | Detection | Fix |
-| --- | --- | --- |
-| "Be helpful" without bound | Phrase appears with no scope | Replace with explicit success criterion |
-| "Use your knowledge" without citation rule | No citation requirement on factual tasks | Add a never-invent floor + citation requirement |
-| "If unsure, do your best" | Encourages confabulation | Replace with "If unsure, say 'I don't know' and ask one clarifying question" |
-| "Be creative" on extraction | Wrong primitive for the task | Remove; replace with strict schema |
-| Open list ("e.g., …") on output schema | Model picks any extra field | Replace with closed enum or explicit `additionalProperties: false` |
-
-Each smell is a finding with a quote, a fix, and a risk tag.
+Quick-detection table relocated to [STRATEGIES §Common hallucination smells](references/STRATEGIES.md#common-hallucination-smells). Each smell row is a finding with quote + fix + risk tag.
 
 ## Phase 4 — Structure Recommendations
 
 Once gaps are documented, propose **what to add**, not just what to remove. Each recommendation is a section the rewrite will include.
 
-If the use case is `skill`, `rag`, or `agent-tool`, use the canonical skeleton from [USE_CASES.md](references/USE_CASES.md) (§1 / §2 / §3 respectively) instead of the generic order below — those skeletons already encode the right section ordering and required fields for that class.
+For the four primary use cases (`skill` / `rag` / `agent-tool` / `agent-base`), use the canonical skeleton from [USE_CASES.md](references/USE_CASES.md) §1 / §2 / §3 / §4 — those skeletons encode required section ordering + fields for the class.
 
-For all other use cases, the generic canonical order is:
-
-1. **Role + persona** — one sentence.
-2. **Task + success criterion** — imperative, with an explicit "done when …" clause.
-3. **Inputs** — labeled, with delimiters or variable names.
-4. **Constraints** — `must`, `must not`, `never`. One bullet each.
-5. **Output schema** — JSON, Markdown skeleton, or YAML.
-6. **Examples** — one golden path; one edge case if relevant; one counter-example if ambiguity is high.
-7. **Refusal / escalation hooks** — when to refuse, when to ask back.
-8. **Tool / skill map** — only for agent prompts.
+For all other use cases, the generic canonical order is: Role → Task + success criterion → Inputs (labeled) → Constraints (`must`/`must not`/`never`, one bullet each) → Output schema → Examples → Refusal/escalation hooks → Tool/skill map (agent prompts only).
 
 The rewrite renders these sections explicitly. If a section is intentionally omitted, the rewrite says so (`Examples: not applicable for this prompt because …`). Silent omission is a finding.
 
@@ -266,6 +238,16 @@ If the prompt is for an agent that has access to tools or sub-skills, the rewrit
 ```
 
 A skill map without `use when` rules is itself a finding — agents over-call tools without one.
+
+### 4.2 Living-prompt versioning
+
+If the audited prompt has a `version` field in its frontmatter (Skills, GPTs, agent base prompts often do), Block 3 includes a SemVer bump suggestion:
+
+- **PATCH** when only SAFE risk-tag findings adopted.
+- **MINOR** when at least one REVIEW finding adopted (constraint added, refusal hook added, schema field added).
+- **MAJOR** when at least one BREAKING finding adopted (output shape changed, tool removed, persona retargeted).
+
+Hint only — soft-spec, not enforced. Skips when frontmatter has no `version`.
 
 ## Phase 5 — Token Economy
 
@@ -305,6 +287,27 @@ Token delta:
 
 If the rewrite is **longer** than the original (common when the original is a one-liner), report the same delta with a positive sign and a one-line rationale (`+47 tokens — added role, schema, refusal hook`).
 
+### 5.3 Token budget per use case
+
+The rewrite respects a per-use-case ceiling. Excess → finding `T-001 Token budget exceeded` with REVIEW risk tag and a fix proposing what to cut.
+
+| Use case      | Ceiling (rewrite) | Why |
+| :------------ | :---------------- | :-- |
+| `skill`       | ≤ 800 tokens      | SKILL.md frontmatter ≤ 250 + lifecycle map should fit ~5 phases tersely |
+| `rag`         | ≤ 400 tokens      | Stable system prompt; retrieved chunks consume bulk of remaining budget |
+| `agent-tool`  | ≤ 200 tokens      | Tool description loaded per agent decision; over-budget = over-call risk |
+| `agent-base`  | ≤ 1500 tokens     | Long-running session identity; persona + tool map + workflow justify size |
+| `factual` / `extraction` | ≤ 600 tokens | One-shot tasks; rule density beats persona ornament |
+| Other         | ≤ 2× original     | Generic cap; keeps rewrites from runaway expansion |
+
+User can override with explicit rationale (e.g., "agent-base needs 2200 tokens because tool map has 18 entries"). Without override, T-001 is a finding.
+
+### 5.4 Cache-friendly ordering
+
+For multi-turn agents and RAG, position **stable** parts (system prompt, schema, refusal hooks, tool map) **before** **dynamic** parts (user input, retrieved chunks, conversation history). Anthropic prompt caching reuses prefix tokens with a 5-minute TTL — reordering the rewrite to put invariants up front converts repeated tokens into cache hits, lowering both cost and latency on every subsequent call. This is a real-world token-economy win that does not show up in a single-prompt token count.
+
+If the audited prompt interleaves stable and dynamic content, propose the reordering as a SAFE finding (semantics unchanged; only structure shifted).
+
 ## Phase 6 — Output
 
 Emit the deliverable in four numbered blocks. The user can adopt all, some, or none.
@@ -335,9 +338,9 @@ The proposed rewrite, fenced, complete enough to copy-paste. EN by default. Incl
 | confidence              | High                                   |
 ```
 
-### Block 5 (optional) — Verification suggestions
+### Block 5 — Verification suggestions
 
-For non-trivial rewrites, propose how the user can validate the change:
+**Required when overall Risk tag is `REVIEW` or `BREAKING`. Optional when overall Risk tag is `SAFE`** (since SAFE rewrites preserve semantics; verification adds noise without changing behavior). For non-trivial rewrites, propose how the user can validate the change:
 
 - Run the original and rewritten prompts on the same 3 inputs and compare outputs.
 - Ask the model to follow the schema; reject if it deviates.
@@ -345,21 +348,23 @@ For non-trivial rewrites, propose how the user can validate the change:
 
 ## Constraints
 
-- **Never edit the prompt automatically.** This skill is a reviewer; the rewrite is a proposal in Block 3, not a side effect.
-- **Never invent user intent.** If the prompt is ambiguous (role unclear, use case unclear), stop and ask before producing the rewrite. A confident rewrite of an unread prompt is the highest-risk failure mode for this skill.
-- **Never strip a safety rule.** Every `never`, `must not`, `do not`, or `refuse if` clause in the original survives into the rewrite, in EN, with the same force. Preserved verbatim if possible.
-- **Never claim translation fidelity without listing preserved terms.** Phase 1.2 produces an explicit preservation list; if the list is empty, the translation is not approved.
-- **Never inflate severity to look thorough.** Use [references/SEVERITY_RUBRIC.md](references/SEVERITY_RUBRIC.md). Heuristic findings start at Medium; promotion requires confirmation.
-- **Never invent findings to appear thorough.** If the audit yields zero genuine gaps for the declared use case, emit Block 2 with `(no findings)`, Block 3 with `no rewrite needed — prompt already passes the audit`, Block 4 with `LGTM`, and stop. Every finding cites a verbatim absence, contradiction, or redundancy. Speculation is not a finding.
-- **Never promote Minor findings to Major to fill the report.** Severity is bound to impact × likelihood per [references/SEVERITY_RUBRIC.md](references/SEVERITY_RUBRIC.md), not to report length. Padding the report erodes audit credibility faster than missed findings.
-- **Never quote a user instruction paraphrased.** Quotes in findings are byte-for-byte from the original. If a passage is summarized for brevity, label it `summary:` not `quote:`.
-- **Never recommend a strategy without citing the catalog entry.** Every Phase 3 finding links to [STRATEGIES.md §N](references/STRATEGIES.md).
-- **Never omit Block 1.** The original verbatim is the contract; comparing to it is how the user audits the audit.
-- **Never auto-translate when the user asked only for an audit.** Phase 1 runs only if the user asked to translate or if the prompt is not in EN and the rewrite needs to land in EN. Otherwise, audit in source language.
-- **Never compress a `never` rule into a positive instruction.** "Never X" and "always not-X" feel equivalent to a writer; they are not equivalent to a model. Keep the negation.
-- **Always emit Blocks 1–4 verbatim** in the Output format below — even when there are zero findings.
-- **Always cap the rewrite at 2× the original token count** unless the user explicitly asked for a longer prompt. Longer-than-necessary prompts erode instruction-following.
-- **Always cross-link to a sibling skill** when the finding belongs to its domain (`@context-optimization`, `@clean-code`, `@code-review`, `@caveman`, `@superpowers`).
+| Rule | Why |
+| :--- | :--- |
+| Never edit the prompt automatically | Reviewer not editor — Block 3 = proposal |
+| Never invent user intent | Confident rewrite of unread prompt = highest-risk failure; ambiguous → stop and ask |
+| Never strip a safety rule | `never`/`must not`/`do not`/`refuse if` survive verbatim into EN with same force |
+| Never claim translation fidelity without preservation list | Phase 1.2 list mandatory; empty list ⇒ translation not approved |
+| Never inflate severity to look thorough | Heuristic findings start Medium per [SEVERITY_RUBRIC](references/SEVERITY_RUBRIC.md) |
+| Never invent findings to appear thorough | Zero-findings = LGTM, valid outcome — not failure |
+| Never promote Minor → Major to fill the report | Severity bound to impact × likelihood, not report length |
+| Never quote paraphrased | Quotes byte-for-byte; summaries labeled `summary:` not `quote:` |
+| Never recommend a strategy without catalog citation | Every Phase 3 finding links [STRATEGIES §N](references/STRATEGIES.md) |
+| Never omit Block 1 | Original verbatim = audit contract; second auditor must reach same verdict |
+| Never auto-translate when user asked only for audit | Phase 1 runs only on user request or when rewrite needs EN landing |
+| Never compress `never` rule into positive instruction | `never X` ≠ `always not-X` to a model; keep negation |
+| Always emit Blocks 1–4 verbatim | Even on zero findings |
+| Always cap rewrite ≤ use-case budget | Per [Phase 5.3](#53-token-budget-per-use-case); `2× original` generic; user override allowed with rationale |
+| Always cross-link sibling skill | When finding belongs to its domain (`@context-optimization`, `@clean-code`, `@code-review`, `@caveman`, `@superpowers`) |
 
 ## Output format
 
@@ -372,16 +377,16 @@ prompt-engineering: <one-line description provided by user, or auto-derived>
   use case:    <skill | rag | agent-tool | agent-base | factual | generation | classification | extraction | planning | code | conversation>
   size:        <est. tokens before> → <est. tokens after>  (Δ <signed delta>)
 
-═══════════════════════════════════════════════════════════════════════
+---
 Block 1 — Original (verbatim)
-═══════════════════════════════════════════════════════════════════════
+---
 """
 <original prompt, byte-for-byte>
 """
 
-═══════════════════════════════════════════════════════════════════════
+---
 Block 2 — Findings
-═══════════════════════════════════════════════════════════════════════
+---
 
 | ID    | Sev      | Conf   | Risk     | Phase | Title                              |
 | ----- | -------- | ------ | -------- | ----- | ---------------------------------- |
@@ -401,9 +406,9 @@ Block 2 — Findings
 
   ... (one block per finding) ...
 
-═══════════════════════════════════════════════════════════════════════
+---
 Block 3 — Rewritten prompt
-═══════════════════════════════════════════════════════════════════════
+---
 """
 <full rewritten prompt, EN by default, ready to copy-paste>
 """
@@ -413,9 +418,9 @@ Preserved safety rules (from Phase 5):
   - "never invent file paths"
   - "if unsure, say 'I don't know' and ask one clarifying question"
 
-═══════════════════════════════════════════════════════════════════════
+---
 Block 4 — Summary
-═══════════════════════════════════════════════════════════════════════
+---
 
 | Metric                       | Before | After |
 | ---------------------------- | ------ | ----- |

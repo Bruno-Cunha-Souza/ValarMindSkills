@@ -12,6 +12,7 @@ Copy-paste cheat sheet. One section per audit phase. Tick each item; unticked it
 - [ ] Use case identified: **skill** | **rag** | **agent-tool** | **agent-base** | factual | generation | classification | extraction | planning | code | conversation
 - [ ] If use case is `skill`, `rag`, `agent-tool`, or `agent-base` → load the canonical skeleton from [USE_CASES.md](USE_CASES.md)
 - [ ] Token size estimated (before)
+- [ ] Triage gate evaluated (Phase 0.5) — trivial prompt (< 30 tokens, generic use case, no safety rule) → emit out-of-scope and stop
 
 ## Phase 1 — Translate (only if not EN)
 
@@ -47,7 +48,8 @@ Apply only the strategies listed for the declared use case (see [STRATEGIES.md t
 - [ ] Counter-example present when ambiguity is high ([§10](STRATEGIES.md#10-counter-examples))
 - [ ] Skill / tool map for agent prompts ([§11](STRATEGIES.md#11-skill--tool-map))
 - [ ] Verification step closes the prompt for long output ([§12](STRATEGIES.md#12-verification-step))
-- [ ] Each finding cites a verbatim absence, contradiction, or redundancy in the original — no speculation, no `"this could be improved"` without a concrete missing strategy from §1–§12
+- [ ] Prompt-injection guard for RAG / agent-base processing untrusted input ([§13](STRATEGIES.md#13-prompt-injection-guard))
+- [ ] Each finding cites a verbatim absence, contradiction, or redundancy in the original — no speculation, no `"this could be improved"` without a concrete missing strategy from §1–§13
 
 ## Phase 4 — Structure
 
@@ -65,6 +67,8 @@ Apply only the strategies listed for the declared use case (see [STRATEGIES.md t
 - [ ] Every refusal hook preserved verbatim
 - [ ] Every example pair preserved (input + output, not just one side)
 - [ ] Token delta reported (signed; positive deltas justified)
+- [ ] Rewrite respects token budget for declared use case (Phase 5.3 — skill ≤ 800 / rag ≤ 400 / agent-tool ≤ 200 / agent-base ≤ 1500 / factual ≤ 600 / generic 2× original)
+- [ ] Cache-friendly ordering for multi-turn (Phase 5.4) — stable parts (system, schema, refusal hooks) before dynamic parts (user input, retrieved chunks)
 
 ## Phase 6 — Output
 
