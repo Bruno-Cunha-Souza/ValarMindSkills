@@ -1,6 +1,6 @@
 # Go API Vulnerability Catalog
 
-Catalog of Go-specific vulnerability patterns for use by the `golang-api-security` skill. Each entry follows the same structure: ID, CWE, vulnerable pattern, fix pattern, detection command, severity baseline.
+Catalog of Go-specific vulnerability patterns for use by `code-security-review` (Go branch — `references/golang/API.md`). Each entry follows the same structure: ID, CWE, vulnerable pattern, fix pattern, detection command, severity baseline.
 
 Use the IDs (`GOVULN-NNN`) when emitting findings in the security report so they can be cross-referenced.
 

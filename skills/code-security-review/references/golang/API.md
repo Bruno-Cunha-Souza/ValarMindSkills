@@ -1,14 +1,10 @@
----
-name: golang-api-security
-description: "Security lifecycle Go 1.25+ REST APIs (Gin/Fiber). Auto-detects framework, audits OWASP API Top 10 2023, middleware misconfigs, AuthN/Z flaws, supply chain CVEs, 25+ Go-specific vuln classes. Build-gated patches + active testing."
-source: ValarMindSkills
----
+# Go API Security Lifecycle — `code-security-review` Go branch reference
 
-# Go API Security Lifecycle
+> Stack-specific reference loaded by `code-security-review/SKILL.md` Phase 0 when `go.mod` + Gin/Fiber are detected. Sibling references in this folder: `MIDDLEWARE.md`, `PATCHES.md`, `TESTING_PAYLOADS.md`, `VULNERABILITIES.md`. Generic phases (`DESIGN_CONTROLS.md`, `TESTING_PHASES.md`, `WEB_VULNERABILITIES.md`, `REPORT_TEMPLATE.md`) live one directory up.
 
 ## When to Use
 
-Use this skill when:
+Load this reference when the parent skill is active and the project is detected as Go. Use it when:
 
 - Auditing a **Gin** or **Fiber** API on Go 1.25+ for security issues
 - Hardening a Go service before production rollout
@@ -17,7 +13,7 @@ Use this skill when:
 - Applying or validating fixes for Go-specific issues (race conditions, goroutine leaks, slowloris, ServeMux conflicts)
 - Mapping a Go codebase against the **OWASP API Security Top 10 (2023)**
 
-This skill is **Go-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For language-agnostic API security review, complement with `@code-security-review` — covers both multi-language design patterns (`references/DESIGN_CONTROLS.md`) and active testing Phases 1–7 (`references/TESTING_PHASES.md`). Referenced explicitly in the relevant phases below.
+This reference is **Go-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. Generic design patterns (`../DESIGN_CONTROLS.md`) and active testing phases 1–7 (`../TESTING_PHASES.md`) live one directory up — load them in addition to this file.
 
 Out of scope: gRPC, graphql-go, and non-Go services. The skill assumes a Gin or Fiber HTTP API; pure `net/http` projects work with most checks but framework-specific phases are best-effort.
 
@@ -115,7 +111,7 @@ For each category below, run the grep, then read the matching files for context.
 | 11 | **Open Redirect** | `rg 'c\.Redirect\([^,]+,\s*c\.(Param|Query)'` |
 | 12 | **Log Injection** | `rg 'log\.[A-Z]\w*\([^)]*c\.(Param|Query|PostForm)'` |
 
-For deep remediation patterns per item, see [references/VULNERABILITIES.md](references/VULNERABILITIES.md).
+For deep remediation patterns per item, see [VULNERABILITIES.md](VULNERABILITIES.md).
 
 ## Phase 2 — Middleware Configuration Analysis
 
@@ -142,7 +138,7 @@ Anti-patterns to flag immediately as **High** severity:
 - Missing `ReadHeaderTimeout` on `http.Server` — exposes the service to slowloris
 - `app.Use(logger.New())` with default format printing request body in production (PII leak)
 
-For framework-specific snippets and Fiber v2/v3 API drift, see [references/MIDDLEWARE.md](references/MIDDLEWARE.md).
+For framework-specific snippets and Fiber v2/v3 API drift, see [MIDDLEWARE.md](MIDDLEWARE.md).
 
 ## Phase 3 — Authentication & Authorization Audit
 
@@ -247,7 +243,7 @@ Archived or risky dependencies to flag (each is at least **Medium**):
 
 ## Phase 5 — Go-Specific Advanced Vulnerabilities
 
-These are issues unique to Go's runtime, standard library, or memory model. Each is detailed in [references/VULNERABILITIES.md](references/VULNERABILITIES.md).
+These are issues unique to Go's runtime, standard library, or memory model. Each is detailed in [VULNERABILITIES.md](VULNERABILITIES.md).
 
 | # | Vulnerability | Detection | Severity baseline |
 | --- | --- | --- | --- |
@@ -285,7 +281,7 @@ These are issues unique to Go's runtime, standard library, or memory model. Each
 
 For every finding from Phases 1–5:
 
-1. Generate a unified diff using the matching template from [references/PATCHES.md](references/PATCHES.md)
+1. Generate a unified diff using the matching template from [PATCHES.md](PATCHES.md)
 2. Tag the patch with a **risk classification**:
    - **SAFE** — isolated change, no API contract or behavior shift (e.g., adding `MinVersion: tls.VersionTLS12`)
    - **REVIEW** — affects middleware stack, auth, or shared code paths (e.g., changing CORS allowlist)
@@ -329,9 +325,9 @@ The skill must report any patch that introduced new findings or test failures an
 
 ## Phase 7 — Active Testing
 
-For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, mass assignment, rate limit bypass, CORS reflection, JWT confusion), **delegate to `@code-security-review` (`references/TESTING_PHASES.md`)** Phases 1–7. Do not duplicate them here.
+For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, mass assignment, rate limit bypass, CORS reflection, JWT confusion), use the generic [`../TESTING_PHASES.md`](../TESTING_PHASES.md) Phases 1–7. Do not duplicate them here.
 
-Return to this phase for **Go-specific** attacks not covered by the generic skill. All payloads live in [references/TESTING_PAYLOADS.md](references/TESTING_PAYLOADS.md):
+Return to this phase for **Go-specific** attacks not covered by the generic flow. All payloads live in [TESTING_PAYLOADS.md](TESTING_PAYLOADS.md):
 
 | Attack | Triggers | Expected if vulnerable |
 | --- | --- | --- |
@@ -479,7 +475,10 @@ Run before every release:
 | **API9** | Improper Inventory Management | Document all `/v1/`, `/v2/` routes; remove `/legacy/` and `/beta/` from production; OpenAPI spec maintained |
 | **API10** | Unsafe Consumption of APIs | Validate third-party API responses against schemas; do not blindly forward upstream errors; mTLS for internal calls |
 
-## Related Skills
+## Sibling references
 
-- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`) + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) — covers FastAPI, Gin, Fiber, Elysia
-- `@code-review` — security-aware code review for PRs
+- [`../DESIGN_CONTROLS.md`](../DESIGN_CONTROLS.md) — language-agnostic design controls (auth, CORS, headers, rate limit)
+- [`../TESTING_PHASES.md`](../TESTING_PHASES.md) — 7-phase active testing flow
+- [`../WEB_VULNERABILITIES.md`](../WEB_VULNERABILITIES.md) — 100-vuln catalog
+- [`../REPORT_TEMPLATE.md`](../REPORT_TEMPLATE.md) — finding documentation template
+- [`../nextjs/API.md`](../nextjs/API.md) — companion lifecycle for Next.js 16 App Router projects

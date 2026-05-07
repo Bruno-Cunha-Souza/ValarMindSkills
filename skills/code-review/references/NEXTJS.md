@@ -1,14 +1,10 @@
----
-name: nextjs-optimization-pro
-description: "Performance optimization Next.js 16.2.x — Server Components, rendering, Client/Server boundaries, img tag rules."
-source: ValarMindSkills
----
+# Next.js 16.2.x Performance — `code-review` Next.js reference
 
-# Next.js 16.2.x Performance Optimization Guide
+> Reference companion loaded by `code-review/SKILL.md` Phase 0 (and Phase 4 — Performance & Scalability) when Next.js 16+ App Router is detected via `package.json` and `app/`. Sibling references in this folder: `GOLANG.md`, `RUST.md`, `TYPESCRIPT.md`, `CHECKLIST.md`, `SEVERITY_RUBRIC.md`.
 
 ## Purpose
 
-This skill aims to guide development and refactoring sessions to ensure Next.js 16.2.x applications are built with maximum performance. The skill focuses on modern optimization best practices introduced in Next.js 16, with a strong emphasis on carefully distinguishing between server and client rendering to achieve the best Web Vitals metrics and end-user experience.
+Audit Next.js 16.2.x applications for performance issues. The reference focuses on modern optimization best practices introduced in Next.js 16, with strong emphasis on the Server / Client boundary, RSC payload size, and the Web Vitals metrics that matter for end-user experience. During a `code-review` run, treat each rule below as a sweep — flag every violation in the diff with `file:line` and a quoted code excerpt.
 
 ## Critical Rules (Mandatory)
 

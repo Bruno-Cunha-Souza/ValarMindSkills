@@ -1,6 +1,6 @@
 # Code Review — TypeScript / Node / Bun Reference
 
-> Reference companion for the [code-review](../SKILL.md) skill. TypeScript-, Node-, and Bun-specific patterns, sweeps, and example findings. Pairs with [clean-code/references/TYPESCRIPT.md](../../clean-code/references/TYPESCRIPT.md) and [clean-code/references/BUN.md](../../clean-code/references/BUN.md). For Next.js App Router code, hand off to [@nextjs-security-pro](../../nextjs-security-pro/SKILL.md) and [@nextjs-optimization-pro](../../nextjs-optimization-pro/SKILL.md).
+> Reference companion for the [code-review](../SKILL.md) skill. TypeScript-, Node-, and Bun-specific patterns, sweeps, and example findings. Pairs with [clean-code/references/TYPESCRIPT.md](../../clean-code/references/TYPESCRIPT.md) and [clean-code/references/BUN.md](../../clean-code/references/BUN.md). For Next.js App Router code, see [NEXTJS.md](NEXTJS.md) for performance and [@code-security-review (Next branch)](../../code-security-review/references/nextjs/API.md) for security.
 
 ## Tools
 
@@ -292,7 +292,7 @@ rg -n '<\w+\s+\w+=\{\{' --type tsx     # candidate; manual review needed
 
 ## Hand-off triggers
 
-- Next.js App Router code (RSC, Server Actions, Route Handlers) → `@nextjs-security-pro` + `@nextjs-optimization-pro`.
-- API security review (design + active testing) → `@code-security-review` (TypeScript Bun/Elysia patterns).
+- Next.js App Router code (RSC, Server Actions, Route Handlers) → `@code-security-review` (Next branch — `references/nextjs/`) for security; `@code-review` (`references/NEXTJS.md`) for performance.
+- API security review (design + active testing) → `@code-security-review` (TypeScript Bun/Elysia patterns in the generic flow).
 - Refactor / clean-code → `@clean-code` with [TYPESCRIPT reference](../../clean-code/references/TYPESCRIPT.md) or [BUN reference](../../clean-code/references/BUN.md).
 - Runtime exception, memory leak, EventLoop stall → `@code-debugger`.

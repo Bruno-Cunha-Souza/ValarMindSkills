@@ -1,18 +1,10 @@
----
-name: nextjs-security-pro
-description: "Security audit Next.js 16.2.x App Router — RSC, Server Actions, Route Handlers, proxy.ts, caching, Image Optimizer. OWASP Web/API Top 10. Auto-detects auth lib."
-source: ValarMindSkills
----
+# Next.js 16.2.x Security Lifecycle — `code-security-review` Next.js branch reference
 
-# Next.js 16.2.x Security Lifecycle (App Router)
-
-## Pre-Requisite
-
-> **IMPORTANT:** Before answering any request with this skill, execute the `/code-security-review` skill command or ensure the `code-security-review` skill is loaded in context. All `Phase X (Vuln Y)` references in this document depend on its 100-vuln baseline catalog (`references/WEB_VULNERABILITIES.md`).
+> Stack-specific reference loaded by `code-security-review/SKILL.md` Phase 0 when `next` 16+ + `app/` directory are detected. Sibling references in this folder: `CONFIGURATION.md`, `PATCHES.md`, `TESTING_PAYLOADS.md`, `VULNERABILITIES.md`. Generic phases (`DESIGN_CONTROLS.md`, `TESTING_PHASES.md`, `WEB_VULNERABILITIES.md`, `REPORT_TEMPLATE.md`) live one directory up.
 
 ## When to Use
 
-Use this skill when:
+Load this reference when the parent skill is active and the project is detected as Next.js 16+ App Router. Use it when:
 
 - Auditing a **Next.js 16.2.x App Router** project for security issues
 - Hardening a Next.js service before production rollout
@@ -21,11 +13,11 @@ Use this skill when:
 - Mapping a Next.js codebase against the **OWASP Web Top 10 2021** and **OWASP API Top 10 2023**
 - Applying or validating fixes for Next.js-specific issues (RSC leakage, cache poisoning, Server Action auth bypass, image optimizer SSRF)
 
-This skill is **Next.js-native and lifecycle-driven**: it covers identification → analysis → correction → validation in a single workflow. For the generic vulnerability catalog and language-agnostic API security review (design + active testing), complement with `@code-security-review` (catalog in `references/WEB_VULNERABILITIES.md`).
+This reference is **Next.js-native and lifecycle-driven**: identification → analysis → correction → validation in a single workflow. The generic catalog (`../WEB_VULNERABILITIES.md`), design patterns (`../DESIGN_CONTROLS.md`), and active testing phases (`../TESTING_PHASES.md`) live one directory up — load them in addition to this file.
 
 **Out of scope:**
-- **Pages Router projects** (`pages/` directory without `app/`) — the skill hard-aborts in Phase 0.
-- Raw React without Next.js (use `@code-security-review` directly — see `references/WEB_VULNERABILITIES.md`).
+- **Pages Router projects** (`pages/` directory without `app/`) — Phase 0 hard-aborts and falls back to the generic flow.
+- Raw React without Next.js (use the generic `../WEB_VULNERABILITIES.md`).
 - Non-Next.js meta-frameworks (Remix, SvelteKit, Nuxt).
 
 ## Prerequisites
@@ -61,8 +53,8 @@ Detect the project's Next.js version, router, auth library, and deploy target be
 ```bash
 # Hard abort if the project is Pages Router only.
 if [ ! -d app ] && [ -d pages ]; then
-    echo "ERROR: Pages Router detected. This skill only supports App Router."
-    echo "Use @code-security-review directly for legacy pages/ projects (see references/WEB_VULNERABILITIES.md)."
+    echo "ERROR: Pages Router detected. This reference only supports App Router."
+    echo "Fall back to the generic flow (../WEB_VULNERABILITIES.md) for legacy pages/ projects."
     exit 1
 fi
 test -d app/ || { echo "ERROR: neither app/ nor pages/ detected — not a Next.js project."; exit 1; }
@@ -143,7 +135,7 @@ Calibration: start every finding at **Medium** severity and promote to **High** 
 
 ### 1.2 Pattern sweep (manual)
 
-For each category below, run the grep and read the matching files for context. Deep detail per item lives in [references/VULNERABILITIES.md](references/VULNERABILITIES.md).
+For each category below, run the grep and read the matching files for context. Deep detail per item lives in [VULNERABILITIES.md](VULNERABILITIES.md).
 
 | # | Category | Detection |
 | --- | --- | --- |
@@ -165,7 +157,7 @@ For each category below, run the grep and read the matching files for context. D
 
 ## Phase 2 — Next.js Surface Configuration Analysis
 
-Covers `next.config.*`, `proxy.ts`, `headers()`, caching directives, and environment files. Full config snippets live in [references/CONFIGURATION.md](references/CONFIGURATION.md).
+Covers `next.config.*`, `proxy.ts`, `headers()`, caching directives, and environment files. Full config snippets live in [CONFIGURATION.md](CONFIGURATION.md).
 
 ### 2.1 `next.config.{js,mjs,ts}`
 
@@ -207,7 +199,7 @@ Required headers (verify with `curl -I https://target/`):
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 - `Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-{nonce}'; ...`
 
-**CSP with nonce** is the only safe way to allow inline scripts with Server Components. See [references/CONFIGURATION.md](references/CONFIGURATION.md) for a full `proxy.ts` + `headers()` template that generates a per-request nonce and injects it into `<Script nonce={...}>`.
+**CSP with nonce** is the only safe way to allow inline scripts with Server Components. See [CONFIGURATION.md](CONFIGURATION.md) for a full `proxy.ts` + `headers()` template that generates a per-request nonce and injects it into `<Script nonce={...}>`.
 
 ### 2.4 Caching directives (Next 16 is opt-in)
 
@@ -379,7 +371,7 @@ After upgrading Next.js to `>= 16.0.7`, run `npx fix-react2shell-next` (if avail
 
 ## Phase 5 — Next.js-Specific Advanced Vulnerabilities
 
-These are issues unique to Next.js 16, React Server Components, or the App Router runtime. Each is detailed in [references/VULNERABILITIES.md](references/VULNERABILITIES.md) under the `NEXTJS-VULN-NNN` catalog.
+These are issues unique to Next.js 16, React Server Components, or the App Router runtime. Each is detailed in [VULNERABILITIES.md](VULNERABILITIES.md) under the `NEXTJS-VULN-NNN` catalog.
 
 | # | Vulnerability | Detection | Severity baseline |
 | --- | --- | --- | --- |
@@ -422,7 +414,7 @@ These are issues unique to Next.js 16, React Server Components, or the App Route
 
 For every finding from Phases 1–5:
 
-1. Generate a unified diff using the matching template from [references/PATCHES.md](references/PATCHES.md)
+1. Generate a unified diff using the matching template from [PATCHES.md](PATCHES.md)
 2. Tag the patch with a **risk classification**:
    - **SAFE** — isolated change, no API contract or behavior shift (e.g., adding `DOMPurify.sanitize()`, removing `dangerouslyAllowLocalIP: true`)
    - **REVIEW** — affects auth, middleware, or shared code paths (e.g., adding `await auth()` to a Server Action, tightening `images.remotePatterns`)
@@ -463,9 +455,9 @@ The skill must report any patch that introduced new findings or test failures an
 
 ## Phase 7 — Active Testing
 
-For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, JWT confusion, CORS reflection, rate-limit bypass), **delegate to `@code-security-review` (`references/TESTING_PHASES.md`) Phases 1–7**. Do not duplicate them here.
+For generic OWASP API Top 10 attack payloads (auth bypass, BOLA, SQLi, NoSQL injection, JWT confusion, CORS reflection, rate-limit bypass), use the generic [`../TESTING_PHASES.md`](../TESTING_PHASES.md) Phases 1–7. Do not duplicate them here.
 
-This phase covers **Next.js-specific** attacks not covered by the generic skill. All payloads live in [references/TESTING_PAYLOADS.md](references/TESTING_PAYLOADS.md):
+This phase covers **Next.js-specific** attacks not covered by the generic flow. All payloads live in [TESTING_PAYLOADS.md](TESTING_PAYLOADS.md):
 
 | Attack | Triggers | Expected if vulnerable |
 | --- | --- | --- |
@@ -482,7 +474,7 @@ This phase covers **Next.js-specific** attacks not covered by the generic skill.
 
 ## Phase 8 — Security Report
 
-Generate the report in **Report Format v1** (same schema as `golang-api-security`).
+Generate the report in **Report Format v1** (same schema as the sibling Go branch — `../golang/API.md` Phase 8).
 
 ```markdown
 # Next.js App Router Security Report — <project name>
@@ -675,9 +667,11 @@ Run before every release:
 | **API9** | Improper Inventory Management | Document all Route Handlers; remove `/legacy` and `/beta` from production; maintain OpenAPI spec if public |
 | **API10** | Unsafe Consumption of APIs | Validate third-party responses with Zod; do not blindly forward upstream errors; mTLS for internal calls |
 
-## Related Skills
+## Sibling references
 
-- `@code-security-review` — multi-language API security lifecycle: design patterns (`references/DESIGN_CONTROLS.md`) + active testing Phases 1–7 (`references/TESTING_PHASES.md`, delegated to in Phase 7) + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`, **mandatory prerequisite — load before using this skill**) — covers FastAPI, Gin, Fiber, Elysia
-- `@nextjs-optimization-pro` — performance specialist for Next.js 16.2.x (sibling skill)
-- `@golang-api-security` — sibling skill: structural template for this skill
-- `@code-review` — security-aware PR review
+- [`../DESIGN_CONTROLS.md`](../DESIGN_CONTROLS.md) — language-agnostic design controls (auth, CORS, headers, rate limit)
+- [`../TESTING_PHASES.md`](../TESTING_PHASES.md) — 7-phase active testing flow
+- [`../WEB_VULNERABILITIES.md`](../WEB_VULNERABILITIES.md) — 100-vuln catalog
+- [`../REPORT_TEMPLATE.md`](../REPORT_TEMPLATE.md) — finding documentation template
+- [`../golang/API.md`](../golang/API.md) — companion lifecycle for Gin/Fiber Go projects
+- For Next.js performance audits (RSC, `<img>`, Turbopack), see `@code-review` `references/NEXTJS.md`

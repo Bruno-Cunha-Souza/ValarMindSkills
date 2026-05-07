@@ -1,6 +1,6 @@
 # Middleware Configuration Reference (Gin / Fiber v2 / Fiber v3)
 
-Side-by-side configuration patterns for the middleware items checked in Phase 2 of `golang-api-security`. Use the `$FRAMEWORK` value detected in Phase 0 to pick the correct column.
+Side-by-side configuration patterns for the middleware items checked in Phase 2 of `code-security-review` (Go branch — `references/golang/API.md`). Use the `$FRAMEWORK` value detected in Phase 0 to pick the correct column.
 
 > **Fiber v2 vs v3**: Fiber v3 changed many middleware import paths from `gofiber/fiber/v2/middleware/X` to `gofiber/fiber/v3/middleware/X`. Some middleware moved to `gofiber/contrib/X`. Always confirm the import path against the version in `go.mod`.
 

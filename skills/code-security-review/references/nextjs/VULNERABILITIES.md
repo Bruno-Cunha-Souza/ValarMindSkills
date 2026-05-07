@@ -1,6 +1,6 @@
 # Next.js App Router Vulnerability Catalog
 
-Catalog of Next.js-specific vulnerability patterns for use by the `nextjs-security-pro` skill. Each entry follows the same structure: ID, CWE, severity baseline, vulnerable snippet, fixed snippet, detection command, notes.
+Catalog of Next.js-specific vulnerability patterns for use by `code-security-review` (Next branch — `references/nextjs/API.md`). Each entry follows the same structure: ID, CWE, severity baseline, vulnerable snippet, fixed snippet, detection command, notes.
 
 Use the IDs (`NEXTJS-VULN-NNN`) when emitting findings in the security report so they can be cross-referenced.
 

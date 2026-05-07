@@ -126,7 +126,7 @@ Findings themselves never cause non-zero exit (they are output, not errors). CI 
 
 ## Limitations
 
-- Scripts are **black-box probes**. They detect vulnerabilities visible from outside the API. White-box code review must come from `references/DESIGN_CONTROLS.md` + framework-specific skills (`@golang-api-security`, `@nextjs-security-pro`).
+- Scripts are **black-box probes**. They detect vulnerabilities visible from outside the API. White-box code review must come from `references/DESIGN_CONTROLS.md` + stack-specific references (`references/golang/` for Gin/Fiber; `references/nextjs/` for Next.js 16 App Router).
 - `02-jwt-attacks.py` requires a sample JWT; it cannot fabricate one for an unknown signing scheme.
 - Rate limit probes can be detected by the target. Run during low-traffic windows or coordinate with ops.
 - `05-burst.k6.js` is **not invoked by run-all.sh** — burst load can disrupt staging environments. Run manually: `k6 run 05-burst.k6.js -e TARGET=$TARGET`.

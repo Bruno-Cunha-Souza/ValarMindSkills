@@ -190,7 +190,7 @@ Structured review following the template in [`EXAMPLE.md`](./EXAMPLE.md):
 - `@code-review` — lifecycle code-review skill (multi-language Go/Rust/TS). Use when the user wants methodology-driven review not tied to a GitHub PR (audit, pre-merge gate, refactor review).
 - `@code-debugger` — when a finding here uncovers a runtime bug that needs root-cause analysis.
 - `@github-commit` — when the review concludes `Approve` and the user wants to author the merge commit.
-- `@nextjs-security-pro` / `@golang-api-security` — hand off security findings into a deeper framework-aware audit.
+- `@code-security-review` — hand off security findings into a stack-aware audit (Go branch — `references/golang/`; Next branch — `references/nextjs/`).
 
 ## References
 

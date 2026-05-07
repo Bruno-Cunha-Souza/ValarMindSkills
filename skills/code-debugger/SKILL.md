@@ -29,7 +29,7 @@ The skill exists because LLM debuggers tend to confabulate: invented stack frame
 - The user wants a **review** of code that is not failing — use `@code-review`.
 - The user wants the code refactored or simplified — use `@clean-code`.
 - The user has no symptom to investigate (no error, no failing test, no observable issue) — debugging needs a starting signal.
-- The user wants to write **new code** — use the relevant builder skill (`@golang-api-security`, `@nextjs-security-pro`, `@ci-cd-generator`, etc.).
+- The user wants to write **new code** — use the relevant builder skill (`@code-security-review` for Go/Next API hardening, `@ci-cd-generator` for pipelines, etc.).
 - The bug is in a third-party library outside the user's control and the user is not asking how to work around it — escalate to the library's issue tracker.
 - The bug is in **infrastructure** (DNS, networking, cluster) without a code fingerprint — use ops tooling, not this skill.
 
@@ -325,7 +325,7 @@ Optional but valuable: propose a lint rule, a test helper, or a CI check that wo
 - **Never expand scope.** The fix targets the root cause of **the reported bug**. Other smells encountered are listed as Info, not patched.
 - **Always provide a regression test.** A fix without a regression test is rejected.
 - **Always include the tool versions used** (`go version`, `cargo --version`, `node --version` / `bun --version`).
-- **Always cross-link to the dedicated skill** when the root cause belongs to its domain (`@code-review`, `@clean-code`, `@golang-api-security`, `@nextjs-security-pro`, `@nextjs-optimization-pro`, `@code-security-review`).
+- **Always cross-link to the dedicated skill** when the root cause belongs to its domain (`@code-review`, `@clean-code`, `@code-security-review` — Go branch `references/golang/`, Next branch `references/nextjs/`; performance regressions in Next.js → `@code-review` `references/NEXTJS.md`).
 - **Must drop a hypothesis the moment evidence-against arrives.** Do not hold onto a theory because it would be elegant.
 - **Must escalate when stuck.** After three falsified hypotheses without progress, summarize the state and ask the user (more telemetry, second pair of eyes).
 
@@ -399,12 +399,9 @@ When the skill cannot reach root cause, print the same skeleton truncated at the
 
 ## Related Skills
 
-- `@code-review` — for static review of code that is not failing; also useful after a fix to spot collateral risk.
+- `@code-review` — for static review of code that is not failing; also useful after a fix to spot collateral risk. For Next.js performance regressions, see `@code-review` `references/NEXTJS.md`.
 - `@clean-code` — when the root cause is a maintainability smell that recurred (god function, unclear name, hidden dependency).
-- `@golang-api-security` — when the root cause has a security dimension on a Go API.
-- `@nextjs-security-pro` — Next.js App Router security-driven runtime bugs.
-- `@nextjs-optimization-pro` — Next.js performance regressions.
-- `@code-security-review` — when the bug is in the API surface and security review (design + active testing) helps.
+- `@code-security-review` — when the bug is in the API surface and security review (design + active testing) helps. Go-specific runtime bugs (race, slowloris, pprof) — see `references/golang/`. Next.js App Router security-driven runtime bugs (RSC, Server Actions, `proxy.ts`) — see `references/nextjs/`.
 - `@github-commit` — when the user wants help drafting the fix commit.
 - `@superpowers` — engineering posture (TDD, evidence-first) for the user fixing more bugs of the same class.
 - `@ci-cd-generator` — to add the lint / test that would have caught this class of bug to the pipeline.

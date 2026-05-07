@@ -74,9 +74,7 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 **Examples in the repo.**
 
 - `skills/clean-code/` (293 lines + 6 references) — Lifecycle with multi-language branching via per-language references (`GOLANG.md`, `TYPESCRIPT.md`, `RUST.md`, `BUN.md`, plus `PRINCIPLES.md` and `PATTERNS.md`).
-- `skills/golang-api-security/` (491 lines + 4 references) — Lifecycle with a single target language and framework auto-detect (Gin / Fiber / stdlib).
-- `skills/code-security-review/` (~200 lines + 3 references) — Lifecycle that splits proactive design (`DESIGN_CONTROLS.md`) and reactive testing (`TESTING_PHASES.md`) into mode-specific references rather than phase-by-phase branching.
-- `skills/nextjs-security-pro/` (691 lines + 4 references) — the largest Lifecycle in the repo; hard-aborts if Pages Router is detected.
+- `skills/code-security-review/` (~200 lines + 4 generic references + `references/golang/` + `references/nextjs/` subfolders) — Lifecycle with Phase 0 stack detection that branches into stack-specific reference bundles. The largest Lifecycle in the repo when both stack folders are loaded; sets the precedent for subfolder organization when the Lifecycle covers more than one framework.
 
 **Demotion rule.** If all phases share the same tools and there is no branching, the skill is probably Procedural with phase labels.
 
@@ -142,7 +140,6 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 **Examples in the repo.**
 
 - `skills/context-optimization/` (189 lines, no references) — compact Best Practices, imported from external source.
-- `skills/nextjs-optimization-pro/` (69 lines, no references) — smallest Best Practices, a tight cheat sheet.
 
 **Promotion rule.** If the skill starts accumulating numbered steps and fixed outputs, convert it to Procedural.
 
@@ -183,7 +180,7 @@ Some combinations are idiomatic in this repo; others are anti-patterns.
 
 **Acceptable hybrids.**
 
-- **Procedural + Reference-style `references/`.** The main file is a procedure, but deep catalogs live in `references/`. Example: `skills/golang-api-security/` references pair a Lifecycle with reference-style appendices.
+- **Procedural + Reference-style `references/`.** The main file is a procedure, but deep catalogs live in `references/`. Example: `skills/code-security-review/` references pair a Lifecycle with reference-style appendices in `references/golang/` and `references/nextjs/`.
 - **Lifecycle with Best-Practices embedded in Phase 1.** When an audit phase needs to teach principles before listing checks.
 
 **Anti-patterns.**

@@ -1,6 +1,6 @@
 ---
 name: code-security-review
-description: "Web+API security lifecycle. Design + active testing (BOLA, JWT, injection) + 100-vuln catalog (XSS, CSRF, SSRF). FastAPI/Gin/Fiber/Elysia. OWASP API Top 10 2023."
+description: "Web+API+Go+Next.js security lifecycle. FastAPI/Gin/Fiber/Elysia/Next.js 16 App Router. Phase 0 stack detect. Design + active testing + Go/Next stack-specific vulns + 100-vuln catalog. OWASP Web 2021 + API 2023."
 source: ValarMindSkills
 ---
 
@@ -27,12 +27,38 @@ This skill is **fully standalone** — every payload, snippet, and checklist nee
 
 | File / Directory | Use when |
 | --- | --- |
-| `SKILL.md` (this file) | Foundations, OWASP API Top 10 map, audit cheat sheet |
-| `references/DESIGN_CONTROLS.md` | Implementing or reviewing controls (proactive) |
-| `references/TESTING_PHASES.md` | Running 7-phase active testing workflow (reactive) |
+| `SKILL.md` (this file) | Foundations, Phase 0 stack detection, OWASP API Top 10 map, audit cheat sheet |
+| `references/DESIGN_CONTROLS.md` | Implementing or reviewing controls (proactive) — language-agnostic |
+| `references/TESTING_PHASES.md` | Running 7-phase active testing workflow (reactive) — language-agnostic |
 | `references/REPORT_TEMPLATE.md` | Documenting findings with consistent severity rubric |
 | `references/WEB_VULNERABILITIES.md` | Reference catalog of 100 web vulnerabilities by category (XSS, CSRF, deserialization, mobile/IoT, etc.) |
+| `references/golang/` | Go stack lifecycle (Gin/Fiber): `API.md`, `MIDDLEWARE.md`, `VULNERABILITIES.md`, `PATCHES.md`, `TESTING_PAYLOADS.md` |
+| `references/nextjs/` | Next.js 16 App Router lifecycle: `API.md`, `CONFIGURATION.md`, `VULNERABILITIES.md`, `PATCHES.md`, `TESTING_PAYLOADS.md` |
 | `scripts/` | Executable probes — automate Phase 0–7 against a live target. See `scripts/README.md`. |
+
+## Phase 0 — Stack Detection
+
+Detect the language/framework before loading stack-specific references. Run the steps in order, stop at the first match.
+
+```bash
+# Step 1 — Go (Gin / Fiber)
+test -f go.mod && grep -E 'gin-gonic/gin|gofiber/fiber/v[23]' go.mod && echo "stack: go"
+
+# Step 2 — Next.js 16+ App Router
+test -f package.json && rg '"next":\s*"\^?1[6-9]' package.json && test -d app/ && echo "stack: nextjs-app"
+
+# Step 3 — FastAPI / Elysia / generic
+test -f pyproject.toml && grep -E '^(fastapi|django|flask)' pyproject.toml && echo "stack: python"
+test -f bun.lockb && rg 'elysia' package.json && echo "stack: elysia"
+```
+
+| `$STACK` | References to load (in addition to generic) | Notes |
+| --- | --- | --- |
+| `go` | `references/golang/{API,MIDDLEWARE,VULNERABILITIES,PATCHES,TESTING_PAYLOADS}.md` | Gin v1.10.1+, Fiber v2/v3, OWASP API 2023 + Go-specific (race, slowloris, `math/rand`, pprof, `ServeMux` conflicts) |
+| `nextjs-app` | `references/nextjs/{API,CONFIGURATION,VULNERABILITIES,PATCHES,TESTING_PAYLOADS}.md` | Next.js 16.2.x App Router — RSC, Server Actions, Route Handlers, `proxy.ts`, `"use cache"`, Image Optimizer |
+| `fastapi` / `elysia` / `generic` | `references/{DESIGN_CONTROLS,TESTING_PHASES,WEB_VULNERABILITIES,REPORT_TEMPLATE}.md` | Generic references already cover the language-agnostic surface |
+
+The generic references (`DESIGN_CONTROLS.md`, `TESTING_PHASES.md`, `WEB_VULNERABILITIES.md`, `REPORT_TEMPLATE.md`) apply to **every** stack — load them in addition to the stack-specific bundle. Stack-specific references inherit the OWASP map and severity rubric from the generic ones; do not duplicate.
 
 ## Security Foundations (Core Principles)
 
@@ -149,6 +175,4 @@ Each phase from `TESTING_PHASES.md` has a script counterpart that emits findings
 
 ## Related Skills
 
-- `@golang-api-security` — Go-specific lifecycle (Gin/Fiber) that delegates language-agnostic phases to this skill
-- `@nextjs-security-pro` — Next.js App Router security audit; complements with this skill for backend API surface
-- `@code-review` — broader code-quality review that pairs with this skill for security-specific concerns
+- `@code-review` — broader code-quality review that pairs with this skill for security-specific concerns. For Next.js performance audits, see `@code-review` `references/NEXTJS.md`.

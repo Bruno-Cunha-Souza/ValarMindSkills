@@ -1,6 +1,6 @@
 # Next.js 16.2.x Configuration Reference
 
-Complete configuration patterns for the security items checked in Phase 2 of `nextjs-security-pro`. This document is the Next.js equivalent of `golang-api-security/references/MIDDLEWARE.md`.
+Complete configuration patterns for the security items checked in Phase 2 of `code-security-review` (Next branch — `references/nextjs/API.md`). This document is the Next.js equivalent of `references/golang/MIDDLEWARE.md`.
 
 > **Scope:** App Router only. Pages Router configurations are deliberately omitted.
 

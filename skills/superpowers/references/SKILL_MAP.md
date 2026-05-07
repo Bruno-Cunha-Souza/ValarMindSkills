@@ -13,9 +13,9 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 1. Brainstorm | — | `@skill-creator` (task is "create/edit a skill") |
 | 2. Worktree | — | — (handled by harness `EnterWorktree`) |
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
-| 4. Execute / implement | `@clean-code` | `@nextjs-optimization-pro`, `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review`, `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
+| 4. Execute / implement | `@clean-code` | `@code-review` (Next.js perf via `references/NEXTJS.md`), `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`), `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
 | 5. TDD + debugging | `@code-debugger` (when red/error) | `@code-security-review` (API under test) |
-| 6. Request review | `@code-review` *or* `@github-pr-review` | `@nextjs-security-pro`, `@golang-api-security`, `@code-security-review` (security-sensitive diff) |
+| 6. Request review | `@code-review` *or* `@github-pr-review` | `@code-security-review` (security-sensitive diff — pick the Go or Next branch) |
 | 7. Finish branch | `@github-commit` | `@github-release-note` (tag/release in scope) |
 
 Notes:
@@ -31,12 +31,12 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
 ### Frontend / Next.js
 
 - `IF` `next.config.{js,ts,mjs}` exists, or task touches `app/`, `pages/`, RSC, Server Actions, route handlers
-  → `@nextjs-optimization-pro` (perf, RSC, rendering strategy) + `@nextjs-security-pro` (audit Server Actions, route handlers, proxy.ts, image optimizer)
+  → `@code-review` (perf, RSC, rendering strategy via `references/NEXTJS.md`) + `@code-security-review` (Next branch — `references/nextjs/`: Server Actions, route handlers, `proxy.ts`, image optimizer)
 
 ### Backend APIs
 
 - `IF` Go module + Gin or Fiber detected (`go.mod` mentions `gin-gonic/gin` or `gofiber/fiber`)
-  → `@golang-api-security` (full lifecycle audit)
+  → `@code-security-review` (Go branch — `references/golang/` for full lifecycle audit)
 - `IF` new or modified REST/GraphQL endpoint, regardless of language
   → `@code-security-review` (design phase via `DESIGN_CONTROLS.md` + validation phase via `TESTING_PHASES.md`)
 - `IF` API in FastAPI / Bun+Elysia / Gin / Fiber and security focus is "find issues now"
@@ -92,7 +92,7 @@ When multiple skills apply, resolve in this order:
 1. **Safety / security never yields.** `@*-security-*` and destructive-action confirmations always run before anything else. Process-skills never override security-skills for "speed".
 2. **Process > implementation.** `@code-debugger`, `@skill-creator`, and review skills come before commit skills. The wrong implementation done quickly is debt.
 3. **Explicit user preference wins.** If the user said "be terse" or activated caveman, the prose around skill output compresses; the skills' artifact format stays. If the user said "no plan", honor it (user-instruction tier of the hierarchy).
-4. **Domain skills coexist with process skills.** Stage 4 can run `@clean-code` + `@nextjs-optimization-pro` + `@nextjs-security-pro` together — they cover different concerns and do not compete.
+4. **Domain skills coexist with process skills.** Stage 4 can run `@clean-code` + `@code-review` (`references/NEXTJS.md`) + `@code-security-review` (Next branch — `references/nextjs/`) together — they cover different concerns and do not compete.
 
 ## 4. Maintenance
 

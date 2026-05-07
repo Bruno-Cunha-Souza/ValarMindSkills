@@ -1,6 +1,6 @@
 # Go API Security Patch Templates
 
-Patch templates for the auto-fix phase of `golang-api-security`. Each template is keyed to a `GOVULN-NNN` ID from `VULNERABILITIES.md`.
+Patch templates for the auto-fix phase of `code-security-review` (Go branch — `references/golang/API.md` Phase 6). Each template is keyed to a `GOVULN-NNN` ID from `VULNERABILITIES.md`.
 
 Risk tag legend:
 - **SAFE** — isolated change, no API contract or behavior shift, no shared state mutation

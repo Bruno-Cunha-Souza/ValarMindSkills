@@ -28,7 +28,7 @@ The skill exists because LLM reviewers tend to hallucinate findings: invented fu
 - The change is a single typo, comment edit, or trivial rename — review overhead exceeds the value; tell the user and stop.
 - The change is in a language the skill cannot detect (not Go, Rust, TypeScript, or covered by an explicit `@<lang>` skill). Surface the gap and ask whether the user wants a generic pass.
 - The user's primary ask is to **run tests**, reproduce a failure, or debug runtime behavior — use `@code-debugger`. This skill may run optional verification commands only when they are explicitly requested or needed to validate a review finding.
-- The diff is on infrastructure (Terraform, Kubernetes manifests) — use `@nextjs-security-pro`, `@golang-api-security`, or `@ci-cd-generator` for those domains.
+- The diff is on infrastructure (Terraform, Kubernetes manifests) — use `@code-security-review` (Next branch — `references/nextjs/`; Go branch — `references/golang/`) or `@ci-cd-generator` for those domains.
 
 ## Prerequisites
 
@@ -100,7 +100,7 @@ Persist as `$LANG ∈ {go, rust, typescript, polyglot, other}`, `$BASE_REF`, `$B
 | --- | --- | --- |
 | `go` | [references/GOLANG.md](references/GOLANG.md) | `golangci-lint` |
 | `rust` | [references/RUST.md](references/RUST.md) | `cargo clippy` |
-| `typescript` | [references/TYPESCRIPT.md](references/TYPESCRIPT.md) | `tsc --noEmit` + `eslint`/`biome` |
+| `typescript` | [references/TYPESCRIPT.md](references/TYPESCRIPT.md) (+ [references/NEXTJS.md](references/NEXTJS.md) if Next.js 16+ App Router detected via `package.json` and `app/`) | `tsc --noEmit` + `eslint`/`biome` |
 | `polyglot` | Run Phase 1–5 per language detected | per-language |
 | `other` | Skip Phase 1.2 sweeps; run Phase 2 + generic Phase 3–5 | semgrep generic ruleset |
 
@@ -250,7 +250,7 @@ Run after Phase 2 because security findings depend on understanding intent. The 
 | API10 | Unsafe Consumption of APIs | Deserialization of upstream JSON without schema |
 | Web1–10 | Web equivalents | XSS, SQLi, SSRF, etc. — see per-language reference |
 
-For deeper Go-specific OWASP audits, hand off to `@golang-api-security`. For Next.js, hand off to `@nextjs-security-pro`. This skill stops at "this PR likely introduces a class-X issue at file.ext:LINE — recommend running the dedicated skill".
+For deeper stack-specific OWASP audits, hand off to `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`). This skill stops at "this PR likely introduces a class-X issue at file.ext:LINE — recommend running the dedicated skill".
 
 ### 3.2 Cross-language security smells
 
@@ -259,6 +259,8 @@ Every language's reference file ([GOLANG](references/GOLANG.md), [RUST](referenc
 ## Phase 4 — Performance & Scalability Review
 
 Performance findings have the lowest hallucination tolerance — the LLM cannot benchmark. Constrain claims to **patterns known to scale poorly**, not to predicted latencies.
+
+For Next.js 16.2.x App Router projects, also load [references/NEXTJS.md](references/NEXTJS.md) — covers the `<img>` rule, Server Components / RSC payload minimization, `"use cache"`, Turbopack notes, and `experimental.prefetchInlining` trade-offs.
 
 | # | Anti-pattern | Sweep |
 | --- | --- | --- |
@@ -346,7 +348,7 @@ If `Confidence=Low` **and** `Severity ≥ High`, escalate explicitly: state "nee
 - **Always run language detection (Phase 0) before sweeping (Phase 1).** Skipping detection produces wrong-language patterns and false positives.
 - **Always cap a single review at 50 files / 1500 lines.** If exceeded, ask to split before continuing.
 - **Always emit the report verbatim in the Output format below** — even if there are zero findings.
-- **Always cross-link to the dedicated skill** when the finding belongs to its domain (`@golang-api-security`, `@nextjs-security-pro`, `@clean-code`, `@code-debugger`).
+- **Always cross-link to the dedicated skill** when the finding belongs to its domain (`@code-security-review` Go branch — `references/golang/`; Next branch — `references/nextjs/`; `@clean-code`, `@code-debugger`; Next.js performance — `references/NEXTJS.md` here).
 - **Must include the tool versions used** in the report. A review without tool versions is not reproducible.
 
 ## Output format
@@ -388,7 +390,7 @@ Detailed findings:
       | c.JSON(200, order)
     Verification: add an integration test that asserts a 403 when user A
                   requests user B's order id.
-    Cross-link:  See @golang-api-security Phase 2 for full BOLA audit.
+    Cross-link:  See @code-security-review (Go branch — references/golang/API.md Phase 2) for full BOLA audit.
 
   R002 — Unbounded SELECT without LIMIT
     File:        api/store/db.go:118
@@ -405,7 +407,7 @@ Summary:
   Blocking-merge findings: 2 (R001, R002)
   Suggested next step:
     1. Author addresses R001 and R002 before re-request.
-    2. Run @golang-api-security Phase 2 to confirm no further BOLA cases.
+    2. Run @code-security-review (Go branch — references/golang/API.md Phase 2) to confirm no further BOLA cases.
     3. Re-review with `/valarmindskills:code-review` after fixes.
 
 Skill version: code-review @ <git rev of SKILL.md>
@@ -435,10 +437,7 @@ Info-level observations are allowed after the LGTM only when grounded in exact f
 
 - `@code-debugger` — when a finding is a runtime failure rather than a code-review concern, hand off here.
 - `@clean-code` — for refactor patterns and Rule-of-Three deduplication recommendations.
-- `@golang-api-security` — deeper Go REST API security audit (Gin, Fiber).
-- `@nextjs-security-pro` — Next.js App Router security audit.
-- `@nextjs-optimization-pro` — Next.js performance and rendering review.
-- `@code-security-review` — multi-language API security lifecycle: design patterns + active runtime testing + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) for cross-linking findings.
+- `@code-security-review` — multi-language + Go (Gin/Fiber) + Next.js 16 App Router security lifecycle: design patterns + active runtime testing + stack-specific vulns + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) for cross-linking findings.
 - `@github-pr-review` — GitHub-flavored PR review (posts comments via `gh`).
 - `@github-commit` — when the author wants help drafting the fix commit.
 - `@superpowers` — engineering posture (TDD, evidence-first) for the author addressing findings.
@@ -450,4 +449,5 @@ Info-level observations are allowed after the LGTM only when grounded in exact f
 - [GOLANG](references/GOLANG.md) — Go-specific patterns, sweeps, and example findings
 - [RUST](references/RUST.md) — Rust-specific patterns, sweeps, and example findings
 - [TYPESCRIPT](references/TYPESCRIPT.md) — TypeScript / Node / Bun patterns, sweeps, and example findings
+- [NEXTJS](references/NEXTJS.md) — Next.js 16.2.x performance rules (RSC, `<img>`, `"use cache"`, Turbopack)
 - [EXAMPLE](EXAMPLE.md) — end-to-end worked review of a Go pull request

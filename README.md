@@ -43,15 +43,12 @@ bash install.sh
 | `ci-cd-generator` | GitHub Actions CI/CD generator for Go/Rust/TS — auto-detects language, encodes coverage/race/leak gates, wires SAST/SCA/secret/container/SBOM scans by security level |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
-| `code-review` | Elite code review expert specializing in modern AI-powered code |
+| `code-review` | Lifecycle code review (Go/Rust/TS) with severity-ranked findings, risk tags, and `references/NEXTJS.md` for Next.js 16.2.x performance audits (RSC, `<img>`, Turbopack) |
 | `context-optimization` | Apply compaction, masking, and caching strategies |
 | `github-release-note` | Generates release notes from a git tag range |
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
-| `code-security-review` | Web+API security lifecycle (FastAPI, Gin, Fiber, Elysia) — design controls + active testing + 100-vuln catalog, OWASP API Top 10 2023 |
-| `golang-api-security` | Complete security lifecycle for Go 1.25+ APIs (Gin/Fiber) — auto-detect, audit, patch, validate, OWASP API Top 10 2023 |
-| `nextjs-optimization-pro` | Performance optimization specialist for Next.js 16.2.x — Server Components, rendering, client/server boundaries |
-| `nextjs-security-pro` | Complete security lifecycle for Next.js 16.2.x App Router — audit, patch, validate, OWASP Top 10 |
+| `code-security-review` | Web+API+Go+Next.js security lifecycle (FastAPI, Gin, Fiber, Elysia, Next.js 16 App Router) — Phase 0 stack detection branches into `references/golang/` (Gin/Fiber lifecycle) or `references/nextjs/` (App Router lifecycle); generic design controls + active testing + 100-vuln catalog. OWASP Web 2021 + API 2023 |
 | `obsidian-bases` | Create and edit Obsidian Bases (.base files) with views, filters, formulas, and summaries |
 | `obsidian-brain` | Token-efficient session-memory for Obsidian-vault projects — auto-detects, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when vault detected |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
@@ -66,7 +63,7 @@ bash install.sh
 
 ### Plugin install (manual, from source)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 20 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 17 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git

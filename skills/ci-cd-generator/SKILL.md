@@ -26,7 +26,7 @@ The skill has two operating modes — **generation** (the default, walks Phase 0
 - Pre-release gate: confirm the workflows match the security level the team thinks they are running at
 - The user explicitly asks for "auditar pipeline", "audit CI pipeline", "review existing workflow"
 
-This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For language-agnostic API security review (design + active testing) run from a CI pipeline, complement with `@code-security-review`. For deeper Go security audits in the CI workflow, complement with `@golang-api-security`. For Next.js-specific CI, see `@nextjs-security-pro` and `@nextjs-optimization-pro`.
+This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For multi-stack API security review (design + active testing + Go and Next.js stack-specific lifecycles) run from a CI pipeline, complement with `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`). For Next.js performance audits, see `@code-review` `references/NEXTJS.md`.
 
 ## Do not use when
 
@@ -307,9 +307,7 @@ Next: review the diff, then `/valarmindskills:github-commit`.
 - `@github-release-note` — generate release notes when the release workflow tags a version
 - `@github-pr-review` — review the diff that introduces the workflow
 - `@clean-code` — apply principles to the YAML (consistent naming, no duplication across jobs)
-- `@golang-api-security` — deeper Go security audit; the CI pipeline can call its tooling directly
-- `@nextjs-security-pro` — Next.js-specific security checks for TS projects under Next.js
-- `@code-security-review` — language-agnostic API security review job (active testing via `references/TESTING_PHASES.md`, run nightly via the load testing slot; 100-vuln class catalog via `references/WEB_VULNERABILITIES.md` when the pipeline must spell out which classes each gate addresses)
+- `@code-security-review` — multi-stack security review job covering generic flows + Go (Gin/Fiber, `references/golang/`) + Next.js 16 App Router (`references/nextjs/`); active testing via `references/TESTING_PHASES.md`, run nightly via the load testing slot; 100-vuln class catalog via `references/WEB_VULNERABILITIES.md` when the pipeline must spell out which classes each gate addresses
 - `@code-debugger` — diagnosing a failing generated workflow before reporting it as broken
 
 ## References

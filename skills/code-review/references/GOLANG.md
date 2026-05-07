@@ -1,6 +1,6 @@
 # Code Review — Go Reference
 
-> Reference companion for the [code-review](../SKILL.md) skill. Go-specific patterns, sweeps, and example findings. Pairs with [clean-code/references/GOLANG.md](../../clean-code/references/GOLANG.md) for refactor patterns and with [@golang-api-security](../../golang-api-security/SKILL.md) for deeper security audit.
+> Reference companion for the [code-review](../SKILL.md) skill. Go-specific patterns, sweeps, and example findings. Pairs with [clean-code/references/GOLANG.md](../../clean-code/references/GOLANG.md) for refactor patterns and with [@code-security-review (Go branch)](../../code-security-review/references/golang/API.md) for deeper security audit.
 
 ## Tools
 
@@ -264,7 +264,7 @@ rg -n 'bufio\.NewScanner\(' --type go
 
 ## Hand-off triggers
 
-- Any **API1–API10** finding from Phase 3 → recommend `@golang-api-security`.
-- A **Gin/Fiber middleware** misuse → `@golang-api-security`.
+- Any **API1–API10** finding from Phase 3 → recommend `@code-security-review` (Go branch — `references/golang/`).
+- A **Gin/Fiber middleware** misuse → `@code-security-review` (`references/golang/MIDDLEWARE.md`).
 - Refactor opportunity (function size, duplication) → `@clean-code` with [GOLANG reference](../../clean-code/references/GOLANG.md).
 - Runtime crash, panic, race observed in tests → `@code-debugger`.

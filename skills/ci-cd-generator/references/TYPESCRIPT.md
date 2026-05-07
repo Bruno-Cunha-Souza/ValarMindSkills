@@ -321,5 +321,5 @@ jobs:
 - Cache key uses the lockfile hash automatically via `cache: 'pnpm'`. Manual `actions/cache` is rarely needed.
 - The `setup` job exists to install once and share `node_modules` via artifact when `node_modules` is large; for small projects, skip it and let each job install in parallel — the cache restore is fast.
 - `--logHeapUsage` produces one line per test file. On large suites, the log volume can crowd out other annotations. Filter with `| grep MB` if needed.
-- For Next.js projects, the framework's own `next build` warns on common misconfigurations; do not duplicate those checks here. See `@nextjs-security-pro` for Next-specific checks the pipeline should call.
+- For Next.js projects, the framework's own `next build` warns on common misconfigurations; do not duplicate those checks here. See `@code-security-review` (Next branch — `references/nextjs/`) for Next-specific security checks the pipeline should call.
 - Bun's `audit` is newer than npm/pnpm's; verify exit codes match expectations during the first run on a project with known vulnerabilities.

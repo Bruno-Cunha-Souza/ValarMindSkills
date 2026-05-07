@@ -1,6 +1,6 @@
 # Next.js App Router Security Patch Templates
 
-Patch templates for the auto-fix phase of `nextjs-security-pro`. Each template is keyed to a `NEXTJS-VULN-NNN` ID from `VULNERABILITIES.md`.
+Patch templates for the auto-fix phase of `code-security-review` (Next branch — `references/nextjs/API.md` Phase 6). Each template is keyed to a `NEXTJS-VULN-NNN` ID from `VULNERABILITIES.md`.
 
 Risk tag legend:
 - **SAFE** — isolated change, no API contract or behavior shift, no shared state mutation

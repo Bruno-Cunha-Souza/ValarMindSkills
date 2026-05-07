@@ -235,7 +235,7 @@ After the report, the user can request fixes per finding ID. Each fix is a unifi
 The audit then:
 
 1. Generates the diff per finding.
-2. Tags each diff with **SAFE** / **REVIEW** / **BREAKING** (same taxonomy as `@golang-api-security` Phase 6).
+2. Tags each diff with **SAFE** / **REVIEW** / **BREAKING** (same taxonomy as `@code-security-review` Phase 6 — see `references/golang/API.md` Phase 6).
 3. Applies via `Edit` tool, one file at a time.
 4. Re-runs `actionlint` against the modified file. If it fails, `git restore` and surface the diff for manual handling.
 5. Reports applied vs deferred.

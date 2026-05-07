@@ -1,6 +1,6 @@
 # Code Debugger — Go Reference
 
-> Reference companion for the [code-debugger](../SKILL.md) skill. Go-specific debugging techniques, command snippets, and bug-class playbooks. Pairs with [code-review/references/GOLANG.md](../../code-review/references/GOLANG.md) (static smell catalogue) and [@golang-api-security](../../golang-api-security/SKILL.md) (security-driven runtime issues).
+> Reference companion for the [code-debugger](../SKILL.md) skill. Go-specific debugging techniques, command snippets, and bug-class playbooks. Pairs with [code-review/references/GOLANG.md](../../code-review/references/GOLANG.md) (static smell catalogue) and [@code-security-review](../../code-security-review/references/golang/API.md) (security-driven runtime issues — Go branch).
 
 ## Tools
 
@@ -222,6 +222,6 @@ runtime.SetMutexProfileFraction(1)
 
 ## Hand-off triggers
 
-- Security-class root cause (BOLA, SSRF, injection) → after fix, run `@golang-api-security` to sweep for siblings.
+- Security-class root cause (BOLA, SSRF, injection) → after fix, run `@code-security-review` (Go branch — `references/golang/`) to sweep for siblings.
 - Refactor-class root cause (god function, hidden coupling) → recommend `@clean-code` for the follow-up PR.
 - The fix is non-trivial and the diff is large → recommend `@code-review` before merge.

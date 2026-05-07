@@ -23,7 +23,7 @@ Before any creative work — new features, components, behavior changes, modific
 7. **Write spec to** `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`.
 8. **Spec self-review** — scan for placeholders, internal contradictions, ambiguity, scope creep. Fix inline.
 9. **User reviews spec.** Wait for explicit approval.
-10. **Invoke** [WRITING_PLANS](WRITING_PLANS.md) — terminal state. Never any implementation, scaffolding, or domain-specific skill (e.g., `@nextjs-optimization-pro`, `@golang-api-security`, `@ci-cd-generator`) before [WRITING_PLANS](WRITING_PLANS.md) has produced an approved plan.
+10. **Invoke** [WRITING_PLANS](WRITING_PLANS.md) — terminal state. Never any implementation, scaffolding, or domain-specific skill (e.g., `@code-review`, `@code-security-review`, `@ci-cd-generator`) before [WRITING_PLANS](WRITING_PLANS.md) has produced an approved plan.
 
 ## Design principles
 

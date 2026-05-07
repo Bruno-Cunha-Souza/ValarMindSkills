@@ -77,7 +77,7 @@ Three scenarios showing how the posture changes the agent's reply. Run for a sid
 
 ### Reply (caveman + superpowers)
 
-> Skill scan: `@nextjs-optimization-pro` applies. Posture compressed.
+> Skill scan: `@code-review` (`references/NEXTJS.md`) applies. Posture compressed.
 >
 > Inline object prop = new ref each render = re-render. Wrap in `useMemo` or hoist out.
 >
@@ -103,11 +103,11 @@ Caveman compresses voice; superpowers enforces process. Both apply at the same t
 
 > Skill scan via `references/SKILL_MAP.md`:
 >
-> - Trigger: `next.config.ts` + `app/` + Server Action → `@nextjs-optimization-pro` (RSC + rendering strategy) **and** `@nextjs-security-pro` (Server Action + route handler audit).
+> - Trigger: `next.config.ts` + `app/` + Server Action → `@code-review` (`references/NEXTJS.md`) for RSC + rendering perf **and** `@code-security-review` (Next branch — `references/nextjs/`) for Server Action + route handler audit.
 > - Stage 4 default → `@clean-code` (helper / handler quality).
 > - Standby: `@code-debugger` if any test fails. `@github-commit` at stage 7.
 >
-> Priority: security never yields, so `@nextjs-security-pro` checks (CSRF on Server Action, input validation on the search query, authz on the route) gate the design. `@nextjs-optimization-pro` shapes the RSC boundary (server component for results, client only for the form). `@clean-code` polices naming and duplication.
+> Priority: security never yields, so `@code-security-review` (Next branch) checks (CSRF on Server Action, input validation on the search query, authz on the route) gate the design. `@code-review` (`references/NEXTJS.md`) shapes the RSC boundary (server component for results, client only for the form). `@clean-code` polices naming and duplication.
 >
 > **Plan (4 tasks):**
 >

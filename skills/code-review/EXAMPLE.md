@@ -125,9 +125,9 @@ Detailed findings:
     Verification: add an integration test in api/handlers/order_test.go
                   asserting a 403 (or 404 — pick one and document) when
                   user A requests /orders/<user-B-id>.
-    Cross-link:  See @golang-api-security Phase 2 for full BOLA audit; the
-                 store layer has at least one more endpoint with the same
-                 pattern (api/handlers/order.go:91).
+    Cross-link:  See @code-security-review (Go branch — references/golang/API.md
+                 Phase 2) for full BOLA audit; the store layer has at least one
+                 more endpoint with the same pattern (api/handlers/order.go:91).
 
   R002 — Authorization header logged verbatim  (Severity: High, Confidence: High, Risk: SAFE)
     File:        api/middleware/auth.go:31
@@ -192,8 +192,8 @@ Summary:
     2. Author adds R004 test alongside the R001 fix.
     3. Author addresses R003 in the same PR or a follow-up.
     4. Re-review with `/valarmindskills:code-review` after fixes.
-    5. Consider running @golang-api-security Phase 2 across the rest of
-       the order service to confirm no further BOLA cases.
+    5. Consider running @code-security-review (Go branch — references/golang/API.md
+       Phase 2) across the rest of the order service to confirm no further BOLA cases.
 
 Skill version: code-review @ HEAD
 ```
@@ -203,5 +203,5 @@ Skill version: code-review @ HEAD
 - Every finding has `path:line`, an exact code quote, an impact, a fix, a risk tag, and a confidence tag.
 - Severity is calibrated by the rubric, not invented (R001 is High because single-resource BOLA has a High floor; R002 is High because CWE-532 + sensitive header).
 - The skill **never** edits the code — the report contains diffs, but they are suggestions for the author.
-- Cross-links steer the author to the dedicated skill (`@golang-api-security`) for follow-on work.
+- Cross-links steer the author to the right reference (`@code-security-review` Go branch — `references/golang/`) for follow-on work.
 - Tool versions are captured so the review is reproducible.
