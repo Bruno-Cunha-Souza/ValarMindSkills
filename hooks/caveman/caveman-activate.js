@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { getDefaultMode, safeWriteFlag } = require('./caveman-config');
+const { resolveSkillMd } = require('../_lib/resolve-skill-path');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.caveman-active');
@@ -40,12 +41,7 @@ if (INDEPENDENT_MODES.has(mode)) {
 const modeLabel = mode;
 
 // Read SKILL.md — the single source of truth for caveman behavior.
-let skillContent = '';
-try {
-  skillContent = fs.readFileSync(
-    path.join(__dirname, '..', 'skills', 'caveman', 'SKILL.md'), 'utf8'
-  );
-} catch (e) { /* fall back below */ }
+const skillContent = resolveSkillMd('caveman', __dirname);
 
 let output;
 
@@ -85,7 +81,12 @@ if (skillContent) {
     'Code/commits/PRs: write normal. "stop caveman" or "normal mode": revert. Level persist until changed or session end.';
 }
 
-// 3. Detect missing statusline config — nudge Claude to help set it up
+// 3. Detect missing statusline config — nudge Claude to help set it up (Claude Code only)
+if (process.env.VALARMIND_HOOK_RUNTIME === 'cursor') {
+  process.stdout.write(output);
+  process.exit(0);
+}
+
 try {
   let hasStatusline = false;
   if (fs.existsSync(settingsPath)) {

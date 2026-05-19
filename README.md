@@ -1,10 +1,10 @@
 # ValarMindSkills
 
-A library of reusable skills for AI agents. Each skill is a Markdown file with YAML frontmatter that can be invoked as a slash command within Claude Code CLI or Antigravity IDE.
+A library of reusable skills for AI agents. Each skill is a Markdown file with YAML frontmatter that can be invoked as a slash command within Claude Code CLI, Cursor IDE, Codex CLI, or Antigravity IDE.
 
 ## Quick install (recommended)
 
-Run the unified installer to set up skills for Claude Code CLI, Codex CLI, and Antigravity. The script is idempotent, so you can re-run it anytime to upgrade.
+Run the unified installer to set up skills for Claude Code CLI, Codex CLI, Antigravity, and Cursor IDE. The script is idempotent, so you can re-run it anytime to upgrade.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh | bash
@@ -74,7 +74,7 @@ cd ValarMindSkills
 bash scripts/install-plugin-claude.sh
 ```
 
-To install in Claude Code CLI, Codex CLI, and Antigravity in one command, use the unified installer:
+To install in Claude Code CLI, Codex CLI, Antigravity, and Cursor IDE in one command, use the unified installer:
 
 ```bash
 bash scripts/install-all.sh
@@ -203,6 +203,48 @@ Restart Codex CLI after either script so the new skills and hooks are picked up.
 
 ---
 
+## Installation on Cursor IDE
+
+### Plugin install (recommended)
+
+Copies all skills to `~/.cursor/skills/`, copies hook scripts to `~/.cursor/hooks/`, and merges ValarMind entries into `~/.cursor/hooks.json` (`sessionStart` + `beforeSubmitPrompt`). Session-start hooks run through `hooks/_cursor/wrap-session.sh`, which adapts Claude-style plain-text output to Cursor's JSON `additional_context` format. Re-running the installer removes prior ValarMind hook entries before appending fresh ones (no duplicates).
+
+```bash
+git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
+cd ValarMindSkills
+bash scripts/install-plugin-cursor.sh
+```
+
+Override the target directory with `CURSOR_HOME=/custom/path bash scripts/install-plugin-cursor.sh`.
+
+Set `VALARMIND_SKIP_HOOKS=1` to install skills only (no `hooks.json` changes).
+
+### Skills-only install (lite)
+
+```bash
+bash scripts/install-cursor.sh
+```
+
+Restart Cursor after either script. Check **Settings → Hooks** (or the Hooks output channel) if hooks do not load.
+
+#### Modes in Cursor
+
+Skills are invoked with `@slug` (e.g. `@code-review`, `@caveman`). Caveman, superpowers, and obsidian-brain postures behave like Codex/Claude:
+
+- **Caveman** — ON by default at level `lite`. Toggle with natural language (`stop caveman`, `normal mode`) or by mentioning `@caveman`.
+- **Superpowers** — OFF by default. Activate with `@superpowers` or phrases like `superpowers on`.
+- **Obsidian-brain** — ON when the workspace `CLAUDE.md` or `AGENTS.md` references an Obsidian vault path.
+
+Override defaults with `CAVEMAN_DEFAULT_MODE`, `SUPERPOWERS_DEFAULT_MODE`, or `OBSIDIAN_BRAIN_DEFAULT_MODE`, or the JSON files under `~/.config/caveman/`, `~/.config/superpowers/`, and `~/.config/obsidian-brain/`.
+
+Cursor does not support the Claude Code statusline; posture state is stored in flag files under `~/.cursor/` (e.g. `~/.cursor/.caveman-active`).
+
+#### Third-party Claude hooks (optional)
+
+If you already use Claude Code hooks in `~/.claude/settings.json`, you can enable **Settings → Features → Third-party skills** to load them in Cursor in parallel. The ValarMind Cursor installer uses native `~/.cursor/hooks.json` and does not require this setting.
+
+---
+
 ## Project structure
 
 ```text
@@ -222,6 +264,10 @@ hooks/
     obsidian-brain-activate.js      <- SessionStart hook (on when vault detected)
     obsidian-brain-mode-tracker.js  <- UserPromptSubmit hook
     obsidian-brain-config.js        <- shared helpers
+  _cursor/
+    wrap-session.sh                 <- Cursor sessionStart JSON adapter
+  _lib/
+    resolve-skill-path.js           <- shared SKILL.md path resolver
   statusline/
     statusline.sh                   <- composer (entry registered in settings.json)
     segments/
@@ -236,8 +282,10 @@ scripts/
   install-plugin-claude.sh  <- persistent plugin install for Claude Code CLI
   install-plugin-codex.sh   <- full plugin install for Codex CLI (skills + hooks + AGENTS.md)
   install-codex.sh          <- skills-only install for Codex CLI (no hooks)
+  install-plugin-cursor.sh  <- full plugin install for Cursor IDE (skills + hooks.json)
+  install-cursor.sh         <- skills-only install for Cursor IDE (no hooks)
   install-antigravity.sh    <- copies skills to Antigravity global directory
-  install-all.sh            <- runs the three plugin installers (Claude + Codex + Antigravity)
+  install-all.sh            <- runs all plugin installers (Claude + Codex + Antigravity + Cursor)
 install.sh                  <- curl-bash bootstrap (downloads latest release, runs install-all.sh)
 ```
 

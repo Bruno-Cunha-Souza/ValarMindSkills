@@ -10,8 +10,8 @@
 #   - Downloads the source tarball into $VALARMIND_INSTALL_DIR
 #     (default: ~/.valarmindskills).
 #   - Runs scripts/install-all.sh which wires up Claude Code, Codex CLI,
-#     and Antigravity (each step is independently graceful — missing CLIs
-#     are skipped, not fatal).
+#     Antigravity, and Cursor IDE (each step is independently graceful —
+#     missing CLIs are skipped, not fatal).
 #
 # Environment overrides:
 #   VALARMIND_VERSION       Specific tag (e.g. v0.1.0). Default: latest.

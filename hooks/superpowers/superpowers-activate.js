@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { getDefaultMode, safeWriteFlag } = require('./superpowers-config');
+const { resolveSkillMd } = require('../_lib/resolve-skill-path');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.superpowers-active');
@@ -32,13 +33,7 @@ safeWriteFlag(flagPath, 'on');
 
 // Try to derive posture from SKILL.md so the message stays in sync with the
 // canonical text. If absent, fall back to a short hardcoded summary.
-let skillContent = '';
-try {
-  skillContent = fs.readFileSync(
-    path.join(__dirname, '..', '..', 'skills', 'superpowers', 'SKILL.md'),
-    'utf8'
-  );
-} catch (e) { /* fall back below */ }
+const skillContent = resolveSkillMd('superpowers', __dirname);
 
 let output;
 
