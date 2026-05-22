@@ -1,6 +1,6 @@
 ---
 name: code-debugger
-description: "Lifecycle debug Go/Rust/TS — symptom→reproduction→root cause→fix→regression test. Evidence-first (cites cmd output or stack frame). For runtime errors, test failures, panics, races, leaks, flaky tests. Triggers: 'debug', 'depurar', 'root cause', '/code-debugger'."
+description: "Lifecycle debug Go/Rust/TS/Python — symptom→reproduction→root cause→fix→regression test. Evidence-first (cites cmd output or stack frame). For runtime errors, test failures, panics, races, leaks, flaky tests. Triggers: 'debug', 'depurar', 'root cause', '/code-debugger'."
 source: ValarMindSkills
 ---
 
@@ -8,7 +8,7 @@ source: ValarMindSkills
 
 > "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it." — Brian Kernighan.
 
-This skill walks a structured root-cause analysis. It is **evidence-first**: every step produces a citable artifact (a command output, a log line, a stack frame, a diff). It is **language-aware** for Go, Rust, and TypeScript; other languages are best-effort. It assumes nothing about the symptom — it asks until it has enough to reproduce.
+This skill walks a structured root-cause analysis. It is **evidence-first**: every step produces a citable artifact (a command output, a log line, a stack frame, a diff). It is **language-aware** for Go, Rust, TypeScript, and Python (CPython 3.13 / 3.14, including the free-threaded build); other languages are best-effort. It assumes nothing about the symptom — it asks until it has enough to reproduce.
 
 The skill exists because LLM debuggers tend to confabulate: invented stack frames, fabricated error messages, premature root-cause claims, and "fixes" that change unrelated code. Every guardrail in the Constraints section is there to push back on those failure modes.
 
@@ -48,6 +48,10 @@ The skill exists because LLM debuggers tend to confabulate: invented stack frame
 | `node --inspect` / `bun --inspect` | TypeScript / Node / Bun debugger | bundled |
 | `clinic` | Node performance diagnostics (`doctor`, `flame`, `bubbleprof`) | `npm i -g clinic` |
 | `0x` | Node flame graph generator | `npm i -g 0x` |
+| `pdb` / `python -m pdb -p <PID>` | Python step debugger + 3.14 remote attach (PEP 768) | bundled |
+| `faulthandler` / `tracemalloc` | Python crash trace + allocation diff | bundled (`python -X faulthandler` / `-X tracemalloc=10`) |
+| `py-spy` | Python sampling profiler (attach by PID, flamegraph) | `pipx install py-spy` |
+| `viztracer` | Python execution trace + flamegraph + viewer | `pipx install viztracer` |
 
 Required access:
 
@@ -251,7 +255,7 @@ If any test fails, you do not yet have the root cause — you have a contributin
 | Lifetime / borrow | Rust | borrow checker error or use-after-move |
 | Async cancellation | Go, Rust, TS | parent task cancelled, child still writing |
 
-Each language reference ([GOLANG](references/GOLANG.md), [RUST](references/RUST.md), [TYPESCRIPT](references/TYPESCRIPT.md)) has the language-specific detection commands and example fixes.
+Each language reference ([GOLANG](references/GOLANG.md), [RUST](references/RUST.md), [TYPESCRIPT](references/TYPESCRIPT.md), [PYTHON](references/PYTHON.md)) has the language-specific detection commands and example fixes.
 
 ## Phase 5 — Apply Minimal Fix
 
@@ -325,7 +329,7 @@ Optional but valuable: propose a lint rule, a test helper, or a CI check that wo
 - **Never expand scope.** The fix targets the root cause of **the reported bug**. Other smells encountered are listed as Info, not patched.
 - **Always provide a regression test.** A fix without a regression test is rejected.
 - **Always include the tool versions used** (`go version`, `cargo --version`, `node --version` / `bun --version`).
-- **Always cross-link to the dedicated skill** when the root cause belongs to its domain (`@code-review`, `@clean-code`, `@code-security-review` — Go branch `references/golang/`, Next branch `references/nextjs/`; performance regressions in Next.js → `@code-review` `references/NEXTJS.md`).
+- **Always cross-link to the dedicated skill** when the root cause belongs to its domain (`@code-review`, `@clean-code`, `@code-security-review` — Go branch `references/golang/`, Next branch `references/nextjs/`, Python branch `references/python/`; performance regressions in Next.js → `@code-review` `references/NEXTJS.md`).
 - **Must drop a hypothesis the moment evidence-against arrives.** Do not hold onto a theory because it would be elegant.
 - **Must escalate when stuck.** After three falsified hypotheses without progress, summarize the state and ask the user (more telemetry, second pair of eyes).
 
@@ -335,8 +339,8 @@ Print verbatim after the investigation. Sections may be empty if the phase did n
 
 ```text
 code-debugger: <one-line title of the bug>
-  language:        <go | rust | typescript | other>
-  toolchain:       <go 1.23 | rust 1.81 | node 20.10 | bun 1.1.30>
+  language:        <go | rust | typescript | python | other>
+  toolchain:       <go 1.23 | rust 1.81 | node 20.10 | bun 1.1.30 | python 3.14.5>
   reproducer:      <command + args, copy-paste-ready>
   duration:        Phase 0–6 walked
 
@@ -401,7 +405,7 @@ When the skill cannot reach root cause, print the same skeleton truncated at the
 
 - `@code-review` — for static review of code that is not failing; also useful after a fix to spot collateral risk. For Next.js performance regressions, see `@code-review` `references/NEXTJS.md`.
 - `@clean-code` — when the root cause is a maintainability smell that recurred (god function, unclear name, hidden dependency).
-- `@code-security-review` — when the bug is in the API surface and security review (design + active testing) helps. Go-specific runtime bugs (race, slowloris, pprof) — see `references/golang/`. Next.js App Router security-driven runtime bugs (RSC, Server Actions, `proxy.ts`) — see `references/nextjs/`.
+- `@code-security-review` — when the bug is in the API surface and security review (design + active testing) helps. Go-specific runtime bugs (race, slowloris, pprof) — see `references/golang/`. Next.js App Router security-driven runtime bugs (RSC, Server Actions, `proxy.ts`) — see `references/nextjs/`. Python (FastAPI/Django/Flask) security-driven runtime bugs (pickle/yaml deserialization, JWT alg confusion, blocking sync in async route, free-threaded races on `python3.14t`) — see `references/python/`.
 - `@github-commit` — when the user wants help drafting the fix commit.
 - `@superpowers` — engineering posture (TDD, evidence-first) for the user fixing more bugs of the same class.
 - `@ci-cd-generator` — to add the lint / test that would have caught this class of bug to the pipeline.
@@ -413,4 +417,5 @@ When the skill cannot reach root cause, print the same skeleton truncated at the
 - [GOLANG](references/GOLANG.md) — Go-specific debugging (delve, pprof, race, goroutine, panic)
 - [RUST](references/RUST.md) — Rust-specific debugging (gdb/lldb, RUST_BACKTRACE, tokio-console, miri)
 - [TYPESCRIPT](references/TYPESCRIPT.md) — TS / Node / Bun debugging (inspector, source maps, async stacks, leak hunting)
+- [PYTHON](references/PYTHON.md) — Python / CPython 3.13/3.14 debugging (pdb, `pdb -p` PEP 768 remote attach, faulthandler, tracemalloc, py-spy, viztracer, async deadlocks, free-threaded races)
 - [EXAMPLE](EXAMPLE.md) — end-to-end worked debug of a Go panic in production

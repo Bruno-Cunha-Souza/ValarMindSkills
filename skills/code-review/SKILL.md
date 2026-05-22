@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Lifecycle code review Go/Rust/TS. Auto-detects toolchain, runs static analysis, emits severity-ranked findings + file:line evidence, diffs, risk tags (SAFE/REVIEW/BREAKING). Covers OWASP Top 10, perf anti-patterns, test quality. Read-only — every finding cites file:line. Triggers: 'review code', 'revisar código', 'auditar código', '/code-review'."
+description: "Lifecycle code review Go/Rust/TS/Python. Auto-detects toolchain, runs static analysis, emits severity-ranked findings + file:line evidence, diffs, risk tags (SAFE/REVIEW/BREAKING). Covers OWASP Top 10, perf anti-patterns, test quality. Read-only — every finding cites file:line. Triggers: 'review code', 'revisar código', 'auditar código', '/code-review'."
 source: ValarMindSkills
 ---
 
@@ -8,7 +8,7 @@ source: ValarMindSkills
 
 > "Code is read far more often than it is written. A review is the first reading after the first write." — adapted from the Go proverbs.
 
-This skill conducts a structured, evidence-first review of a code change set. It is **read-only by default** — it never edits code, it produces a report. It is **language-aware** for Go, Rust, and TypeScript (Node and Bun); other languages are best-effort using the generic principles. It is **lifecycle-driven**: detect → sweep → read → assess → report → cross-link.
+This skill conducts a structured, evidence-first review of a code change set. It is **read-only by default** — it never edits code, it produces a report. It is **language-aware** for Go, Rust, TypeScript (Node and Bun), and Python (CPython 3.13 / 3.14 on FastAPI / Django / Flask); other languages are best-effort using the generic principles. It is **lifecycle-driven**: detect → sweep → read → assess → report → cross-link.
 
 The skill exists because LLM reviewers tend to hallucinate findings: invented function names, wrong file paths, fabricated CVEs, and severity inflation. Every guardrail in the Constraints section is there to push back on those failure modes.
 
@@ -26,7 +26,7 @@ The skill exists because LLM reviewers tend to hallucinate findings: invented fu
 - The user wants to **fix** code — this skill never edits. Hand off to the user or to `@code-debugger` for runtime issues.
 - The user wants a **commit message** or **release notes** — use `@github-commit` or `@github-release-note`.
 - The change is a single typo, comment edit, or trivial rename — review overhead exceeds the value; tell the user and stop.
-- The change is in a language the skill cannot detect (not Go, Rust, TypeScript, or covered by an explicit `@<lang>` skill). Surface the gap and ask whether the user wants a generic pass.
+- The change is in a language the skill cannot detect (not Go, Rust, TypeScript, Python, or covered by an explicit `@<lang>` skill). Surface the gap and ask whether the user wants a generic pass.
 - The user's primary ask is to **run tests**, reproduce a failure, or debug runtime behavior — use `@code-debugger`. This skill may run optional verification commands only when they are explicitly requested or needed to validate a review finding.
 - The diff is on infrastructure (Terraform, Kubernetes manifests) — use `@code-security-review` (Next branch — `references/nextjs/`; Go branch — `references/golang/`) or `@ci-cd-generator` for those domains.
 
@@ -52,7 +52,12 @@ Install before starting a review. Each tool's absence is logged and the related 
 | `eslint` / `biome` | TypeScript linter |
 | `knip` | Find unused TS exports/files/deps |
 | `npm audit` / `bun audit` | Node/Bun CVE scan |
-| Test runners (`go test`, `cargo test`, `bun test`, `vitest`) | Optional verification only |
+| `ruff` | Python lint + format (replaces flake8/black/isort/most of pylint) |
+| `mypy` / `pyright` | Python strict type check |
+| `bandit` | Python SAST (CWE-mapped) |
+| `pip-audit` / `safety` | Python CVE scan |
+| `pytest` | Python test runner (optional verification only) |
+| Test runners (`go test`, `cargo test`, `bun test`, `vitest`, `pytest`) | Optional verification only |
 
 Required access:
 
@@ -73,12 +78,19 @@ test -f go.mod        && echo "language: go"
 test -f Cargo.toml    && echo "language: rust"
 test -f package.json  && echo "language: typescript"
 test -f tsconfig.json && echo "  ts-config: present"
+test -f pyproject.toml && echo "language: python"
+test -f requirements.txt && echo "language: python (legacy manifest)"
 
 # Step 2 — TypeScript runtime (only if language=typescript)
 test -f bun.lockb         && echo "runtime: bun, pm: bun"
 test -f pnpm-lock.yaml    && echo "runtime: node, pm: pnpm"
 test -f yarn.lock         && echo "runtime: node, pm: yarn"
 test -f package-lock.json && echo "runtime: node, pm: npm"
+
+# Step 2b — Python package manager (only if language=python)
+test -f uv.lock       && echo "  pm: uv"
+test -f poetry.lock   && echo "  pm: poetry"
+test -f Pipfile.lock  && echo "  pm: pipenv"
 
 # Step 3 — review scope and base branch
 git rev-parse --abbrev-ref HEAD
@@ -91,16 +103,17 @@ git diff --name-only "$DIFF_RANGE" | wc -l
 git diff --shortstat "$DIFF_RANGE"
 
 # Step 4 — polyglot or monorepo
-fd -t f -d 5 '^(go.mod|Cargo.toml|package.json)$' .      # multiple roots → monorepo
+fd -t f -d 5 '^(go.mod|Cargo.toml|package.json|pyproject.toml)$' .      # multiple roots → monorepo
 ```
 
-Persist as `$LANG ∈ {go, rust, typescript, polyglot, other}`, `$BASE_REF`, `$BASE_SHA`, and `$DIFF_RANGE`.
+Persist as `$LANG ∈ {go, rust, typescript, python, polyglot, other}`, `$BASE_REF`, `$BASE_SHA`, and `$DIFF_RANGE`.
 
 | `$LANG` | Reference to load | Primary linter |
 | --- | --- | --- |
 | `go` | [references/GOLANG.md](references/GOLANG.md) | `golangci-lint` |
 | `rust` | [references/RUST.md](references/RUST.md) | `cargo clippy` |
 | `typescript` | [references/TYPESCRIPT.md](references/TYPESCRIPT.md) (+ [references/NEXTJS.md](references/NEXTJS.md) if Next.js 16+ App Router detected via `package.json` and `app/`) | `tsc --noEmit` + `eslint`/`biome` |
+| `python` | [references/PYTHON.md](references/PYTHON.md) | `ruff` + `mypy`/`pyright` + `bandit` |
 | `polyglot` | Run Phase 1–5 per language detected | per-language |
 | `other` | Skip Phase 1.2 sweeps; run Phase 2 + generic Phase 3–5 | semgrep generic ruleset |
 
@@ -116,6 +129,7 @@ Use null-delimited file lists when passing changed files between tools. The loop
 git diff --name-only -z "$DIFF_RANGE" -- '*.go' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
 git diff --name-only -z "$DIFF_RANGE" -- '*.rs' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
 git diff --name-only -z "$DIFF_RANGE" -- '*.ts' '*.tsx' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
+git diff --name-only -z "$DIFF_RANGE" -- '*.py' | while IFS= read -r -d '' file; do rg -n '<pattern>' "$file"; done
 ```
 
 ### 0.2 Monorepo / Workspace Handling
@@ -127,6 +141,7 @@ When multiple `go.mod`, `Cargo.toml`, or `package.json` files are present, map e
 | Go module | nearest ancestor `go.mod` | run Go tools from that module |
 | Cargo workspace | workspace root if `workspace` exists; otherwise crate root | run Cargo tools with package filters when available |
 | npm/pnpm/yarn/bun workspace | nearest package or workspace root from lockfile config | run package scripts in touched package first |
+| Python project | nearest ancestor `pyproject.toml` (else `requirements.txt`) | run `ruff` / `mypy` / `bandit` from that root |
 
 ## Phase 1 — Static Analysis Sweep
 
@@ -155,6 +170,14 @@ bunx biome check .             # or: bunx eslint .
 bunx knip
 bun audit                      # or: npm audit --omit=dev
 
+# Python
+ruff check .
+ruff format --check .
+mypy --strict .                # or: pyright
+bandit -r src/ -q
+pip-audit
+safety check
+
 # Duplication (any language)
 npx jscpd --min-lines 5 --min-tokens 50 ./
 ```
@@ -169,6 +192,7 @@ Run tests only when the user asks, CI output is unavailable, or a finding needs 
 go test ./...                 # add -race only for concurrency findings or explicit request
 cargo test --all-features
 bun test                      # or: npx vitest run
+pytest -q                     # Python
 ```
 
 Never claim pass/fail unless the command and relevant output are shown in the report.
@@ -190,7 +214,7 @@ For each category below, run the grep across changed files only using `$DIFF_RAN
 | 9 | **Disabled lints / suppressions** | `rg -n '(// nolint\|//nolint\|#\[allow\(\|@ts-ignore\|@ts-nocheck\|eslint-disable)'` |
 | 10 | **Test code in production paths** | `rg -n '(println\!\|console\.log\|fmt\.Println)' --glob '!**/*test*'` |
 
-Per-language sweeps live in [references/GOLANG.md](references/GOLANG.md), [references/RUST.md](references/RUST.md), and [references/TYPESCRIPT.md](references/TYPESCRIPT.md).
+Per-language sweeps live in [references/GOLANG.md](references/GOLANG.md), [references/RUST.md](references/RUST.md), [references/TYPESCRIPT.md](references/TYPESCRIPT.md), and [references/PYTHON.md](references/PYTHON.md).
 
 ## Phase 2 — Manual Read-Through
 
@@ -250,11 +274,11 @@ Run after Phase 2 because security findings depend on understanding intent. The 
 | API10 | Unsafe Consumption of APIs | Deserialization of upstream JSON without schema |
 | Web1–10 | Web equivalents | XSS, SQLi, SSRF, etc. — see per-language reference |
 
-For deeper stack-specific OWASP audits, hand off to `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`). This skill stops at "this PR likely introduces a class-X issue at file.ext:LINE — recommend running the dedicated skill".
+For deeper stack-specific OWASP audits, hand off to `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`; Python branch — `references/python/`). This skill stops at "this PR likely introduces a class-X issue at file.ext:LINE — recommend running the dedicated skill".
 
 ### 3.2 Cross-language security smells
 
-Every language's reference file ([GOLANG](references/GOLANG.md), [RUST](references/RUST.md), [TYPESCRIPT](references/TYPESCRIPT.md)) lists detection commands and code examples for: SQL injection, XSS, SSRF, path traversal, command injection, insecure deserialization, hardcoded secrets, insecure crypto, log injection, open redirect, race conditions, resource exhaustion.
+Every language's reference file ([GOLANG](references/GOLANG.md), [RUST](references/RUST.md), [TYPESCRIPT](references/TYPESCRIPT.md), [PYTHON](references/PYTHON.md)) lists detection commands and code examples for: SQL injection, XSS / SSTI, SSRF, path traversal, command injection, insecure deserialization (pickle / yaml in Python), hardcoded secrets, insecure crypto, log injection, open redirect, race conditions (including free-threaded races on `python3.14t`), resource exhaustion.
 
 ## Phase 4 — Performance & Scalability Review
 
@@ -348,7 +372,7 @@ If `Confidence=Low` **and** `Severity ≥ High`, escalate explicitly: state "nee
 - **Always run language detection (Phase 0) before sweeping (Phase 1).** Skipping detection produces wrong-language patterns and false positives.
 - **Always cap a single review at 50 files / 1500 lines.** If exceeded, ask to split before continuing.
 - **Always emit the report verbatim in the Output format below** — even if there are zero findings.
-- **Always cross-link to the dedicated skill** when the finding belongs to its domain (`@code-security-review` Go branch — `references/golang/`; Next branch — `references/nextjs/`; `@clean-code`, `@code-debugger`; Next.js performance — `references/NEXTJS.md` here).
+- **Always cross-link to the dedicated skill** when the finding belongs to its domain (`@code-security-review` Go branch — `references/golang/`; Next branch — `references/nextjs/`; Python branch — `references/python/`; `@clean-code`, `@code-debugger`; Next.js performance — `references/NEXTJS.md` here).
 - **Must include the tool versions used** in the report. A review without tool versions is not reproducible.
 
 ## Output format
@@ -357,7 +381,7 @@ Print verbatim after every successful run. The report is the deliverable.
 
 ```text
 code-review: <branch / PR# / commit range>
-  language(s):     <go | rust | typescript | polyglot>
+  language(s):     <go | rust | typescript | python | polyglot>
   mode:            <static review | static + optional verification>
   base:            <base ref> @ <merge-base sha>
   scope:           <files changed> files / <lines added>+ / <lines deleted>-
@@ -449,5 +473,6 @@ Info-level observations are allowed after the LGTM only when grounded in exact f
 - [GOLANG](references/GOLANG.md) — Go-specific patterns, sweeps, and example findings
 - [RUST](references/RUST.md) — Rust-specific patterns, sweeps, and example findings
 - [TYPESCRIPT](references/TYPESCRIPT.md) — TypeScript / Node / Bun patterns, sweeps, and example findings
+- [PYTHON](references/PYTHON.md) — Python 3.13/3.14 (FastAPI / Django / Flask) patterns, sweeps, and example findings (ruff, mypy, bandit, free-threaded build notes)
 - [NEXTJS](references/NEXTJS.md) — Next.js 16.2.x performance rules (RSC, `<img>`, `"use cache"`, Turbopack)
 - [EXAMPLE](EXAMPLE.md) — end-to-end worked review of a Go pull request
