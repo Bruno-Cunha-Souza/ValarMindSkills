@@ -93,11 +93,13 @@ cargo test --test <file> -- --exact <name>          # Rust
 bun test <file> -t '<name>'                         # Bun
 npx vitest run -t '<name>'                          # Vitest
 npx jest -t '<name>'                                # Jest
+pytest path/to/test_module.py::TestClass::test_name -v   # Python (pytest)
+pytest -k '<name>' -v                              # Python (keyword expr)
 ```
 
 Confirm the failure is observable on the local machine with the same error message captured in 0.1. If the failure is not reproducible:
 
-- For flaky tests: re-run with `-count=100` (Go), `--repeat 100` (cargo nextest), `--retry 100` in test runner config (TS). Capture the failure rate.
+- For flaky tests: re-run with `-count=100` (Go), `--repeat 100` (cargo nextest), `--retry 100` in test runner config (TS), `pytest path::test --count=100` (Python, requires `pytest-repeat`). Capture the failure rate.
 - For environment-specific bugs: replicate the env (container, CI matrix, OS version).
 - For timing bugs: vary `GOMAXPROCS`, increase load, run with `-race`.
 

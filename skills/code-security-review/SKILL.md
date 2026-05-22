@@ -12,7 +12,7 @@ Lifecycle skill for REST and GraphQL APIs: covers **secure design** (controls to
 
 Use this skill when:
 
-- **Designing** new endpoints or middleware in **FastAPI**, **Gin**, **Fiber**, or **Elysia** (→ `references/DESIGN_CONTROLS.md`)
+- **Designing** or hardening **FastAPI / Django / Flask** APIs (→ `references/python/`), **Gin / Fiber** APIs (→ `references/golang/`), or **Elysia** APIs (→ `references/DESIGN_CONTROLS.md`)
 - **Reviewing** an existing API for security weaknesses against the OWASP API Top 10 (2023)
 - **Pre-release security assessment** before deploying to production (→ `references/TESTING_PHASES.md`)
 - **Bug bounty** engagements or **pentest** of an API target

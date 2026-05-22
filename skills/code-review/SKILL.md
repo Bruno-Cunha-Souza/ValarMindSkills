@@ -28,7 +28,7 @@ The skill exists because LLM reviewers tend to hallucinate findings: invented fu
 - The change is a single typo, comment edit, or trivial rename — review overhead exceeds the value; tell the user and stop.
 - The change is in a language the skill cannot detect (not Go, Rust, TypeScript, Python, or covered by an explicit `@<lang>` skill). Surface the gap and ask whether the user wants a generic pass.
 - The user's primary ask is to **run tests**, reproduce a failure, or debug runtime behavior — use `@code-debugger`. This skill may run optional verification commands only when they are explicitly requested or needed to validate a review finding.
-- The diff is on infrastructure (Terraform, Kubernetes manifests) — use `@code-security-review` (Next branch — `references/nextjs/`; Go branch — `references/golang/`) or `@ci-cd-generator` for those domains.
+- The diff is on infrastructure (Terraform, Kubernetes manifests) — use `@code-security-review` (Next branch — `references/nextjs/`; Go branch — `references/golang/`; Python branch — `references/python/`) or `@ci-cd-generator` for those domains.
 
 ## Prerequisites
 
@@ -174,7 +174,7 @@ bun audit                      # or: npm audit --omit=dev
 ruff check .
 ruff format --check .
 mypy --strict .                # or: pyright
-bandit -r src/ -q
+bandit -r . -q            # run from package root (pyproject.toml dir); use src/ if project uses src-layout
 pip-audit
 safety check
 
@@ -205,14 +205,14 @@ For each category below, run the grep across changed files only using `$DIFF_RAN
 | --- | --- | --- |
 | 1 | **Hardcoded secrets** | `rg -i '(password\|secret\|api[_-]?key\|token\|bearer)\s*[:=]\s*["\x27][A-Za-z0-9/+=_-]{8,}["\x27]'` |
 | 2 | **TODO/FIXME/XXX** | `rg -n '\b(TODO\|FIXME\|XXX\|HACK)\b'` (finding only when newly introduced, shipping to main, and not linked to an issue) |
-| 3 | **Stack trace exposure** | `rg -n '(stack\|stacktrace\|traceback\|panic)' --type-add 'web:*.{go,ts,tsx,rs}' --type web` |
+| 3 | **Stack trace exposure** | `rg -n '(stack\|stacktrace\|traceback\|panic)' --type-add 'web:*.{go,ts,tsx,rs,py}' --type web` |
 | 4 | **Unbounded loops / collections** | `rg -n 'for\s*\(\s*;;\s*\)\|while\s*\(true\)\|loop\s*\{' ` |
-| 5 | **Disabled error handling** | `rg -n '_ =\|catch\s*\(\s*_\s*\)\|\.unwrap\(\)\|\.expect\(\|\.ok\(\)\.unwrap\('` |
+| 5 | **Disabled error handling** | `rg -n '_ =\|catch\s*\(\s*_\s*\)\|\.unwrap\(\)\|\.expect\(\|\.ok\(\)\.unwrap\(\|except\s*:\|except\s+Exception\s*:'` |
 | 6 | **Insecure crypto** | `rg -n '(md5\|sha1\|des\|InsecureSkipVerify\|crypto/rand vs math/rand)'` |
 | 7 | **Logging of sensitive data** | `rg -n 'log\.(Info\|Debug\|Print).*\b(password\|token\|secret\|cookie\|authorization)\b'` |
 | 8 | **Wide-open CORS** | `rg -n 'Access-Control-Allow-Origin.*\*\|AllowAllOrigins\|origin: ["\x27]\*'` |
-| 9 | **Disabled lints / suppressions** | `rg -n '(// nolint\|//nolint\|#\[allow\(\|@ts-ignore\|@ts-nocheck\|eslint-disable)'` |
-| 10 | **Test code in production paths** | `rg -n '(println\!\|console\.log\|fmt\.Println)' --glob '!**/*test*'` |
+| 9 | **Disabled lints / suppressions** | `rg -n '(// nolint\|//nolint\|#\[allow\(\|@ts-ignore\|@ts-nocheck\|eslint-disable\|# noqa\|# ruff: noqa\|# type: ignore\|# pyright: ignore)'` |
+| 10 | **Test code in production paths** | `rg -n '(println\!\|console\.log\|fmt\.Println\|^\s*print\()' --glob '!**/*test*'` |
 
 Per-language sweeps live in [references/GOLANG.md](references/GOLANG.md), [references/RUST.md](references/RUST.md), [references/TYPESCRIPT.md](references/TYPESCRIPT.md), and [references/PYTHON.md](references/PYTHON.md).
 
@@ -365,7 +365,7 @@ If `Confidence=Low` **and** `Severity ≥ High`, escalate explicitly: state "nee
 - **Never edit code.** This skill is a reviewer, not an editor. Suggestions are diffs in the report, never `Edit`/`Write` calls.
 - **Never invent a file path, function name, or symbol.** Every reference must be copied from the diff or the repo. If you do not know, say "not in diff — please confirm".
 - **Never claim a test passes / fails without showing the command and its output.** Tests are optional verification, not default review. If results are needed and you cannot run them, ask the user to run them and paste output.
-- **Never invent a CVE.** Cite only CVEs that appear in `govulncheck`, `cargo audit`, `npm audit`, or `semgrep` output of this run.
+- **Never invent a CVE.** Cite only CVEs that appear in `govulncheck`, `cargo audit`, `npm audit`, `pip-audit`, `safety`, or `semgrep` output of this run.
 - **Never quote a line you did not read.** Open the file at the cited line; the quote in the report must match byte-for-byte.
 - **Never inflate severity to look thorough.** Inflated severity erodes trust. Use the rubric.
 - **Never list a finding without a `file:line`, a code quote, an impact, a fix, and a risk tag.** Drop incomplete findings.
@@ -461,7 +461,7 @@ Info-level observations are allowed after the LGTM only when grounded in exact f
 
 - `@code-debugger` — when a finding is a runtime failure rather than a code-review concern, hand off here.
 - `@clean-code` — for refactor patterns and Rule-of-Three deduplication recommendations.
-- `@code-security-review` — multi-language + Go (Gin/Fiber) + Next.js 16 App Router security lifecycle: design patterns + active runtime testing + stack-specific vulns + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) for cross-linking findings.
+- `@code-security-review` — multi-language + Go (Gin/Fiber) + Python (FastAPI/Django/Flask, `references/python/`) + Next.js 16 App Router security lifecycle: design patterns + active runtime testing + stack-specific vulns + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) for cross-linking findings.
 - `@github-pr-review` — GitHub-flavored PR review (posts comments via `gh`).
 - `@github-commit` — when the author wants help drafting the fix commit.
 - `@superpowers` — engineering posture (TDD, evidence-first) for the author addressing findings.
