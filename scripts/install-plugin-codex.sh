@@ -76,10 +76,12 @@ fi
 echo ""
 echo "=== Step 2/3: Hooks ==="
 
+mkdir -p "$HOOKS_TARGET/_lib"
 mkdir -p "$HOOKS_TARGET/caveman"
 mkdir -p "$HOOKS_TARGET/superpowers"
 mkdir -p "$HOOKS_TARGET/obsidian-brain"
 
+cp "$SOURCE_HOOKS/_lib/"*.js           "$HOOKS_TARGET/_lib/"
 cp "$SOURCE_HOOKS/caveman/"*.js        "$HOOKS_TARGET/caveman/"
 cp "$SOURCE_HOOKS/superpowers/"*.js    "$HOOKS_TARGET/superpowers/"
 cp "$SOURCE_HOOKS/obsidian-brain/"*.js "$HOOKS_TARGET/obsidian-brain/"
