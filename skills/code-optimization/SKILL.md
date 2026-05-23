@@ -1,6 +1,6 @@
 ---
 name: code-optimization
-description: "Lifecycle performance & efficiency review Go/Rust/TypeScript/Python (FastAPI/Django/Flask/Gin/Fiber/fx/Elysia/Bun/Node/Axum/Actix). Auto-detects toolchain, profiles, sweeps for duplication/leaks/N+1/CPU-bound/blocking I/O, classifies findings by Impact x Risk x Effort (tri-axis), writes OPTIMIZATION_REPORT.md at project root. Optional WebSearch + context7 validation for High/Critical findings. Read-only on code — every finding cites file:line. Triggers: 'optimize code', 'otimizar código', 'auditar performance', 'performance review', 'find bottlenecks', 'analisar gargalos', '/code-optimization'."
+description: "Lifecycle perf audit Go/Rust/TS/Python. N+1/leak/duplication sweeps, tri-axis Impact×Risk×Effort, writes OPTIMIZATION_REPORT.md. Read-only — file:line evidence. Triggers: 'optimize code', 'otimizar código', 'auditar performance', 'find bottlenecks', '/code-optimization'."
 source: ValarMindSkills
 ---
 
