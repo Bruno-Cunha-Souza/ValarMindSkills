@@ -13,7 +13,7 @@ Each row: skills marked **default** apply to nearly every task in that stage; sk
 | 1. Brainstorm | — | `@skill-creator` (task is "create/edit a skill") |
 | 2. Worktree | — | — (handled by harness `EnterWorktree`) |
 | 3. Write plan | — | `@skill-creator` (skill authoring); `@context-optimization` (long plan, large surface) |
-| 4. Execute / implement | `@clean-code` | `@code-review` (Next.js perf via `references/NEXTJS.md`), `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`), `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
+| 4. Execute / implement | `@clean-code` | `@code-review` (Next.js perf via `references/NEXTJS.md`), `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`), `@code-optimization` (perf focus — bottleneck audit, latency/cost reduction, OPTIMIZATION_REPORT.md), `@ci-cd-generator`, `@obsidian-brain`, `@obsidian-markdown`, `@obsidian-cli`, `@obsidian-bases` (per §2) |
 | 5. TDD + debugging | `@code-debugger` (when red/error) | `@code-security-review` (API under test) |
 | 6. Request review | `@code-review` *or* `@github-pr-review` | `@code-security-review` (security-sensitive diff — pick the Go or Next branch) |
 | 7. Finish branch | `@github-commit` | `@github-release-note` (tag/release in scope) |
@@ -48,6 +48,15 @@ Rules of the form `IF <signal> → invoke <skill(s)>`. Signals are **detected fr
   → `@ci-cd-generator` (phased GitHub Actions generation with documented heuristics: coverage gates, N+1 detection, race condition PBT, memory leak detection, optional load testing — plus SAST/SCA/secret/container/SBOM gates per chosen security level)
 - `IF` editing an existing workflow with security-sensitive content (secrets, third-party actions without SHA pin, `pull_request_target`, broad `permissions:`)
   → `@ci-cd-generator` (refactor toward safer defaults) + `@code-security-review` (catalog of supply-chain attack classes via `references/WEB_VULNERABILITIES.md`)
+
+### Performance / Optimization focus
+
+- `IF` task mentions "latency", "slow", "performance", "throughput", "cost reduction", "memory", "memoria", "vazamento", "leak", "otimizar", "bottleneck", "gargalo", "N+1", "profile", "profiling"
+  → `@code-optimization` (lifecycle audit; Impact × Risk × Effort tri-axis grading; writes `OPTIMIZATION_REPORT.md` at project root; optional WebSearch + context7 validation for High/Critical findings)
+- `IF` repo contains existing profiling/benchmark artifacts (`*.bench.*`, `criterion/`, `flamegraph.svg`, `*.pprof`, `pytest-benchmark.json`) AND user wants prioritization
+  → `@code-optimization` (use existing profile as Phase 2 input, skip re-profiling)
+- `IF` recent latency incident, OOM, connection-pool exhaustion, or thundering herd
+  → `@code-debugger` (root cause first; iron law: no fixes without investigation) **then** `@code-optimization` (preventive sweep after fix lands)
 
 ### Generic web vulnerabilities
 
@@ -107,7 +116,11 @@ When multiple skills apply, resolve in this order:
 1. **Safety / security never yields.** `@*-security-*` and destructive-action confirmations always run before anything else. Process-skills never override security-skills for "speed".
 2. **Process > implementation.** `@code-debugger`, `@skill-creator`, and review skills come before commit skills. The wrong implementation done quickly is debt.
 3. **Explicit user preference wins.** If the user said "be terse" or activated caveman, the prose around skill output compresses; the skills' artifact format stays. If the user said "no plan", honor it (user-instruction tier of the hierarchy).
-4. **Domain skills coexist with process skills.** Stage 4 can run `@clean-code` + `@code-review` (`references/NEXTJS.md`) + `@code-security-review` (Next branch — `references/nextjs/`) together — they cover different concerns and do not compete.
+4. **Domain skills coexist with process skills.** Stage 4 can run `@clean-code` + `@code-review` (`references/NEXTJS.md`) + `@code-security-review` (Next branch — `references/nextjs/`) + `@code-optimization` together — they cover different concerns and do not compete:
+   - `@clean-code` owns maintainability and refactor safety mechanics.
+   - `@code-review` owns broad PR review (correctness + security + perf-light Phase 4).
+   - `@code-security-review` owns OWASP + active testing + stack-specific vuln catalogs.
+   - `@code-optimization` owns deep perf (profiling + tri-axis Impact × Risk × Effort + `OPTIMIZATION_REPORT.md`).
 
 ## 4. Maintenance
 

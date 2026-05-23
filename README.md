@@ -46,6 +46,7 @@ The following table estimates token consumption per skill/context at session sta
 | `ci-cd-generator` | GitHub Actions CI/CD generator for Go/Rust/TS — auto-detects language, encodes coverage/race/leak gates, wires SAST/SCA/secret/container/SBOM scans by security level |
 | `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
+| `code-optimization` | Lifecycle performance & efficiency audit for Go (Gin/Fiber/fx), Rust (Axum/Actix/Tokio), TypeScript (Node/Bun/Elysia/Fastify), Python (FastAPI/Django/Flask, CPython 3.13/3.14 incl. free-threaded 3.14t) — profiling, duplication/leaks/N+1/CPU-bound/blocking-I/O sweeps, tri-axis Impact × Risk × Effort classification, optional WebSearch + context7 validation, writes `OPTIMIZATION_REPORT.md` at project root |
 | `code-review` | Lifecycle code review (Go/Rust/TS) with severity-ranked findings, risk tags, and `references/NEXTJS.md` for Next.js 16.2.x performance audits (RSC, `<img>`, Turbopack) |
 | `context-optimization` | Apply compaction, masking, and caching strategies |
 | `github-release-note` | Generates release notes from a git tag range |
@@ -66,7 +67,7 @@ The following table estimates token consumption per skill/context at session sta
 
 ### Plugin install (manual, from source)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 17 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 18 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git

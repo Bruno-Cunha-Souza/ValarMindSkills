@@ -117,6 +117,17 @@ Long workflows accumulate context. Compact by **numeric trigger**, not by phase 
 
 `/compact` is the harness primitive that *reduces* context; `@context-optimization` is the audit that *measures and recommends*. Use them in that order when both apply.
 
+## Performance Focus
+
+When the work is perf-driven — latency, cost, memory, throughput — `@code-optimization` is the canonical skill. Differences from siblings:
+
+- `@code-review` Phase 4 touches perf, but is shallow (≈10 cross-language anti-patterns, no profiling).
+- `@code-optimization` runs language-specific profilers (`pprof`, `py-spy`, `cargo flamegraph`, `clinic.js`), classifies every finding on three independent axes — **Impact × Risk × Effort** — and writes a durable artifact at `OPTIMIZATION_REPORT.md` (project root). The report places **Quick Wins** (High/Critical impact + Small effort) at the top so the user can act before the next release.
+- Use after a latency or OOM incident, before a release with a perf SLO gate, or while planning a refactor whose primary motivation is perf rather than readability.
+- Coexists with `@code-review` and `@clean-code` in Stage 4 — they cover different concerns. `@code-optimization` may cross-link to `@code-security-review` when a finding doubles as a DoS surface (unbounded query, ReDoS, decompression bomb).
+
+Trigger phrases: `optimize code`, `otimizar codigo`, `auditar performance`, `performance review`, `find bottlenecks`, `analisar gargalos`, or `/valarmindskills:code-optimization`.
+
 ## Persistence
 
 Active until the user says:
@@ -132,7 +143,7 @@ The posture does **not** auto-revert after N turns.
 - **Does not override safety.** Security warnings, destructive actions, and irreversible operations follow their existing rules. Superpowers tightens process; it never loosens guardrails.
 - **Coexists with caveman.** Caveman shapes voice; superpowers shapes process. Both can be active simultaneously — the reply is terse AND disciplined.
 - **Does not bypass user instructions.** If the user explicitly skips a stage, skip it.
-- **Skill library is delegated.** Superpowers does not ship its own brainstorm / plan / review skills. It points to the existing ValarMind skills and to the harness's built-in `Plan`, `EnterWorktree`, and subagent capabilities. The full catalog (stage→skill, context triggers, priority) lives in [references/SKILL_MAP.md](references/SKILL_MAP.md); core skills referenced inline are `@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, and `@skill-creator`.
+- **Skill library is delegated.** Superpowers does not ship its own brainstorm / plan / review skills. It points to the existing ValarMind skills and to the harness's built-in `Plan`, `EnterWorktree`, and subagent capabilities. The full catalog (stage→skill, context triggers, priority) lives in [references/SKILL_MAP.md](references/SKILL_MAP.md); core skills referenced inline are `@code-review`, `@github-pr-review`, `@clean-code`, `@code-debugger`, `@code-optimization`, and `@skill-creator`.
 
 ## Inputs you may receive after invocation
 
