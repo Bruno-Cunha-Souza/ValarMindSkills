@@ -1,12 +1,12 @@
 ---
 name: ci-cd-generator
-description: "Scaffold/audit GitHub Actions CI/CD — Go/Rust/TS. Generation: workflows + coverage gates (60–80%), security scans (CodeQL/Semgrep, SCA, SBOM, gitleaks), N+1/race/leak/load tests. Audit: severity-ranked findings + diff fixes. Triggers: 'criar CI', 'gerar pipeline', 'auditar pipeline', '/ci-cd-generator'."
+description: "Scaffold/audit GitHub Actions CI/CD — Go/Rust/TS/Python (FastAPI/Django/Flask). Generation: workflows + coverage gates (60–80%), security scans (CodeQL/Semgrep/bandit, SCA, SBOM, gitleaks), N+1/race/leak/load tests + free-threaded 3.14t. Audit: severity-ranked findings + diff fixes. Triggers: 'criar CI', 'gerar pipeline', 'auditar pipeline', '/ci-cd-generator'."
 source: ValarMindSkills
 ---
 
 # CI/CD Generator
 
-Lifecycle skill that scaffolds a complete GitHub Actions pipeline for a Go, Rust, or TypeScript project. The workflow encodes opinionated defaults documented in the project owner's notes — coverage gates, N+1 query detection, race condition property-based testing, memory leak detection, and load testing — plus standard security gates (SAST, SCA, container scan, SBOM, secret scan).
+Lifecycle skill that scaffolds a complete GitHub Actions pipeline for a Go, Rust, TypeScript, or Python project. The workflow encodes opinionated defaults documented in the project owner's notes — coverage gates, N+1 query detection, race condition property-based testing (including Python 3.14t free-threaded), memory leak detection, and load testing — plus standard security gates (SAST, SCA, container scan, SBOM, secret scan).
 
 ## When to Use
 
@@ -14,7 +14,7 @@ The skill has two operating modes — **generation** (the default, walks Phase 0
 
 ### Generation mode
 
-- A new repository (Go, Rust, or TypeScript) has no `.github/workflows/` directory and the user wants CI/CD wired up
+- A new repository (Go, Rust, TypeScript, or Python) has no `.github/workflows/` directory and the user wants CI/CD wired up
 - An existing repository has an ad-hoc workflow that the user wants replaced with a complete, opinionated baseline
 - The user explicitly asks for "criar CI", "gerar pipeline", "scaffold workflow", or invokes `/valarmindskills:ci-cd-generator`
 - A polyglot monorepo needs per-language pipelines (run the skill once per project root)
@@ -26,13 +26,13 @@ The skill has two operating modes — **generation** (the default, walks Phase 0
 - Pre-release gate: confirm the workflows match the security level the team thinks they are running at
 - The user explicitly asks for "auditar pipeline", "audit CI pipeline", "review existing workflow"
 
-This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For multi-stack API security review (design + active testing + Go and Next.js stack-specific lifecycles) run from a CI pipeline, complement with `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`). For Next.js performance audits, see `@code-review` `references/NEXTJS.md`.
+This skill is **language-aware and lifecycle-driven**: it detects → asks the minimum needed → applies heuristics → emits YAML or report → validates. For multi-stack API security review (design + active testing + Go, Next.js, and Python stack-specific lifecycles) run from a CI pipeline, complement with `@code-security-review` (Go branch — `references/golang/`; Next branch — `references/nextjs/`; Python branch — `references/python/`). For Next.js performance audits, see `@code-review` `references/NEXTJS.md`; for Python performance/style sweeps, see `@code-review` `references/PYTHON.md`.
 
 ## Do not use when
 
 - The user wants to fix or refactor a single line in an existing workflow — open the YAML directly or use `@github-pr-review`. For a full pipeline audit, switch to **audit mode** instead.
 - The CI platform is GitLab CI, CircleCI, Buildkite, or Jenkins — this skill is GitHub Actions only
-- The project language is not Go, Rust, or TypeScript (Node.js / Bun / Deno)
+- The project language is not Go, Rust, TypeScript (Node.js / Bun / Deno), or Python (3.13+/3.14+, FastAPI / Django / Flask)
 - The user wants to deploy infrastructure (Terraform, Pulumi, Kubernetes manifests) — pipeline ≠ infra
 
 ## Prerequisites
@@ -42,7 +42,7 @@ This skill is **language-aware and lifecycle-driven**: it detects → asks the m
 | `gh` (GitHub CLI) | Branch protection, secrets management, dispatch | `brew install gh` then `gh auth login` |
 | `actionlint` | Static lint of generated YAML | `brew install actionlint` |
 | `yamllint` | Style and structural lint | `brew install yamllint` |
-| Language toolchain on host | Local sanity check before commit | `go`, `cargo`, `bun`/`pnpm`/`npm` per project |
+| Language toolchain on host | Local sanity check before commit | `go`, `cargo`, `bun`/`pnpm`/`npm`, `python` 3.13+/3.14+ with `uv`/`poetry`/`pip` per project |
 
 Required access:
 
@@ -57,10 +57,11 @@ Detect language, package manager, and runtime before generating anything. Run th
 
 ```bash
 # Step 1 — language
-test -f go.mod        && echo "language: go"
-test -f Cargo.toml    && echo "language: rust"
-test -f package.json  && echo "language: typescript"
-test -f tsconfig.json && echo "  ts-config: present"
+test -f go.mod                                                  && echo "language: go"
+test -f Cargo.toml                                              && echo "language: rust"
+test -f package.json                                            && echo "language: typescript"
+test -f tsconfig.json                                           && echo "  ts-config: present"
+{ test -f pyproject.toml || test -f requirements.txt || test -f setup.py; } && echo "language: python"
 
 # Step 2 — TypeScript runtime (only if language=typescript)
 test -f bun.lockb         && echo "runtime: bun, pm: bun"
@@ -74,15 +75,28 @@ grep -q '\[workspace\]' Cargo.toml 2>/dev/null && echo "rust: workspace"
 # Step 4 — Go module shape
 grep -E '^go [0-9]+\.[0-9]+' go.mod | head -1   # toolchain version
 grep -q '^// +build' . -r 2>/dev/null && echo "go: legacy build tags present"
+
+# Step 5 — Python PM + framework (only if language=python)
+test -f uv.lock           && echo "pm: uv"
+test -f poetry.lock       && echo "pm: poetry"
+test -f Pipfile.lock      && echo "pm: pipenv"   # legacy
+{ test -f requirements.txt && ! test -f uv.lock && ! test -f poetry.lock; } && echo "pm: pip"
+grep -qE '(^|[[:space:]"])fastapi[>=<~!"[:space:]]' pyproject.toml requirements.txt 2>/dev/null && echo "framework: fastapi"
+grep -qE '(^|[[:space:]"])django[>=<~!"[:space:]]'  pyproject.toml requirements.txt 2>/dev/null && echo "framework: django"
+grep -qE '(^|[[:space:]"])flask[>=<~!"[:space:]]'   pyproject.toml requirements.txt 2>/dev/null && echo "framework: flask"
+# Python version source of truth
+test -f .python-version   && cat .python-version
+grep -E '^requires-python' pyproject.toml 2>/dev/null
 ```
 
-Persist as `$LANG ∈ {go, rust, typescript}`, plus per-language sub-fields (`$RUNTIME`, `$PM`, `$WORKSPACE`). The next phases branch on these values.
+Persist as `$LANG ∈ {go, rust, typescript, python}`, plus per-language sub-fields (`$RUNTIME`, `$PM`, `$WORKSPACE`, `$FRAMEWORK`). The next phases branch on these values.
 
 | `$LANG` | Reference to load | Default file emitted |
 | --- | --- | --- |
 | `go` | [references/GO.md](references/GO.md) | `.github/workflows/ci.yml` |
 | `rust` | [references/RUST.md](references/RUST.md) | `.github/workflows/ci.yml` |
 | `typescript` | [references/TYPESCRIPT.md](references/TYPESCRIPT.md) | `.github/workflows/ci.yml` |
+| `python` | [references/PYTHON.md](references/PYTHON.md) | `.github/workflows/ci.yml` |
 | `polyglot` (multiple matches) | Run Phase 0 per subdirectory | One workflow per language detected |
 
 If no match is found, abort with a one-line notice. The skill does not invent a language.
@@ -119,7 +133,7 @@ The pipeline emits five opinionated checks regardless of language. Each is sourc
 | 1 | **Coverage gate** ≥ 60% (warn ≥ 80%) | Pipeline fails below threshold | `--coverage=N` or "ignore coverage" |
 | 2 | **N+1 detection** | Integration tests assert max query count per request | `--no-n1` |
 | 3 | **Race condition PBT** | Concurrent property-based test job; `-race` flag in Go | `--no-race` |
-| 4 | **Memory leak detection** | Jest/Vitest `--detectOpenHandles --detectLeaks` (TS); `-race` (Go); miri optional (Rust) | `--no-leak-detect` |
+| 4 | **Memory leak detection** | Jest/Vitest `--detectOpenHandles --detectLeaks` (TS); `-race` (Go); miri optional (Rust); `tracemalloc` snapshot + `pytest-asyncio --strict-mode` + `pytest-memray` (Python) | `--no-leak-detect` |
 | 5 | **Load testing** | Nightly `workflow_dispatch` job using k6 or artillery (opt-in) | Default off |
 
 For each heuristic, [references/USER_HEURISTICS.md](references/USER_HEURISTICS.md) contains:
@@ -207,6 +221,7 @@ Per-language fully populated workflows (with matrix, cache, environment variable
 - [references/GO.md](references/GO.md) — `actions/setup-go@v5`, `go test -race -cover -covermode=atomic`, `staticcheck`, `golangci-lint`, `govulncheck`, optional `goreleaser`
 - [references/RUST.md](references/RUST.md) — `actions-rust-lang/setup-rust-toolchain@v1`, `Swatinem/rust-cache@v2`, `cargo fmt --check`, `cargo clippy -D warnings`, `cargo nextest`, `cargo-llvm-cov`, `cargo-audit`, `cargo-deny`
 - [references/TYPESCRIPT.md](references/TYPESCRIPT.md) — `setup-bun` / `setup-node` + `pnpm/action-setup`, `tsc --noEmit`, `eslint`, `vitest`/`jest` with `--detectOpenHandles --detectLeaks`, N+1 query test template, `size-limit`
+- [references/PYTHON.md](references/PYTHON.md) — `actions/setup-python@v5` / `astral-sh/setup-uv@v3` / `snok/install-poetry`, `ruff check`+`ruff format --check`, `mypy --strict`/`pyright`, `pytest --cov-fail-under`, `bandit`+`pip-audit`+`safety`, N+1 templates (Django `assertNumQueries` / SQLAlchemy event listener), free-threaded race (`python3.14t` + hypothesis), optional PyPI trusted publishing
 
 Always pin third-party actions:
 
@@ -268,7 +283,7 @@ Pick the entry point by user intent:
 - **Never** default `permissions:` to `write-all` at workflow level — start at `contents: read` and elevate per job
 - **Never** pass secrets via the workflow-level `env:`; scope them to the job or step
 - **Never** use third-party actions without a version pin (major tag minimum, SHA in `strict`)
-- **Never** generate a pipeline for a language outside `{go, rust, typescript}` — abort with a one-line notice
+- **Never** generate a pipeline for a language outside `{go, rust, typescript, python}` — abort with a one-line notice
 - **Never** silently downgrade the security level when a tool is missing — surface the gap to the user
 - **Must** load the matching language reference before emitting any YAML
 - **Must** run `actionlint` on the generated file before reporting success
@@ -282,8 +297,9 @@ Generation report (printed verbatim after every successful run):
 
 ```text
 ci-cd-generator: <action>
-  language:      <go | rust | typescript>
-  runtime/pm:    <node+pnpm | bun | rust+nextest | go+toolchain x.y>
+  language:      <go | rust | typescript | python>
+  runtime/pm:    <node+pnpm | bun | rust+nextest | go+toolchain x.y | python+uv | python+poetry | python+pip>
+  framework:     <fastapi | django | flask | n/a>   # python only
   security:      <minimal | standard | strict>
   workflows:     <files written, paths under .github/>
   jobs:          <ordered list of job ids in ci.yml>
@@ -315,6 +331,7 @@ Next: review the diff, then `/valarmindskills:github-commit`.
 - [GO](references/GO.md) — Go pipeline template, tooling matrix, canonical workflow
 - [RUST](references/RUST.md) — Rust pipeline template, tooling matrix, canonical workflow
 - [TYPESCRIPT](references/TYPESCRIPT.md) — TypeScript pipeline template (Node + Bun), N+1 and leak templates
+- [PYTHON](references/PYTHON.md) — Python 3.13/3.14 pipeline template (FastAPI / Django / Flask), uv/poetry/pip PM detection, N+1 templates, free-threaded race testing, PyPI trusted publishing
 - [USER_HEURISTICS](references/USER_HEURISTICS.md) — coverage gate, N+1, race PBT, leak detection, load testing — rationale and snippets
 - [SECURITY_GATES](references/SECURITY_GATES.md) — SAST, SCA, container, SBOM, secret scan, license — per-language tool matrix
 - [CHECKLIST](references/CHECKLIST.md) — post-generation validation, branch protection, smoke test

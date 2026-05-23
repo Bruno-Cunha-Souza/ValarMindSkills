@@ -48,10 +48,10 @@ The five default heuristics from [USER_HEURISTICS.md](USER_HEURISTICS.md). For e
 
 | # | Heuristic | Detection (grep / yq) | If missing |
 | --- | --- | --- | --- |
-| 1 | **Coverage gate** | `rg -n 'COVERAGE_MIN\|coverage.*fail\|--fail-under\|coverageThreshold' .github/workflows/` | **Medium** finding; suggest adding env-var gate |
-| 2 | **N+1 detection** (test-side) | `rg -n 'queryCount\|captureQueries\|N\+1\|max.*queries' .github/workflows/` | **Low** finding; the gate is in test code, not workflow — surface as info |
-| 3 | **Race detector** (Go) / `loom` (Rust) / async PBT (TS) | `rg -n -e '-race\b' -e 'loom\b' -e 'fast-check\|test:pbt' .github/workflows/` | **Medium** finding for Go (`-race` is cheap); **Info** for Rust/TS (PBT is opt-in) |
-| 4 | **Memory leak detection** | `rg -n -e 'detectOpenHandles\|detectLeaks' -e 'goleak' -e 'miri' .github/workflows/` | **Medium** for TS without flags; **Info** for Go/Rust (project-side) |
+| 1 | **Coverage gate** | `rg -n 'COVERAGE_MIN\|coverage.*fail\|--fail-under\|--cov-fail-under\|--cov-report\|coverageThreshold' .github/workflows/` | **Medium** finding; suggest adding env-var gate |
+| 2 | **N+1 detection** (test-side) | `rg -n 'queryCount\|captureQueries\|N\+1\|max.*queries\|assertNumQueries\|before_cursor_execute' .github/workflows/` | **Low** finding; the gate is in test code, not workflow — surface as info |
+| 3 | **Race detector** (Go) / `loom` (Rust) / async PBT (TS) / free-threaded `3.14t` (Python) | `rg -n -e '-race\b' -e 'loom\b' -e 'fast-check\|test:pbt' -e 'python3\.14t\|hypothesis\b' .github/workflows/` | **Medium** finding for Go (`-race` is cheap); **Info** for Rust/TS/Python (PBT/free-threaded are opt-in) |
+| 4 | **Memory leak detection** | `rg -n -e 'detectOpenHandles\|detectLeaks' -e 'goleak' -e 'miri' -e 'tracemalloc\|memray\|--memray\|asyncio-mode=strict' .github/workflows/` | **Medium** for TS without flags + Python without `--asyncio-mode=strict`; **Info** for Go/Rust (project-side) |
 | 5 | **Load testing** | `rg -nl 'k6\|artillery' .github/workflows/` | **Info** only — load testing is opt-in |
 
 Record per-heuristic verdict: `present` / `missing` / `partial` (e.g., `-race` set but no coverage gate).
@@ -62,8 +62,8 @@ Walk the matrix from [SECURITY_GATES.md](SECURITY_GATES.md). The audit infers th
 
 ```bash
 # Detect each gate by signature
-rg -nl 'github/codeql-action\|returntocorp/semgrep'      .github/workflows/   # SAST
-rg -nl 'govulncheck\|cargo-audit\|cargo-deny\|pnpm audit\|bun pm audit\|npm audit\|osv-scanner' .github/workflows/   # SCA
+rg -nl 'github/codeql-action\|returntocorp/semgrep\|bandit\s' .github/workflows/   # SAST
+rg -nl 'govulncheck\|cargo-audit\|cargo-deny\|pnpm audit\|bun pm audit\|npm audit\|osv-scanner\|pip-audit\|safety check' .github/workflows/   # SCA
 rg -nl 'gitleaks-action'                                  .github/workflows/   # secret scan
 rg -nl 'aquasecurity/trivy-action\|trivy '                .github/workflows/   # container
 rg -nl 'anchore/sbom-action\|cyclonedx'                   .github/workflows/   # SBOM

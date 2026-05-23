@@ -42,7 +42,7 @@ Run this checklist before reporting a generated pipeline as complete. Failing it
 ## Dependabot config
 
 - [ ] `.github/dependabot.yml` exists when the user opted in (default: yes)
-- [ ] Each detected ecosystem has a block (`gomod` / `cargo` / `npm` / `bun`) plus `github-actions`
+- [ ] Each detected ecosystem has a block (`gomod` / `cargo` / `npm` / `bun` / `pip`) plus `github-actions`
 - [ ] `version: 2` at the top
 - [ ] No duplicate `directory:` entries within the same ecosystem
 

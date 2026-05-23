@@ -6,16 +6,16 @@ The security jobs the generator wires into the pipeline based on the chosen secu
 
 ## Cross-language tool matrix
 
-| Concern | Go | Rust | TypeScript | Action / command |
-| --- | --- | --- | --- | --- |
-| **SAST** | CodeQL (`go`) | Semgrep (CodeQL has no Rust) | CodeQL (`javascript-typescript`) | `github/codeql-action/init` + `analyze` or `returntocorp/semgrep@v1` |
-| **SCA (advisories)** | govulncheck + osv-scanner | cargo-audit + cargo-deny | pnpm/npm audit + osv-scanner | tool-specific |
-| **Dependency PR bot** | dependabot (gomod) | dependabot (cargo) | dependabot (npm) or renovate | `.github/dependabot.yml` |
-| **Secret scan** | gitleaks | gitleaks | gitleaks | `gitleaks/gitleaks-action@v2` |
-| **Container scan** | trivy fs + image | trivy fs + image | trivy fs + image | `aquasecurity/trivy-action@0.20.0` |
-| **SBOM** | syft (`anchore/sbom-action`) | syft | syft | `anchore/sbom-action@v0` |
-| **License check** | `golang-jwt/license-detector` (rare) | cargo-deny licenses | license-checker (npm) | per-language |
-| **Provenance / signing** | cosign + SLSA | cosign + SLSA | cosign + SLSA | `slsa-framework/slsa-github-generator` |
+| Concern | Go | Rust | TypeScript | Python | Action / command |
+| --- | --- | --- | --- | --- | --- |
+| **SAST** | CodeQL (`go`) | Semgrep (CodeQL has no Rust) | CodeQL (`javascript-typescript`) | CodeQL (`python`) + bandit | `github/codeql-action/init` + `analyze` or `returntocorp/semgrep@v1`; bandit via `pip install bandit` |
+| **SCA (advisories)** | govulncheck + osv-scanner | cargo-audit + cargo-deny | pnpm/npm audit + osv-scanner | pip-audit + safety + osv-scanner | tool-specific |
+| **Dependency PR bot** | dependabot (gomod) | dependabot (cargo) | dependabot (npm) or renovate | dependabot (pip) | `.github/dependabot.yml` |
+| **Secret scan** | gitleaks | gitleaks | gitleaks | gitleaks | `gitleaks/gitleaks-action@v2` |
+| **Container scan** | trivy fs + image | trivy fs + image | trivy fs + image | trivy fs + image | `aquasecurity/trivy-action@0.20.0` |
+| **SBOM** | syft (`anchore/sbom-action`) | syft | syft | syft | `anchore/sbom-action@v0` |
+| **License check** | `golang-jwt/license-detector` (rare) | cargo-deny licenses | license-checker (npm) | pip-licenses | per-language |
+| **Provenance / signing** | cosign + SLSA | cosign + SLSA | cosign + SLSA | cosign + SLSA + sigstore (PEP 740 attestations) | `slsa-framework/slsa-github-generator` |
 
 ## Security level expansion
 
@@ -91,6 +91,9 @@ The SCA job runs alongside the unit-test job; failures block merge.
 | TypeScript (bun) | `bun pm audit` | non-zero exit |
 | TypeScript (npm) | `npm audit --omit=dev --audit-level=high` | High+ in production deps |
 | TypeScript (yarn) | `yarn npm audit --severity high` (Berry) or `yarn audit --level high` (classic) | High+ |
+| Python (uv) | `uv pip compile --universal pyproject.toml -o /tmp/req.txt && pip-audit -r /tmp/req.txt --strict` + `osv-scanner --lockfile=uv.lock` | any High/Critical |
+| Python (poetry) | `pip-audit --strict` + `osv-scanner --lockfile=poetry.lock` | any High/Critical |
+| Python (pip) | `pip-audit --strict --disable-pip` + `safety check --full-report` | any High/Critical (pip-audit); safety informational |
 
 Generator does **not** silence audit failures with `|| true`. If a known false-positive must be ignored, the user adds it to a `.audit-ignore` config — the workflow does not invent suppressions.
 
@@ -129,7 +132,20 @@ updates:
         patterns: ["typescript", "@types/*", "tsx", "tsup"]
       test-runners:
         patterns: ["vitest", "jest", "@vitest/*", "@jest/*"]
+
+  - package-ecosystem: "pip"              # only when language=python
+    directory: "/"
+    schedule: { interval: "weekly" }
+    groups:
+      python-tooling:
+        patterns: ["ruff", "mypy", "pyright", "bandit", "pip-audit"]
+      test-runners:
+        patterns: ["pytest", "pytest-*", "hypothesis", "coverage"]
+      framework:
+        patterns: ["fastapi", "django*", "flask*", "starlette", "pydantic*", "sqlalchemy*"]
 ```
+
+Dependabot supports `pip` for `requirements*.txt`, `pyproject.toml` (PEP 621), and `pipenv` files. For `uv.lock` and `poetry.lock` updates, Dependabot reads the `pyproject.toml` and bumps the spec; the lockfile is refreshed by `uv lock` / `poetry lock` on next install.
 
 Renovate is offered as an alternative when the user has used it before; the generator does not force a choice.
 
@@ -219,6 +235,7 @@ For releases, the generator wires `anchore/sbom-action` into the release workflo
 | Go | `pmezard/licenses` (CLI) — manual review preferred |
 | Rust | `cargo deny check licenses` (already in security job) |
 | TypeScript | `license-checker --production --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC'` |
+| Python | `pip-licenses --format=csv --fail-on='GPL;AGPL;LGPL'` (or whichever set is disallowed) |
 
 The strict pipeline fails if a non-allowlisted license appears in production dependencies.
 

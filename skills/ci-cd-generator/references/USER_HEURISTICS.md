@@ -24,6 +24,7 @@ The rationale matters: when a heuristic catches something in the field, the fail
 | Go | `go test -cover -covermode=atomic -coverprofile=coverage.out ./...` then `go tool cover -func=coverage.out` | `awk '/total:/ {gsub("%",""); if ($3+0 < 60) exit 1}' coverage.out` |
 | Rust | `cargo llvm-cov --workspace --lcov --output-path lcov.info` | `cargo llvm-cov report --fail-under-lines 60` |
 | TypeScript | `vitest run --coverage --coverage.thresholds.lines=60` (or `jest --coverage --coverageThreshold='{"global":{"lines":60}}'`) | (built into the runner) |
+| Python | `pytest --cov --cov-report=xml --cov-report=term --cov-fail-under=60` (via `pytest-cov`) | (built into the runner) |
 
 **Snippet (env-var driven).**
 
@@ -95,6 +96,41 @@ test("GET /users fires at most 3 queries", async () => {
 
 `sqlx` exposes a logger; wrap it in a counter and assert in `#[tokio::test]`. Example template lives in [RUST.md](RUST.md#n1-detection-template).
 
+### Python (Django / FastAPI+SQLAlchemy / Flask+SQLAlchemy)
+
+Three variants. **Django** has it built in:
+
+```python
+from django.test import TestCase
+class UserListTests(TestCase):
+    def test_list_at_most_3_queries(self):
+        with self.assertNumQueries(3):
+            self.client.get("/users/")
+```
+
+**FastAPI + SQLAlchemy 2.0** (and Flask + SQLAlchemy — same pattern) uses an `event.listen` hook on `Engine`:
+
+```python
+# conftest.py
+import pytest
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+@pytest.fixture
+def query_counter():
+    counts = {"n": 0}
+    def _count(conn, cursor, *_): counts["n"] += 1
+    event.listen(Engine, "before_cursor_execute", _count)
+    yield counts
+    event.remove(Engine, "before_cursor_execute", _count)
+
+def test_users_query_budget(client, query_counter):
+    client.get("/users")
+    assert query_counter["n"] <= 3, f"N+1: {query_counter['n']}"
+```
+
+Full templates (with framework-specific variants) live in [PYTHON.md](PYTHON.md#n1-detection-templates).
+
 **Workflow integration.** The N+1 tests run inside the standard `test` job — no separate job needed. The pipeline is configured to surface query counts as annotations on failure.
 
 ## 3. Race condition — Property-Based Testing (PBT)
@@ -108,6 +144,7 @@ test("GET /users fires at most 3 queries", async () => {
 | Go | Built-in `go test -race` (data-race detector) + `pgregory.net/rapid` for concurrent PBT | `go test -race -count=1 ./...` and a separate `go test -tags=pbt -timeout=10m ./...` job |
 | Rust | `proptest` + `loom` for concurrent state-machine tests | `cargo test --release` and `RUSTFLAGS="--cfg loom" cargo test --test loom_tests` |
 | TypeScript | `fast-check` with `fc.assert(fc.asyncProperty(...))`; spawn N async workers | `pnpm test:pbt` (separate script) |
+| Python | `hypothesis` `RuleBasedStateMachine` (stateful PBT) + free-threaded interpreter `python3.14t` (PEP 779) — GIL removal exposes races silently masked under the lock | `uv run --python 3.14t pytest tests/concurrency/ -W error` in a dedicated `race-pbt` job |
 
 **Workflow snippet (Go reference).**
 
@@ -143,6 +180,7 @@ The pipeline owns the test-time layer.
 | TypeScript (Vitest) | `--reporter=verbose --logHeapUsage` + `--isolate` | `vitest run --logHeapUsage --isolate` |
 | Go | `-race` (catches goroutine leaks indirectly) + `uber-go/goleak` in `TestMain` | `go test -race ./...` + dedicated `go test -run TestNoGoroutineLeak ./...` |
 | Rust | `cargo miri test` (slow; opt-in nightly job) | `rustup +nightly component add miri && cargo +nightly miri test` |
+| Python | `pytest-asyncio --strict-mode` (unawaited coroutines + leaked tasks) + `tracemalloc` snapshot diff fixture + `pytest-memray` (Bloomberg) for allocator flamegraph | `pytest --asyncio-mode=strict --memray` |
 
 **Workflow snippet (TypeScript / Jest).**
 
@@ -193,7 +231,7 @@ jobs:
           K6_BASE_URL: ${{ secrets.STAGING_URL }}
 ```
 
-Artillery alternative is documented in [TYPESCRIPT.md](TYPESCRIPT.md#load-testing-with-artillery).
+Artillery alternative (Node) is documented in [TYPESCRIPT.md](TYPESCRIPT.md#load-testing-with-artillery). For Python projects, **Locust** (`pip install locust && locust -f tests/load/locustfile.py --headless -u 50 -r 5 -t 5m --host=$BASE_URL`) is a native alternative — the locustfile lives in the repo and the generator wires the same `nightly-load.yml` schedule against it instead of k6.
 
 The job consumes `secrets.STAGING_URL` and `secrets.STAGING_TOKEN`; both are listed in the generation report so the user can configure them before the first nightly run.
 
