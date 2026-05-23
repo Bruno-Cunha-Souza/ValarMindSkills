@@ -126,7 +126,7 @@ When the work is perf-driven — latency, cost, memory, throughput — `@code-op
 - Use after a latency or OOM incident, before a release with a perf SLO gate, or while planning a refactor whose primary motivation is perf rather than readability.
 - Coexists with `@code-review` and `@clean-code` in Stage 4 — they cover different concerns. `@code-optimization` may cross-link to `@code-security-review` when a finding doubles as a DoS surface (unbounded query, ReDoS, decompression bomb).
 
-Trigger phrases: `optimize code`, `otimizar codigo`, `auditar performance`, `performance review`, `find bottlenecks`, `analisar gargalos`, or `/valarmindskills:code-optimization`.
+Trigger phrases: `optimize code`, `otimizar código`, `auditar performance`, `performance review`, `find bottlenecks`, `analisar gargalos`, or `/valarmindskills:code-optimization`.
 
 ## Persistence
 

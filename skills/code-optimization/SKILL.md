@@ -1,6 +1,6 @@
 ---
 name: code-optimization
-description: "Lifecycle performance & efficiency review Go/Rust/TypeScript/Python (FastAPI/Django/Flask/Gin/Fiber/fx/Elysia/Bun/Node/Axum/Actix). Auto-detects toolchain, profiles, sweeps for duplication/leaks/N+1/CPU-bound/blocking I/O, classifies findings by Impact x Risk x Effort (tri-axis), writes OPTIMIZATION_REPORT.md at project root. Optional WebSearch + context7 validation for High/Critical findings. Read-only on code — every finding cites file:line. Triggers: 'optimize code', 'otimizar codigo', 'auditar performance', 'performance review', 'find bottlenecks', 'analisar gargalos', '/code-optimization'."
+description: "Lifecycle performance & efficiency review Go/Rust/TypeScript/Python (FastAPI/Django/Flask/Gin/Fiber/fx/Elysia/Bun/Node/Axum/Actix). Auto-detects toolchain, profiles, sweeps for duplication/leaks/N+1/CPU-bound/blocking I/O, classifies findings by Impact x Risk x Effort (tri-axis), writes OPTIMIZATION_REPORT.md at project root. Optional WebSearch + context7 validation for High/Critical findings. Read-only on code — every finding cites file:line. Triggers: 'optimize code', 'otimizar código', 'auditar performance', 'performance review', 'find bottlenecks', 'analisar gargalos', '/code-optimization'."
 source: ValarMindSkills
 ---
 
@@ -51,7 +51,7 @@ Each tool's absence is logged and the related Phase degrades but is never silent
 | `knip` | TS | Unused exports / files / deps |
 | `cProfile` + `py-spy` + `line_profiler` + `tracemalloc` + `pytest-memray` | Python | CPU sampling, line-level, alloc tracing |
 | `pytest --benchmark` (`pytest-benchmark`) | Python | Micro-bench |
-| `WebSearch`, `mcp__context7__resolve-library-id`, `mcp__context7__query-docs` | all | Phase 4 conditional validation |
+| `WebSearch` + context7 MCP (Claude Code: `mcp__context7__resolve-library-id` + `mcp__context7__query-docs`; Cursor: `CallMcpTool` on server `user-context7` with `resolve-library-id` / `query-docs`) | all | Phase 4 conditional validation. If context7 is not configured on the host, Phase 4 falls back to WebSearch only — document the gap in the report's `external validation:` field. |
 
 Required access:
 
@@ -71,7 +71,7 @@ Detect language, framework, package manager. Read project docs (README, ARCHITEC
 test -f go.mod        && echo "language: go"
 test -f Cargo.toml    && echo "language: rust"
 test -f package.json  && echo "language: typescript"
-test -f pyproject.toml || test -f requirements.txt || test -f setup.py && echo "language: python"
+{ test -f pyproject.toml || test -f requirements.txt || test -f setup.py; } && echo "language: python"
 
 # Step 2 — framework (single most authoritative match wins)
 case "$LANG" in
@@ -153,12 +153,15 @@ Run the static perf-aware toolchain. Treat results as **leads**, never as conclu
 # Polyglot duplication (always)
 jscpd --min-lines 5 --min-tokens 50 .
 
-# Go
+# Go — static (always; no consent needed)
 go build -gcflags='-m=2' ./...                                                  # escape analysis → heap allocations
 go vet ./...
-go test -bench=. -benchmem -cpuprofile=/tmp/cpu.pprof -memprofile=/tmp/mem.pprof ./...
-go tool pprof -top -cum /tmp/cpu.pprof | head -30
+golangci-lint run ./...
+staticcheck ./...
 dupl -t 50 ./...
+# Optional with user consent (live profiling — may be slow on monorepos):
+# go test -bench=. -benchmem -cpuprofile=/tmp/cpu.pprof -memprofile=/tmp/mem.pprof ./...
+# go tool pprof -top -cum /tmp/cpu.pprof | head -30
 
 # Rust
 cargo build --release --timings                                                 # compile-time + dep graph
@@ -230,7 +233,11 @@ For each triggered finding:
    - `"FastAPI N+1 query SQLAlchemy 2.0 selectinload best practice"`
    - `"Go sync.Pool when not to use 2026"`
    - `"Rust tokio multi-thread runtime cost vs current-thread"`
-2. **context7** for the specific library: `mcp__context7__resolve-library-id` with the library name, then `mcp__context7__query-docs` with the anti-pattern question. Cite the doc snippet in the finding.
+2. **context7** for the specific library — invocation differs by harness:
+   - **Claude Code:** `mcp__context7__resolve-library-id` with the library name, then `mcp__context7__query-docs` with the anti-pattern question.
+   - **Cursor:** `CallMcpTool` on server `user-context7` with method `resolve-library-id`, then `query-docs`.
+   - If context7 is not configured on the host, fall back to WebSearch only and record `external validation: web-only` in the report's Context section.
+   Cite the doc snippet in the finding.
 3. Promote `Confidence` to High if both sources agree, or demote to Low and rewrite the finding (or drop it) if they contradict the draft.
 
 Findings that pass validation include the citation in their detail block (`Validation: context7 /sqlalchemy/sqlalchemy §loading.html ...` or `WebSearch: <url>`).
@@ -275,6 +282,7 @@ If `OPTIMIZATION_REPORT.md` already exists and the user has not confirmed overwr
 ## Constraints
 
 - **Never edit source code.** This skill writes exactly one file: `OPTIMIZATION_REPORT.md` at the project root. Source files are read-only.
+- **Never invent findings to fill the report.** Zero findings is a valid outcome — emit the LGTM block (see [Output format](#output-format)) and stop. Do not promote Low → High to look thorough; do not pad with `Info` observations that are not grounded in a file actually read this run.
 - **Never invent a file path, function name, latency number, or library version.** Every fact must come from a file you read or a tool you ran in this session.
 - **Never claim a benchmark result without showing the command and the relevant output.** Benchmarks are optional verification, not default review.
 - **Never quote a line you did not read.** Open the file at the cited line; the quote in the report must match byte-for-byte.
