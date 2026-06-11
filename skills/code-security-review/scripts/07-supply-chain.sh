@@ -29,7 +29,7 @@ emit_supply_chain() {
   local evidence
   evidence="$(build_evidence "tool=$tool" "stack=$stack" "output_excerpt=$excerpt")"
   emit_finding \
-    "$id" "high" "A06:2021 Vulnerable Components" \
+    "$id" "high" "A03:2025 Software Supply Chain Failures" \
     "$stack project at $PROJECT_ROOT" \
     "$tool reported vulnerable dependencies in the project. Severity should be assessed per-CVE; treating as High by default." \
     "Upgrade affected packages. In CI, fail the build on vuln-bearing dependencies. Pin versions and use lockfile-with-hashes (pip-audit --require-hashes, bun --frozen-lockfile, go.sum)." \
@@ -132,6 +132,51 @@ fi
 
 if [ "$ran_any" = "0" ]; then
   log_warn "No supply-chain scanner ran. Install at least one of: pip-audit, govulncheck, bun, npm, cargo-audit, osv-scanner."
+fi
+
+# ---------------------------------------------------------------------------
+# Lockfile pinning (static — no scanner needed). A03:2025 dependency integrity.
+# ---------------------------------------------------------------------------
+log_info "Checking dependency lockfile pinning..."
+
+# package.json without any lockfile → unpinned transitive deps.
+if [ -f "$PROJECT_ROOT/package.json" ]; then
+  if [ ! -f "$PROJECT_ROOT/package-lock.json" ] && \
+     [ ! -f "$PROJECT_ROOT/bun.lock" ] && \
+     [ ! -f "$PROJECT_ROOT/bun.lockb" ] && \
+     [ ! -f "$PROJECT_ROOT/yarn.lock" ] && \
+     [ ! -f "$PROJECT_ROOT/pnpm-lock.yaml" ]; then
+    emit_finding \
+      "SUPPLY-LOCK-001" "medium" "A03:2025 Software Supply Chain Failures / CWE-494" \
+      "package.json at $PROJECT_ROOT" \
+      "package.json present without any lockfile. Transitive dependency versions are unpinned, so a malicious or yanked release can enter the build silently." \
+      "Commit a lockfile (npm: package-lock.json + 'npm ci'; bun: bun.lock; pnpm/yarn equivalents). In CI use the frozen-install flag." \
+      "$(build_evidence "file=package.json" "lockfile=missing")"
+  fi
+fi
+
+# requirements.txt with unpinned (no '==' and no hash) requirement lines.
+if [ -f "$PROJECT_ROOT/requirements.txt" ]; then
+  unpinned="$(grep -vE '^\s*(#|-r |--|$)' "$PROJECT_ROOT/requirements.txt" 2>/dev/null \
+    | grep -vE '==|@|--hash' | sed 's/[[:space:]]*$//' | grep -cvE '^$' || true)"
+  if [ "${unpinned:-0}" -gt 0 ]; then
+    emit_finding \
+      "SUPPLY-LOCK-002" "low" "A03:2025 Software Supply Chain Failures / CWE-494" \
+      "requirements.txt at $PROJECT_ROOT" \
+      "$unpinned requirement line(s) are not pinned with '==' or a hash. Unpinned versions resolve to whatever is current at install time, widening the supply-chain window." \
+      "Pin exact versions ('pkg==1.2.3') and prefer hashed installs ('pip install --require-hashes')." \
+      "$(build_evidence "file=requirements.txt" "unpinned_lines=$unpinned")"
+  fi
+fi
+
+# Cargo.toml (binary crate) without Cargo.lock.
+if [ -f "$PROJECT_ROOT/Cargo.toml" ] && [ ! -f "$PROJECT_ROOT/Cargo.lock" ]; then
+  emit_finding \
+    "SUPPLY-LOCK-003" "low" "A03:2025 Software Supply Chain Failures / CWE-494" \
+    "Cargo.toml at $PROJECT_ROOT" \
+    "Cargo.toml present without Cargo.lock. For a binary crate this leaves dependency versions unpinned across builds." \
+    "Commit Cargo.lock for binaries; in CI build with '--locked' to fail on drift." \
+    "$(build_evidence "file=Cargo.toml" "lockfile=missing")"
 fi
 
 log_ok "Supply chain audit complete."

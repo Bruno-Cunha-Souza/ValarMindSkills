@@ -419,6 +419,19 @@ Generate the report in **Report Format v1**. Versioned because the schema is mea
 - [x] **API9** Improper Inventory Management
 - [x] **API10** Unsafe Consumption of APIs
 
+## OWASP Web Top 10 2025 Compliance Matrix
+
+- [ ] **A01** Broken Access Control (incl. SSRF) — 1 finding (GOAPI-001)
+- [ ] **A02** Security Misconfiguration — 1 finding (GOAPI-002)
+- [x] **A03** Software Supply Chain Failures
+- [x] **A04** Cryptographic Failures
+- [x] **A05** Injection
+- [ ] **A06** Insecure Design — 1 finding (GOAPI-003 missing ReadHeaderTimeout)
+- [x] **A07** Authentication Failures
+- [x] **A08** Software or Data Integrity Failures
+- [x] **A09** Logging & Alerting Failures
+- [x] **A10** Mishandling of Exceptional Conditions
+
 ## Remediation Roadmap
 
 1. **Critical (immediate):** GOAPI-001

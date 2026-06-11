@@ -9,7 +9,7 @@ Load this reference when the parent skill is active and the project is detected 
 - Auditing a **FastAPI / Django / Flask** project for security issues
 - Hardening a Python service before production rollout
 - Reviewing **Pydantic Settings**, **Django settings**, **Flask `app.config`**, **ASGI middleware**, JWT layers, supply-chain manifests
-- Mapping a Python web codebase against the **OWASP Web Top 10 2021** and **OWASP API Top 10 2023**
+- Mapping a Python web codebase against the **OWASP Web Top 10 2025** and **OWASP API Top 10 2023**
 - Applying or validating fixes for Python-specific issues (pickle/yaml deserialization, SSTI in Jinja2, ALLOWED_HOSTS misconfig, `SECRET_KEY` exposure, JWT alg confusion, free-threaded data races on `python3.14t`)
 
 This reference is **lifecycle-driven**: identification → analysis → correction → validation in a single workflow. The generic catalog (`../WEB_VULNERABILITIES.md`), design patterns (`../DESIGN_CONTROLS.md`), and active testing phases (`../TESTING_PHASES.md`) live one directory up — load them in addition to this file.
@@ -536,7 +536,7 @@ Generate the report in **Report Format v1** (same schema as the sibling Go and N
 - **Deploy target:** containerized (k8s) / serverless / bare-metal
 - **Files audited:** N
 - **Findings:** Critical X · High Y · Medium Z · Low W · Info V
-- **OWASP Web Top 10 2021 categories affected:** N / 10
+- **OWASP Web Top 10 2025 categories affected:** N / 10
 - **OWASP API Top 10 2023 categories affected:** N / 10
 - **Patches generated:** P (S SAFE · R REVIEW · B BREAKING)
 - **Patches applied:** A (post-confirmation)
@@ -546,16 +546,16 @@ Generate the report in **Report Format v1** (same schema as the sibling Go and N
 
 | ID | Severity | OWASP | CWE | File:Line | Title | Risk tag | Status |
 |----|----------|-------|-----|-----------|-------|----------|--------|
-| PY-001 | Critical | A08:2021 / API8:2023 | CWE-502 | `tasks.py:14` | `yaml.load(payload)` without SafeLoader on broker message | SAFE | Diff available |
-| PY-002 | Critical | A06:2021 | CWE-1395 | `pyproject.toml:24` | `pyyaml < 6.0.2` + `python-jose` (CVE-2024-33663 JWT alg confusion) | SAFE | Patched |
-| PY-003 | High | A01:2021 / API1:2023 | CWE-639 | `app/api/orders.py:42` | Endpoint missing ownership check (BOLA) | REVIEW | Diff available |
-| PY-004 | High | A05:2021 | CWE-942 | `app/main.py:18` | CORS `allow_origins=["*"]` + `allow_credentials=True` | SAFE | Patched |
+| PY-001 | Critical | A08:2025 / API8:2023 | CWE-502 | `tasks.py:14` | `yaml.load(payload)` without SafeLoader on broker message | SAFE | Diff available |
+| PY-002 | Critical | A03:2025 | CWE-1395 | `pyproject.toml:24` | `pyyaml < 6.0.2` + `python-jose` (CVE-2024-33663 JWT alg confusion) | SAFE | Patched |
+| PY-003 | High | A01:2025 / API1:2023 | CWE-639 | `app/api/orders.py:42` | Endpoint missing ownership check (BOLA) | REVIEW | Diff available |
+| PY-004 | High | A02:2025 | CWE-942 | `app/main.py:18` | CORS `allow_origins=["*"]` + `allow_credentials=True` | SAFE | Patched |
 
 ## Detailed Findings
 
 ### PY-001 — Critical — `yaml.load(payload)` without SafeLoader
 
-- **OWASP:** A08:2021 Software and Data Integrity Failures / API8:2023 Security Misconfiguration
+- **OWASP:** A08:2025 Software or Data Integrity Failures / API8:2023 Security Misconfiguration
 - **CWE:** CWE-502 (Deserialization of Untrusted Data)
 - **Location:** `tasks.py:14`
 - **Framework:** FastAPI worker consuming Celery messages
@@ -580,20 +580,20 @@ Generate the report in **Report Format v1** (same schema as the sibling Go and N
   python -c "import yaml; yaml.safe_load('!!python/object/apply:os.system [\"id\"]')"
   # → yaml.constructor.ConstructorError
   ```
-- **References:** OWASP A08:2021, API8:2023, CWE-502, PYVULN-011
+- **References:** OWASP A08:2025, API8:2023, CWE-502, PYVULN-011
 
-## OWASP Web Top 10 2021 Compliance Matrix
+## OWASP Web Top 10 2025 Compliance Matrix
 
 - [ ] **A01** Broken Access Control — 1 finding (PY-003)
-- [x] **A02** Cryptographic Failures
-- [x] **A03** Injection
-- [x] **A04** Insecure Design
-- [ ] **A05** Security Misconfiguration — 1 finding (PY-004)
-- [ ] **A06** Vulnerable and Outdated Components — 1 finding (PY-002)
-- [x] **A07** Identification and Authentication Failures
-- [ ] **A08** Software and Data Integrity Failures — 1 finding (PY-001)
-- [x] **A09** Security Logging and Monitoring Failures
-- [x] **A10** Server-Side Request Forgery (SSRF)
+- [ ] **A02** Security Misconfiguration — 1 finding (PY-004)
+- [ ] **A03** Software Supply Chain Failures — 1 finding (PY-002)
+- [x] **A04** Cryptographic Failures
+- [x] **A05** Injection
+- [x] **A06** Insecure Design
+- [x] **A07** Authentication Failures
+- [ ] **A08** Software or Data Integrity Failures — 1 finding (PY-001)
+- [x] **A09** Logging & Alerting Failures
+- [x] **A10** Mishandling of Exceptional Conditions
 
 ## OWASP API Top 10 2023 Compliance Matrix
 

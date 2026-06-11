@@ -256,7 +256,7 @@ A finding is born only when the answer is unsatisfactory **and** the evidence is
 
 ## Phase 3 — Security Review
 
-Run after Phase 2 because security findings depend on understanding intent. The OWASP API Top 10 (2023) and OWASP Web Top 10 (2021) are the reference frames.
+Run after Phase 2 because security findings depend on understanding intent. The OWASP API Top 10 (2023) and OWASP Web Top 10 (2025) are the reference frames.
 
 ### 3.1 Security categories (sweep + read)
 

@@ -500,3 +500,19 @@ grep -r "@elysiajs/bearer\|bearer()" . --include="*.ts"
 grep -r "additionalProperties" . --include="*.ts"
 # t.Object schemas should include { additionalProperties: false }
 ```
+
+## Static Phases 8–10 (no live target required)
+
+The seven phases above send attack-shaped traffic and need an authorized live target. Three additional phases are **static** — they read repository files and send no traffic, so they run under `STATIC_ONLY=1 PROJECT_ROOT=. ./run-all.sh` with no `TARGET` and no authorization gate.
+
+### Phase 8 — CI/CD workflow audit (`09-cicd-workflows.sh`)
+
+Audits `.github/workflows/*.yml` for supply-chain misconfigurations: actions pinned to mutable tags instead of 40-hex SHAs, `pull_request_target` + PR-head checkout ("pwn request"), secrets interpolated into `run:` shells, missing top-level `permissions:`, and self-hosted runners. Prefers `zizmor` (Trail of Bits) when installed; falls back to grep heuristics. Full control catalog in [`SUPPLY_CHAIN_CICD.md`](SUPPLY_CHAIN_CICD.md).
+
+### Phase 9 — Secrets scan (`10-secrets-scan.sh`)
+
+Scans tracked files (and git history, via the tools) for committed credentials. Prefers `gitleaks`, then `trufflehog` (verifies whether a credential is still live), then a redacting regex fallback over `git ls-files`. Matched values are always redacted before being written to findings.
+
+### Phase 10 — AI/LLM surface review (`11-ai-llm-probes.sh`)
+
+Static heuristics for AI-integrated code: detects the LLM/MCP surface, flags request data concatenated into prompts (LLM01), unencoded LLM output flowing into dangerous sinks (LLM05), and unpinned MCP servers (A03). An **active** prompt-injection canary battery runs only when `LLM_ENDPOINT` and `I_HAVE_AUTHORIZATION=1` are both set. Full reference in [`AI_SECURITY.md`](AI_SECURITY.md).

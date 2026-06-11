@@ -63,13 +63,13 @@ The risk tag describes the **fix**, not the finding.
 | Server-Side Request Forgery | API7:2023 | CWE-918 | High |
 | Security Misconfiguration | API8:2023 | CWE-16 | Medium |
 | Unsafe Consumption of APIs | API10:2023 | CWE-20 | Medium |
-| SQL Injection | Web03:2021 | CWE-89 | Critical |
-| Cross-Site Scripting | Web03:2021 | CWE-79 | High |
-| Insecure Deserialization | Web08:2021 | CWE-502 | Critical |
+| SQL Injection | A05:2025 | CWE-89 | Critical |
+| Cross-Site Scripting | A05:2025 | CWE-79 | High |
+| Insecure Deserialization | A08:2025 | CWE-502 | Critical |
 | Path Traversal | — | CWE-22 | High |
 | Command Injection | — | CWE-78 | Critical |
 | Hardcoded Credentials | — | CWE-798 | Critical |
-| Insecure Crypto | Web02:2021 | CWE-327 | High |
+| Insecure Crypto | A04:2025 | CWE-327 | High |
 | Race Condition | — | CWE-362 | Medium |
 | Open Redirect | — | CWE-601 | Medium |
 

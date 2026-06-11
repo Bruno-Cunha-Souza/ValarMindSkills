@@ -3,6 +3,8 @@
 Executable companions to `references/TESTING_PHASES.md`. Each script automates one phase of active security testing and emits findings as JSON-Lines (one finding per line) to `findings.jsonl`.
 
 > **AUTHORIZATION REQUIRED.** Run only against systems you own or for which you have explicit written authorization (pentest agreement, bug bounty scope). Unauthorized testing is a crime in most jurisdictions. The orchestrator (`run-all.sh`) refuses to run unless `I_HAVE_AUTHORIZATION=1` is set.
+>
+> **Static phases are exempt.** Phases 07/09/10/11 read repository files and send no attack traffic, so `STATIC_ONLY=1 PROJECT_ROOT=. ./run-all.sh` runs them with no `TARGET` and no authorization gate. The active prompt-injection battery in `11-ai-llm-probes.sh` stays gated by `LLM_ENDPOINT` + `I_HAVE_AUTHORIZATION=1`.
 
 ## Quickstart
 
@@ -25,14 +27,29 @@ export I_HAVE_AUTHORIZATION=1
 ./04-injection-probes.sh
 ```
 
+**Static-only run (no live target, no authorization needed):**
+
+```bash
+# Audits the repo's dependencies, CI workflows, secrets, and AI/LLM surface
+STATIC_ONLY=1 PROJECT_ROOT=/path/to/repo ./run-all.sh
+
+# Or a single static phase
+PROJECT_ROOT=/path/to/repo ./09-cicd-workflows.sh
+```
+
 Findings end up in `./out/findings.jsonl` and a human-readable summary in `./out/report.md`.
 
 ## Environment Variables
 
 | Variable | Required by | Default | Description |
 | --- | --- | --- | --- |
-| `TARGET` | all | — | Base URL of the API under test (no trailing slash) |
-| `I_HAVE_AUTHORIZATION` | run-all | — | Must be `1` to proceed |
+| `TARGET` | active phases | — | Base URL of the API under test (no trailing slash) |
+| `I_HAVE_AUTHORIZATION` | run-all (active), 11-ai active | — | Must be `1` to proceed |
+| `STATIC_ONLY` | run-all | — | Set to `1` to run only static phases 07/09/10/11 (no `TARGET`/auth) |
+| `PROJECT_ROOT` | 07, 09, 10, 11 | `$PWD` | Repo root scanned by the static phases |
+| `LLM_ENDPOINT` | 11-ai (active) | — | Chat/completions URL for the active prompt-injection battery |
+| `LLM_FIELD` | 11-ai (active) | `message` | JSON field the endpoint reads the user message from |
+| `LLM_AUTH_HEADER` | 11-ai (active) | — | Full auth header, e.g. `Authorization: Bearer xxx` |
 | `TOKEN_USER_A` | 03-bola | — | Bearer token for user A |
 | `TOKEN_USER_B` | 03-bola | — | Bearer token for user B |
 | `USER_A_RESOURCE_ID` | 03-bola | — | Resource ID owned by user A (e.g. order ID) |
@@ -59,9 +76,12 @@ Findings end up in `./out/findings.jsonl` and a human-readable summary in `./out
 | `05-rate-limit.sh` | Phase 4 Burst + IP spoofing bypass | curl, jq |
 | `05-burst.k6.js` | Phase 4.4 k6 burst load (separate run) | k6 |
 | `06-info-disclosure.sh` | Phase 5 Headers, /docs, GraphQL introspect, timing | curl, jq |
-| `07-supply-chain.sh` | Phase 6 pip-audit / govulncheck / bun audit | per-stack |
+| `07-supply-chain.sh` | Phase 6 pip-audit / govulncheck / bun audit / osv-scanner + lockfile pinning | per-stack |
 | `08-cors-headers.sh` | Phase 7 Origin reflection, sec headers | curl, jq |
-| `run-all.sh` | Orchestrator (00→08, except 05-burst.k6.js) | bash |
+| `09-cicd-workflows.sh` | Phase 8 (static) GitHub Actions audit — zizmor or grep fallback | zizmor (optional) |
+| `10-secrets-scan.sh` | Phase 9 (static) committed secrets — gitleaks / trufflehog / regex fallback | gitleaks or trufflehog (optional) |
+| `11-ai-llm-probes.sh` | Phase 10 AI/LLM static heuristics + gated prompt-injection canary | python3, curl |
+| `run-all.sh` | Orchestrator (00→11, except 05-burst.k6.js; or 07/09/10/11 under `STATIC_ONLY=1`) | bash |
 | `lib/common.sh` | Shared helpers | — |
 | `lib/report.py` | Aggregates `findings.jsonl` → `report.md` | python3 |
 
@@ -83,7 +103,7 @@ Each script appends one JSON-Lines record per finding:
 }
 ```
 
-`severity` ∈ {`critical`, `high`, `medium`, `low`, `info`}. CVSS bands match `references/REPORT_TEMPLATE.md`.
+`severity` ∈ {`critical`, `high`, `medium`, `low`, `info`}. CVSS bands match `references/REPORT_TEMPLATE.md`. The `owasp` field is an opaque label and may reference any catalog: `A0x:2025` (Web), `API0x:2023` (API), `LLM0x:2025` (LLM apps), or `ASI0x:2026` (agentic).
 
 ## Aggregating Findings
 
@@ -130,3 +150,5 @@ Findings themselves never cause non-zero exit (they are output, not errors). CI 
 - `02-jwt-attacks.py` requires a sample JWT; it cannot fabricate one for an unknown signing scheme.
 - Rate limit probes can be detected by the target. Run during low-traffic windows or coordinate with ops.
 - `05-burst.k6.js` is **not invoked by run-all.sh** — burst load can disrupt staging environments. Run manually: `k6 run 05-burst.k6.js -e TARGET=$TARGET`.
+- Static phases 09/10/11 use **grep/regex heuristics** when their preferred tool (zizmor / gitleaks / trufflehog) is absent. Treat those findings as leads to confirm, not verdicts — `AI-002`/`AI-003` in particular fire on any nearby keyword and expect manual triage. When the real tool is installed, it takes precedence.
+- `10-secrets-scan.sh` always **redacts** matched secret values (first 4 + last 4 chars) before writing evidence.

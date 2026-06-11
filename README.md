@@ -52,7 +52,7 @@ The following table estimates token consumption per skill/context at session sta
 | `github-release-note` | Generates release notes from a git tag range |
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
-| `code-security-review` | Web+API+Go+Next.js security lifecycle (FastAPI, Gin, Fiber, Elysia, Next.js 16 App Router) — Phase 0 stack detection branches into `references/golang/` (Gin/Fiber lifecycle) or `references/nextjs/` (App Router lifecycle); generic design controls + active testing + 100-vuln catalog. OWASP Web 2021 + API 2023 |
+| `code-security-review` | Web+API+Go+Next.js+Python security lifecycle (FastAPI, Gin, Fiber, Elysia, Next.js 16 App Router) — Phase 0 stack + AI/CI-surface detection branches into `references/golang/` or `references/nextjs/`; generic design controls + active testing + 100-vuln catalog + supply-chain/CI-CD hardening + LLM/agentic/MCP coverage. OWASP Web Top 10 2025 + API 2023 + LLM 2025 + Agentic 2026; static probes for deps, CI workflows, secrets, AI |
 | `obsidian-bases` | Create and edit Obsidian Bases (.base files) with views, filters, formulas, and summaries |
 | `obsidian-brain` | Token-efficient session-memory for Obsidian-vault projects — auto-detects, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when vault detected |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |

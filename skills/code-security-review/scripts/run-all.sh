@@ -4,7 +4,11 @@
 # AUTHORIZATION REQUIRED: set I_HAVE_AUTHORIZATION=1 to confirm you have written
 # permission to test the target. Refuses to run otherwise.
 #
-# Reads:  TARGET, I_HAVE_AUTHORIZATION, plus per-script env vars (see README.md)
+# STATIC_ONLY=1 runs only the static phases (07/09/10/11 — supply chain, CI/CD,
+# secrets, AI/LLM static) against PROJECT_ROOT. No TARGET and no authorization
+# needed, because static phases read files and send no attack traffic.
+#
+# Reads:  TARGET, I_HAVE_AUTHORIZATION, STATIC_ONLY, plus per-script env vars (see README.md)
 # Writes: out/findings.jsonl, out/report.md, out/summary.json
 
 set -euo pipefail
@@ -12,24 +16,49 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
-require_env TARGET
+if [ "${STATIC_ONLY:-}" = "1" ]; then
+  log_info "STATIC_ONLY=1 — running static phases only (no live target)."
+  phases=(
+    "07-supply-chain.sh"
+    "09-cicd-workflows.sh"
+    "10-secrets-scan.sh"
+    "11-ai-llm-probes.sh"
+  )
+else
+  require_env TARGET
 
-# ---------------------------------------------------------------------------
-# Authorization gate
-# ---------------------------------------------------------------------------
-if [ "${I_HAVE_AUTHORIZATION:-}" != "1" ]; then
-  log_error "Refusing to run without explicit authorization."
-  log_dim ""
-  log_dim "These probes send real attack-shaped traffic to $TARGET."
-  log_dim "Running without authorization is a crime in most jurisdictions."
-  log_dim ""
-  log_dim "If you have written permission to test (pentest agreement, bug bounty"
-  log_dim "scope, ownership of the target), set:"
-  log_dim ""
-  log_dim "    export I_HAVE_AUTHORIZATION=1"
-  log_dim ""
-  log_dim "and rerun."
-  exit 2
+  # -------------------------------------------------------------------------
+  # Authorization gate (active phases send attack-shaped traffic)
+  # -------------------------------------------------------------------------
+  if [ "${I_HAVE_AUTHORIZATION:-}" != "1" ]; then
+    log_error "Refusing to run without explicit authorization."
+    log_dim ""
+    log_dim "These probes send real attack-shaped traffic to $TARGET."
+    log_dim "Running without authorization is a crime in most jurisdictions."
+    log_dim ""
+    log_dim "If you have written permission to test (pentest agreement, bug bounty"
+    log_dim "scope, ownership of the target), set:"
+    log_dim ""
+    log_dim "    export I_HAVE_AUTHORIZATION=1"
+    log_dim ""
+    log_dim "and rerun. (For file-only static checks, use STATIC_ONLY=1 instead.)"
+    exit 2
+  fi
+
+  phases=(
+    "00-pre-checks.sh"
+    "01-auth-probes.sh"
+    "02-jwt-attacks.py"
+    "03-bola-probes.sh"
+    "04-injection-probes.sh"
+    "05-rate-limit.sh"
+    "06-info-disclosure.sh"
+    "07-supply-chain.sh"
+    "08-cors-headers.sh"
+    "09-cicd-workflows.sh"
+    "10-secrets-scan.sh"
+    "11-ai-llm-probes.sh"
+  )
 fi
 
 # ---------------------------------------------------------------------------
@@ -41,21 +70,6 @@ if [ -s "$FINDINGS_FILE" ]; then
   log_info "Previous findings backed up to $backup"
 fi
 : > "$FINDINGS_FILE"
-
-# ---------------------------------------------------------------------------
-# Run phases
-# ---------------------------------------------------------------------------
-phases=(
-  "00-pre-checks.sh"
-  "01-auth-probes.sh"
-  "02-jwt-attacks.py"
-  "03-bola-probes.sh"
-  "04-injection-probes.sh"
-  "05-rate-limit.sh"
-  "06-info-disclosure.sh"
-  "07-supply-chain.sh"
-  "08-cors-headers.sh"
-)
 
 run_phase() {
   local script="$1"

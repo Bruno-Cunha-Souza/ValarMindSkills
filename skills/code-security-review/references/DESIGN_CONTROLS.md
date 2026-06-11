@@ -449,6 +449,8 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 ## Supply Chain Security
 
+Quick per-ecosystem commands below. For the full A03:2025 deep-dive — lockfile pinning, GitHub Actions hardening, secrets hygiene, SBOM, typosquatting/slopsquatting, and incident case studies — see [`SUPPLY_CHAIN_CICD.md`](SUPPLY_CHAIN_CICD.md).
+
 ### Python
 
 ```bash
@@ -549,29 +551,15 @@ async with httpx.AsyncClient(verify=ssl_ctx) as client:
 
 ## AI / LLM API Security
 
-When your API is AI-powered or consumes LLM services:
-
-### Prompt Injection
-
-**OWASP GenAI Top 10 #1 (2025)** — present in ~73% of production LLM deployments.
-
-- Isolate system prompts from user inputs architecturally — never concatenate them into a single string
-- Treat LLM output as **untrusted user input** before using it in downstream systems
-- Implement output filtering for known injection patterns and sensitive data regexes
-- Use behavioral monitoring to detect prompt injection attempts at runtime
-
-### Token-Based Rate Limiting
+When your API is AI-powered, consumes LLM services, exposes agentic tools, or runs MCP servers, the model surface needs its own controls. Token-budget rate limiting is the one design control that belongs here:
 
 ```python
-# Count tokens before sending to LLM; reject if over budget
+# Count tokens before sending to LLM; reject if over budget (LLM10 Unbounded Consumption)
 from tiktoken import encoding_for_model
 
 enc = encoding_for_model("gpt-4o")
-token_count = len(enc.encode(user_input))
-if token_count > MAX_INPUT_TOKENS:
+if len(enc.encode(user_input)) > MAX_INPUT_TOKENS:
     raise HTTPException(status_code=400, detail="Input too long")
 ```
 
-### Compliance Note
-
-**EU AI Act** enforcement begins **August 2, 2026** for high-risk AI systems. APIs that make consequential decisions (credit, hiring, healthcare) must implement risk assessment, human oversight mechanisms, and audit logging.
+See [`AI_SECURITY.md`](AI_SECURITY.md) for the full reference: OWASP LLM Top 10 2025, Agentic Top 10 2026, MCP security, prompt-injection design controls, AI-generated-code review, and testing payloads.

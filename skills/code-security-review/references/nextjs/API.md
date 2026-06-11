@@ -10,7 +10,7 @@ Load this reference when the parent skill is active and the project is detected 
 - Hardening a Next.js service before production rollout
 - Responding to a CVE against Next.js, React, or the RSC protocol
 - Reviewing `proxy.ts`, Server Actions, Route Handlers, or `next.config.mjs`
-- Mapping a Next.js codebase against the **OWASP Web Top 10 2021** and **OWASP API Top 10 2023**
+- Mapping a Next.js codebase against the **OWASP Web Top 10 2025** and **OWASP API Top 10 2023**
 - Applying or validating fixes for Next.js-specific issues (RSC leakage, cache poisoning, Server Action auth bypass, image optimizer SSRF)
 
 This reference is **Next.js-native and lifecycle-driven**: identification → analysis → correction → validation in a single workflow. The generic catalog (`../WEB_VULNERABILITIES.md`), design patterns (`../DESIGN_CONTROLS.md`), and active testing phases (`../TESTING_PHASES.md`) live one directory up — load them in addition to this file.
@@ -487,7 +487,7 @@ Generate the report in **Report Format v1** (same schema as the sibling Go branc
 - **Deploy target:** Vercel / standalone / self-hosted Node
 - **Files audited:** N
 - **Findings:** Critical X · High Y · Medium Z · Low W · Info V
-- **OWASP Web Top 10 2021 categories affected:** N / 10
+- **OWASP Web Top 10 2025 categories affected:** N / 10
 - **OWASP API Top 10 2023 categories affected:** N / 10
 - **Patches generated:** P (S SAFE · R REVIEW · B BREAKING)
 - **Patches applied:** A (post-confirmation)
@@ -497,16 +497,16 @@ Generate the report in **Report Format v1** (same schema as the sibling Go branc
 
 | ID | Severity | OWASP | CWE | File:Line | Title | Risk tag | Status |
 |----|----------|-------|-----|-----------|-------|----------|--------|
-| NEXTJS-001 | Critical | A01:2021 / API1:2023 | CWE-639 | `app/(dashboard)/orders/actions.ts:14` | Server Action missing auth guard | REVIEW | Diff available |
-| NEXTJS-002 | Critical | A06:2021 | CWE-1395 | `package.json:24` | `next < 16.0.7` vulnerable to RSC RCE (CVE-2025-66478) | SAFE | Patched |
-| NEXTJS-003 | High | A03:2021 | CWE-79 | `app/blog/[slug]/page.tsx:42` | `dangerouslySetInnerHTML` without DOMPurify | SAFE | Patched |
-| NEXTJS-004 | High | A05:2021 | CWE-918 | `proxy.ts:18` | `next()` SSRF via user-controlled rewrite (CVE-2025-57822 class) | REVIEW | Diff available |
+| NEXTJS-001 | Critical | A01:2025 / API1:2023 | CWE-639 | `app/(dashboard)/orders/actions.ts:14` | Server Action missing auth guard | REVIEW | Diff available |
+| NEXTJS-002 | Critical | A03:2025 | CWE-1395 | `package.json:24` | `next < 16.0.7` vulnerable to RSC RCE (CVE-2025-66478) | SAFE | Patched |
+| NEXTJS-003 | High | A05:2025 | CWE-79 | `app/blog/[slug]/page.tsx:42` | `dangerouslySetInnerHTML` without DOMPurify | SAFE | Patched |
+| NEXTJS-004 | High | A01:2025 | CWE-918 | `proxy.ts:18` | `next()` SSRF via user-controlled rewrite (CVE-2025-57822 class) | REVIEW | Diff available |
 
 ## Detailed Findings
 
 ### NEXTJS-001 — Critical — Server Action missing auth guard
 
-- **OWASP:** A01:2021 Broken Access Control / API1:2023 Broken Object Level Authorization
+- **OWASP:** A01:2025 Broken Access Control / API1:2023 Broken Object Level Authorization
 - **CWE:** CWE-639 (Authorization Bypass Through User-Controlled Key)
 - **Location:** `app/(dashboard)/orders/actions.ts:14`
 - **Auth library:** next-auth v5
@@ -566,20 +566,20 @@ Generate the report in **Report Format v1** (same schema as the sibling Go branc
       -F "id=$USER_A_ORDER_ID" \
       -F "status=delivered"
   ```
-- **References:** OWASP A01:2021, API1:2023, CWE-639, NEXTJS-VULN-007
+- **References:** OWASP A01:2025, API1:2023, CWE-639, NEXTJS-VULN-007
 
-## OWASP Web Top 10 2021 Compliance Matrix
+## OWASP Web Top 10 2025 Compliance Matrix
 
-- [ ] **A01** Broken Access Control — 1 finding (NEXTJS-001)
-- [x] **A02** Cryptographic Failures
-- [ ] **A03** Injection — 1 finding (NEXTJS-003)
-- [x] **A04** Insecure Design
-- [ ] **A05** Security Misconfiguration — 1 finding (NEXTJS-004)
-- [ ] **A06** Vulnerable and Outdated Components — 1 finding (NEXTJS-002)
-- [x] **A07** Identification and Authentication Failures
-- [x] **A08** Software and Data Integrity Failures
-- [x] **A09** Security Logging and Monitoring Failures
-- [x] **A10** Server-Side Request Forgery (SSRF)
+- [ ] **A01** Broken Access Control — 2 findings (NEXTJS-001, NEXTJS-004 SSRF)
+- [x] **A02** Security Misconfiguration
+- [ ] **A03** Software Supply Chain Failures — 1 finding (NEXTJS-002)
+- [x] **A04** Cryptographic Failures
+- [ ] **A05** Injection — 1 finding (NEXTJS-003)
+- [x] **A06** Insecure Design
+- [x] **A07** Authentication Failures
+- [x] **A08** Software or Data Integrity Failures
+- [x] **A09** Logging & Alerting Failures
+- [x] **A10** Mishandling of Exceptional Conditions
 
 ## OWASP API Top 10 2023 Compliance Matrix
 
@@ -637,20 +637,20 @@ Run before every release:
 
 ## OWASP → Next.js Prevention Mapping
 
-### OWASP Web Top 10 2021
+### OWASP Web Top 10 2025
 
 | # | Vulnerability | Next.js Prevention |
 | --- | --- | --- |
-| **A01** | Broken Access Control | `await auth()` + ownership check at the top of every Server Action / Route Handler; `proxy.ts` matcher + handler-level revalidation (defense in depth) |
-| **A02** | Cryptographic Failures | Web Crypto API (`crypto.randomUUID`, `crypto.subtle`); bcrypt ≥ 12 / argon2id; `crypto.timingSafeEqual` |
-| **A03** | Injection (XSS, SQLi) | React auto-escaping (JSX); `DOMPurify.sanitize` for `dangerouslySetInnerHTML`; parameterized queries via Prisma/Drizzle; Zod/Valibot for input validation |
-| **A04** | Insecure Design | Response DTOs to prevent RSC over-fetching; rate limit on expensive flows; CAPTCHA on signup/checkout |
-| **A05** | Security Misconfiguration | `next.config` audited (Phase 2.1); CSP with nonce; `headers()` function; no `ignoreDuringBuilds`/`ignoreBuildErrors` |
-| **A06** | Vulnerable & Outdated Components | `npm audit --production`; `socket scan`; `osv-scanner`; pin `next`/`react` versions |
-| **A07** | Identification & Auth Failures | Auth.js v5 / Clerk / Supabase; session rotation on login; `sameSite: "lax"` cookies; rate limit on `/api/auth/*` |
-| **A08** | Software & Data Integrity Failures | `package-lock.json` committed; `subresource-integrity` on third-party scripts; Vercel Deployment Protection or equivalent |
-| **A09** | Logging & Monitoring Failures | `slog`-style structured logger; audit Server Function Logging 16.2 output; no PII in args |
-| **A10** | Server-Side Request Forgery | Allowlist in `proxy.ts` `next()` calls; `images.dangerouslyAllowLocalIP: false`; validate `new URL()` hostname before passing to `fetch()` |
+| **A01** | Broken Access Control (incl. SSRF) | `await auth()` + ownership check at the top of every Server Action / Route Handler; `proxy.ts` matcher + handler-level revalidation (defense in depth). SSRF (merged into A01 in 2025): allowlist `proxy.ts` `next()` rewrites; `images.dangerouslyAllowLocalIP: false`; validate `new URL()` hostname before `fetch()` |
+| **A02** | Security Misconfiguration | `next.config` audited (Phase 2.1); CSP with nonce; `headers()` function; no `ignoreDuringBuilds`/`ignoreBuildErrors`; `poweredByHeader: false` |
+| **A03** | Software Supply Chain Failures | `npm audit --production`; `osv-scanner`; `socket scan`; commit `package-lock.json`; pin `next`/`react` versions; **pin GitHub Actions by full 40-hex SHA, not tags**; verify package existence/age before adding AI-suggested deps (slopsquatting). See `../SUPPLY_CHAIN_CICD.md` |
+| **A04** | Cryptographic Failures | Web Crypto API (`crypto.randomUUID`, `crypto.subtle`); bcrypt ≥ 12 / argon2id; `crypto.timingSafeEqual` |
+| **A05** | Injection (XSS, SQLi) | React auto-escaping (JSX); `DOMPurify.sanitize` for `dangerouslySetInnerHTML`; parameterized queries via Prisma/Drizzle; Zod/Valibot for input validation |
+| **A06** | Insecure Design | Response DTOs to prevent RSC over-fetching; rate limit on expensive flows; CAPTCHA on signup/checkout |
+| **A07** | Authentication Failures | Auth.js v5 / Clerk / Supabase; session rotation on login; `sameSite: "lax"` cookies; rate limit on `/api/auth/*` |
+| **A08** | Software or Data Integrity Failures | `package-lock.json` committed; `subresource-integrity` on third-party scripts; Vercel Deployment Protection or equivalent |
+| **A09** | Logging & Alerting Failures | `slog`-style structured logger; audit Server Function Logging 16.2 output; no PII in args; alert on auth-failure spikes |
+| **A10** | Mishandling of Exceptional Conditions | `error.tsx` / `global-error.tsx` boundaries fail secure; no `error.stack`/`error.cause` leaked to Client Components via `unstable_catchError`; thrown auth errors must deny (never fall through to render) |
 
 ### OWASP API Top 10 2023 (applies to Route Handlers + Server Actions)
 
@@ -662,7 +662,7 @@ Run before every release:
 | **API4** | Unrestricted Resource Consumption | `@upstash/ratelimit` per-user; timeout on every server-side `fetch` via `AbortSignal.timeout()`; body size limits |
 | **API5** | Broken Function Level Authorization | RBAC check in admin Server Actions / Route Handlers; proxy matcher for admin paths |
 | **API6** | Unrestricted Access to Sensitive Business Flows | CAPTCHA + per-user rate limit on signup/checkout/password-reset |
-| **API7** | Server-Side Request Forgery | See A10 above |
+| **API7** | Server-Side Request Forgery | See A01 above (SSRF merged into Broken Access Control in Web 2025) |
 | **API8** | Security Misconfiguration | See A05 above |
 | **API9** | Improper Inventory Management | Document all Route Handlers; remove `/legacy` and `/beta` from production; maintain OpenAPI spec if public |
 | **API10** | Unsafe Consumption of APIs | Validate third-party responses with Zod; do not blindly forward upstream errors; mTLS for internal calls |
