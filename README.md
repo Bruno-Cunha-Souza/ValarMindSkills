@@ -57,6 +57,7 @@ The following table estimates token consumption per skill/context at session sta
 | `obsidian-brain` | Token-efficient session-memory for Obsidian-vault projects — auto-detects, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when vault detected |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
+| `only-plan` | Read-only planning modifier — never edits project files; writes a step-by-step implementation plan to a single new `IMPLEMENTATION_PLAN.md` at the project root. Composable with other skills: `/code-security-review /only-plan` |
 | `prompt-engineering` | Audits, hardens, and rewrites LLM prompts (`SKILL.md`, RAG, tool descriptions, agent base prompts) — severity-ranked findings with risk tags, rewritten prompt, token delta |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
 | `superpowers` | Engineering-discipline posture — 1% skill-scan, four pillars (TDD, systematic, complexity, evidence), seven-stage workflow. **OFF by default** |
@@ -67,7 +68,7 @@ The following table estimates token consumption per skill/context at session sta
 
 ### Plugin install (manual, from source)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 18 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 19 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
