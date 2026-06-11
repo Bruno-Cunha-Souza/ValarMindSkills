@@ -1,6 +1,6 @@
 ---
 name: only-plan
-description: "Read-only planning mode — use when the user wants full analysis and planning but no changes to existing project files. The agent never edits, creates, or deletes project files; instead it writes a step-by-step implementation plan to a single new Markdown file at the project root (default IMPLEMENTATION_PLAN.md). Composable with other skills: '/code-security-review /only-plan' runs the analysis and plans the fixes without applying them. Trigger phrases: 'only plan', 'plan only', 'apenas planejar', 'só o plano', 'não altere os arquivos', 'crie apenas o plano', '/only-plan'."
+description: "Read-only planning: analyze and design without changing project files. Writes one step-by-step plan at project root (default IMPLEMENTATION_PLAN.md). Composable with other skills (e.g. /code-security-review /only-plan). Triggers: /only-plan, 'only plan', 'apenas planejar', 'não altere os arquivos'."
 source: ValarMindSkills
 ---
 
