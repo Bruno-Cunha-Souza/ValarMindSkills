@@ -1,62 +1,62 @@
 {
-  "name": "valarmindskills",
-  "description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default), superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default), and obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found).",
-  "version": "1.3.0",
-  "author": {
-    "name": "Bruno Cunha Souza",
-    "url": "https://github.com/Bruno-Cunha-Souza"
-  },
-  "homepage": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
-  "repository": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
-  "license": "MIT",
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-activate.js\"",
-            "timeout": 5,
-            "statusMessage": "Loading caveman mode..."
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-activate.js\"",
-            "timeout": 5,
-            "statusMessage": "Loading superpowers mode..."
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-activate.js\"",
-            "timeout": 5,
-            "statusMessage": "Loading obsidian-brain..."
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-mode-tracker.js\"",
-            "timeout": 5,
-            "statusMessage": "Tracking caveman mode..."
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-mode-tracker.js\"",
-            "timeout": 5,
-            "statusMessage": "Tracking superpowers mode..."
-          },
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-mode-tracker.js\"",
-            "timeout": 5,
-            "statusMessage": "Tracking obsidian-brain mode..."
-          }
-        ]
-      }
-    ]
-  }
+	"name": "valarmindskills",
+	"description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default), superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default), and obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found).",
+	"version": "1.4.0",
+	"author": {
+		"name": "Bruno Cunha Souza",
+		"url": "https://github.com/Bruno-Cunha-Souza"
+	},
+	"homepage": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
+	"repository": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
+	"license": "MIT",
+	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-activate.js\"",
+						"timeout": 5,
+						"statusMessage": "Loading caveman mode..."
+					},
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-activate.js\"",
+						"timeout": 5,
+						"statusMessage": "Loading superpowers mode..."
+					},
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-activate.js\"",
+						"timeout": 5,
+						"statusMessage": "Loading obsidian-brain..."
+					}
+				]
+			}
+		],
+		"UserPromptSubmit": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-mode-tracker.js\"",
+						"timeout": 5,
+						"statusMessage": "Tracking caveman mode..."
+					},
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-mode-tracker.js\"",
+						"timeout": 5,
+						"statusMessage": "Tracking superpowers mode..."
+					},
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-mode-tracker.js\"",
+						"timeout": 5,
+						"statusMessage": "Tracking obsidian-brain mode..."
+					}
+				]
+			}
+		]
+	}
 }
