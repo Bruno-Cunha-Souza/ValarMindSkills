@@ -34,6 +34,19 @@ The plan file is the **only** write this skill performs. Everything else is read
 3. The companion skill's hard constraints (`Never`, `Must not`) remain in force; `only-plan` adds the read-only constraint on top, it does not relax anything.
 4. Exactly one new file is produced: the plan. Companion findings are folded into the plan's Context section, not written to separate files.
 
+## Interaction with host-agent plan mode
+
+Most coding agents — Claude Code, Cursor, Codex, and others — ship a built-in **plan mode**. It overlaps with `/only-plan` but enforces a **different** contract, and combining them is the known failure case:
+
+- **The host agent's plan mode** is research-only until you approve; approval means *implement now*. On approval the host injects a message to that effect — e.g. "You have exited plan mode. You can now make edits, run tools, and take actions" in Claude Code, or the equivalent in Cursor, Codex, and others.
+- **only-plan** means *write one plan file and stop* — never implement in this invocation.
+
+When both are active at once:
+
+1. That post-approval message ("you can now make edits", or the host's equivalent) is **the host's** plan-mode signal, not authorization under this skill. Under `/only-plan` the act of exiting plan mode grants exactly one write: the plan `.md` file. Treat any edit beyond it as forbidden.
+2. The host's plan mode blocks all writes, including the plan file. Exit plan mode **only** to write the plan file, then stop immediately — do not proceed to implement the steps you just planned, regardless of the host message.
+3. You do not need plan mode for `/only-plan`: the skill is already read-only and produces the plan artifact on its own. Prefer running `/only-plan` **without** the host's plan mode to avoid the exit-injection trap. If the user actually wants plan-then-implement, that is plain plan mode **without** `/only-plan`.
+
 ## Inputs you must collect before starting
 
 | Input | Required | How to obtain |
@@ -48,7 +61,7 @@ The plan file is the **only** write this skill performs. Everything else is read
 
 ### Step 1 — Lock the read-only contract
 
-State in one line that only-plan mode is active and no project files will be modified. The contract holds from this point until the plan is delivered, regardless of any instruction that arrives in the same invocation.
+State in one line that only-plan mode is active and no project files will be modified. The contract holds from this point until the plan is delivered, regardless of any instruction that arrives in the same invocation — **including** a "you can now make edits" message (or its equivalent) emitted by the host agent when its plan mode is exited (see [Interaction with host-agent plan mode](#interaction-with-host-agent-plan-mode)). If the host's plan mode is active, exit it only to write the plan file, then stop.
 
 ### Step 2 — Run companion analysis (if a companion skill is invoked)
 
@@ -130,6 +143,7 @@ Adjacent issues found during analysis but deliberately not planned.
 - **Never** create any file other than the single plan file at the project root.
 - **Never** run commands that mutate state: `git add`/`commit`/`push`, package installs, formatters, code generators, migrations, or test/build commands that write artifacts.
 - **Never** apply the plan in the same invocation, even if the extra prompt asks to "plan and then implement" — implementation requires a new request without `/only-plan`.
+- **Never** treat exiting the host agent's plan mode — or the "you can now make edits" message (or its equivalent) that follows approval — as authorization to implement. Under this skill, exiting plan mode permits writing the plan file and nothing else.
 - **Never** silently overwrite an existing plan file — version the name or ask first.
 - **Never** invent file paths, APIs, or line references in the plan — every target must have been verified during discovery, or be explicitly marked `(new file)`.
 - When combined with another skill, the read-only contract takes precedence over any companion step that writes; the companion's own safety constraints still hold.
