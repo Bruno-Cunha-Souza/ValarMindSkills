@@ -73,7 +73,11 @@ if (skillContent) {
     'Current level: **' + modeLabel + '**. Switch: `/valarmindskills:caveman lite|full|ultra`.\n\n' +
     '## Rules\n\n' +
     'Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. ' +
-    'Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.\n\n' +
+    'Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). ' +
+    'No tool-call narration, no decorative tables/emoji, no raw error-log dumps — quote shortest decisive line. ' +
+    'Standard acronyms OK (DB/API/HTTP); never invent abbreviations. Technical terms exact. Code blocks unchanged. Errors quoted exact.\n\n' +
+    "Preserve user's dominant language — compress the style, not the language. Technical terms, code, CLI commands, commit-type keywords, error strings stay verbatim.\n\n" +
+    'No self-reference. Never name or announce the mode. Output caveman-only — no "Caveman:" recap.\n\n' +
     'Pattern: `[thing] [action] [reason]. [next step].`\n\n' +
     '## Auto-Clarity\n\n' +
     'Drop caveman for: security warnings, irreversible action confirmations, multi-step sequences where fragment order risks misread. Resume caveman after clear part done.\n\n' +
