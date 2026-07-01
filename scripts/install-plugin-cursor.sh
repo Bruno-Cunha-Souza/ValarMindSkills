@@ -79,12 +79,14 @@ echo ""
 echo "=== Step 2/2: Hooks ==="
 
 mkdir -p "$HOOKS_TARGET/caveman"
+mkdir -p "$HOOKS_TARGET/ponytail"
 mkdir -p "$HOOKS_TARGET/superpowers"
 mkdir -p "$HOOKS_TARGET/obsidian-brain"
 mkdir -p "$HOOKS_TARGET/_cursor"
 mkdir -p "$HOOKS_TARGET/_lib"
 
 cp "$SOURCE_HOOKS/caveman/"*.js        "$HOOKS_TARGET/caveman/"
+cp "$SOURCE_HOOKS/ponytail/"*.js       "$HOOKS_TARGET/ponytail/"
 cp "$SOURCE_HOOKS/superpowers/"*.js    "$HOOKS_TARGET/superpowers/"
 cp "$SOURCE_HOOKS/obsidian-brain/"*.js "$HOOKS_TARGET/obsidian-brain/"
 cp "$SOURCE_HOOKS/_cursor/"*.sh        "$HOOKS_TARGET/_cursor/"
@@ -97,6 +99,7 @@ echo "Hook scripts copied → $HOOKS_TARGET"
 VALARMIND_SESSION_START=$(cat <<EOF
 [
   {"command": "./hooks/_cursor/wrap-session.sh caveman", "timeout": 5},
+  {"command": "./hooks/_cursor/wrap-session.sh ponytail", "timeout": 5},
   {"command": "./hooks/_cursor/wrap-session.sh superpowers", "timeout": 5},
   {"command": "./hooks/_cursor/wrap-session.sh obsidian-brain", "timeout": 5}
 ]
@@ -106,6 +109,7 @@ EOF
 VALARMIND_BEFORE_SUBMIT=$(cat <<EOF
 [
   {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/caveman/caveman-mode-tracker.js", "timeout": 5},
+  {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/ponytail/ponytail-mode-tracker.js", "timeout": 5},
   {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/superpowers/superpowers-mode-tracker.js", "timeout": 5},
   {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/obsidian-brain/obsidian-brain-mode-tracker.js", "timeout": 5}
 ]
@@ -152,7 +156,7 @@ if [ -f "$HOOKS_JSON" ]; then
         ((.hooks.sessionStart // []) | map(select(
           (.command // "") | (
             test("valarmindskills") or test("hooks/_cursor/") or
-            test("hooks/caveman/") or test("hooks/superpowers/") or
+            test("hooks/caveman/") or test("hooks/ponytail/") or test("hooks/superpowers/") or
             test("hooks/obsidian-brain/")
           ) | not
         ))) + $session
@@ -161,7 +165,7 @@ if [ -f "$HOOKS_JSON" ]; then
         ((.hooks.beforeSubmitPrompt // []) | map(select(
           (.command // "") | (
             test("valarmindskills") or test("hooks/_cursor/") or
-            test("hooks/caveman/") or test("hooks/superpowers/") or
+            test("hooks/caveman/") or test("hooks/ponytail/") or test("hooks/superpowers/") or
             test("hooks/obsidian-brain/")
           ) | not
         ))) + $submit
@@ -183,6 +187,9 @@ echo "Done! Restart Cursor to load skills and hooks."
 echo ""
 echo "Caveman auto-activation: ON (default level = lite)."
 echo "Override via env: export CAVEMAN_DEFAULT_MODE=lite|full|ultra|off"
+echo ""
+echo "Ponytail auto-activation: ON (default level = full)."
+echo "Override via env: export PONYTAIL_DEFAULT_MODE=lite|full|ultra|off"
 echo ""
 echo "Superpowers auto-activation: OFF (default)."
 echo "Activate per-session: mention @superpowers or 'superpowers on'"

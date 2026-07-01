@@ -2,14 +2,14 @@
 # Cursor sessionStart wrapper — runs ValarMind *-activate.js hooks and emits
 # Cursor-compatible JSON ({ "additional_context": "...", "continue": true }).
 #
-# Usage (from ~/.cursor/ as CWD): ./hooks/_cursor/wrap-session.sh caveman|superpowers|obsidian-brain
+# Usage (from ~/.cursor/ as CWD): ./hooks/_cursor/wrap-session.sh caveman|ponytail|superpowers|obsidian-brain
 
 set -euo pipefail
 
-HOOK_NAME="${1:?usage: wrap-session.sh caveman|superpowers|obsidian-brain}"
+HOOK_NAME="${1:?usage: wrap-session.sh caveman|ponytail|superpowers|obsidian-brain}"
 
 case "$HOOK_NAME" in
-  caveman|superpowers|obsidian-brain) ;;
+  caveman|ponytail|superpowers|obsidian-brain) ;;
   *)
     echo '{"continue":true}' >&1
     exit 0

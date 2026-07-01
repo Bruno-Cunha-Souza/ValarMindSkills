@@ -65,4 +65,4 @@ if [ "${#pruned[@]}" -gt 0 ]; then
 fi
 echo ""
 echo "Done! Restart Cursor for new skills to be detected."
-echo "For caveman/superpowers/obsidian-brain hooks, run: bash scripts/install-plugin-cursor.sh"
+echo "For caveman/ponytail/superpowers/obsidian-brain hooks, run: bash scripts/install-plugin-cursor.sh"

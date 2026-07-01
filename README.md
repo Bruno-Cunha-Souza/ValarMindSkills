@@ -18,23 +18,25 @@ The following table estimates token consumption per skill/context at session sta
 
 | Component | Tokens |
 | --- | --- |
-| Skill descriptions (17 skills, YAML frontmatter) | ~ 970 |
+| Skill descriptions (21 skills, YAML frontmatter) | ~ 1,120 |
 | Caveman (SessionStart hook) | ~ 2,000 |
+| Ponytail (SessionStart hook) | ~ 2,100 |
 | Superpowers (SessionStart hook) | ~ 3,400 |
 | Obsidian-brain (SessionStart hook) | ~ 160 |
-| Per-turn reinforcement (UserPromptSubmit) | ~ 90 |
+| Per-turn reinforcement (UserPromptSubmit) | ~ 150 |
 
 ### Scenarios
 
 | Scenario | Tokens |
 | --- | --- |
-| Skill descriptions only | ~ 970 |
-| Descriptions + Caveman active | ~ 2,970 |
-| Descriptions + Superpowers active | ~ 4,400 |
-| Descriptions + Obsidian-brain active | ~ 1,130 |
-| All combined | ~ 6,530 |
+| Skill descriptions only | ~ 1,120 |
+| Descriptions + Caveman active | ~ 3,120 |
+| Descriptions + Ponytail active | ~ 3,220 |
+| Descriptions + Superpowers active | ~ 4,520 |
+| Descriptions + Obsidian-brain active | ~ 1,280 |
+| All combined | ~ 8,780 |
 
-> **Context impact:** 6,530 tokens ≈ 0.65% of a 1M context window or 2.49% of a 262k window.
+> **Context impact:** 8,780 tokens ≈ 0.88% of a 1M context window or 3.35% of a 262k window.
 
 ---
 
@@ -58,6 +60,8 @@ The following table estimates token consumption per skill/context at session sta
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
 | `only-plan` | Read-only planning modifier — never edits project files; writes a step-by-step implementation plan to a single new `IMPLEMENTATION_PLAN.md` at the project root. Composable with other skills: `/code-security-review /only-plan` |
+| `ponytail` | Lazy-senior-dev posture for code output — seven-rung ladder (YAGNI → reuse → stdlib → native → installed dep → one line → minimum). Never cuts validation/security/accessibility. Levels: lite / full / ultra. **ON by default** |
+| `ponytail-review` | Over-engineering review — delete-list with tags `delete/stdlib/native/yagni/shrink` and net-lines score. Scopes: diff (default), repo, debt ledger |
 | `prompt-engineering` | Audits, hardens, and rewrites LLM prompts (`SKILL.md`, RAG, tool descriptions, agent base prompts) — severity-ranked findings with risk tags, rewritten prompt, token delta |
 | `skill-creator` | Meta-skill that scaffolds new skills for this repository following project conventions |
 | `superpowers` | Engineering-discipline posture — 1% skill-scan, four pillars (TDD, systematic, complexity, evidence), seven-stage workflow. **OFF by default** |
@@ -68,7 +72,7 @@ The following table estimates token consumption per skill/context at session sta
 
 ### Plugin install (manual, from source)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 19 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 21 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), the ponytail lazy-code hooks (`SessionStart` + `UserPromptSubmit` + `SubagentStart`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
@@ -99,6 +103,17 @@ After install, open a new session and caveman mode activates at level `lite` by 
 
 Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, or with `defaultMode` in `~/.config/caveman/config.json`.
 
+#### Ponytail (on by default, level `full`)
+
+The plugin also ships `ponytail`, a lazy-senior-dev posture for code output ported from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail): before writing code, climb the ladder — needed at all? (YAGNI) → already in the codebase? → stdlib? → native platform? → installed dependency? → one line? → minimum that works. Validation, error handling, security, and accessibility are never cut. A `SubagentStart` hook injects the same ruleset into Task-spawned subagents (where code actually gets written). Caveman shapes prose; ponytail shapes code — they compose.
+
+- `/valarmindskills:ponytail lite|full|ultra` — switch intensity
+- `/valarmindskills:ponytail off` — deactivate
+- `stop ponytail` / `normal mode` (natural language) — deactivate
+- `/valarmindskills:ponytail-review [repo|debt]` — one-shot over-engineering review (diff, whole repo, or `ponytail:` debt ledger)
+
+Override the default mode with `PONYTAIL_DEFAULT_MODE=lite|full|ultra|off` in your environment, or with `defaultMode` in `~/.config/ponytail/config.json`.
+
 #### Superpowers (off by default)
 
 The plugin also ships a `superpowers` posture inspired by [obra/superpowers](https://github.com/obra/superpowers): scan skills before each reply (1% rule), follow the user > skills > defaults hierarchy, refuse twelve rationalizations, apply four pillars (TDD, systematic, complexity reduction, evidence), and walk a seven-stage workflow when scope warrants it. Unlike caveman, **superpowers is OFF by default**; you opt in.
@@ -126,6 +141,7 @@ Disable persistently via `OBSIDIAN_BRAIN_DEFAULT_MODE=off` in your environment, 
 The plugin ships a composable statusline that combines three optional badges with the current context window usage (e.g. `42% 420k/1M`, color-coded by threshold):
 
 - `[CAVEMAN]` / `[CAVEMAN:ULTRA]` — laranja, hidden when caveman is off.
+- `[PONYTAIL]` / `[PONYTAIL:ULTRA]` — verde, hidden when ponytail is off.
 - `[SUPERPOWERS]` — cyan when on, dim when off (always visible).
 - `[OBSIDIAN-BRAIN]` — roxo (cor 99 ≈ #875FFF, próxima do roxo Obsidian), hidden when no vault is detected or the user opted out.
 
@@ -183,7 +199,7 @@ cp -r ValarMindSkills/skills/* .agent/skills/
 
 ### Plugin install (recommended)
 
-Copies all skills to `~/.codex/skills/`, copies the caveman / superpowers / obsidian-brain hook scripts to `~/.codex/hooks/`, and injects the corresponding `[[hooks.SessionStart]]` and `[[hooks.UserPromptSubmit]]` entries into `~/.codex/config.toml`. Also writes the matching postures into `~/.codex/AGENTS.md`. Both the `config.toml` block and the `AGENTS.md` block are wrapped in `# >>> VALARMIND BEGIN/END` (or `<!-- VALARMIND BEGIN/END -->`) markers, so re-running the installer rewrites the managed block in place without duplicating entries.
+Copies all skills to `~/.codex/skills/`, copies the caveman / ponytail / superpowers / obsidian-brain hook scripts to `~/.codex/hooks/`, and injects the corresponding `[[hooks.SessionStart]]` and `[[hooks.UserPromptSubmit]]` entries into `~/.codex/config.toml`. Also writes the matching postures into `~/.codex/AGENTS.md`. Both the `config.toml` block and the `AGENTS.md` block are wrapped in `# >>> VALARMIND BEGIN/END` (or `<!-- VALARMIND BEGIN/END -->`) markers, so re-running the installer rewrites the managed block in place without duplicating entries.
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
@@ -231,13 +247,14 @@ Restart Cursor after either script. Check **Settings → Hooks** (or the Hooks o
 
 #### Modes in Cursor
 
-Skills are invoked with `@slug` (e.g. `@code-review`, `@caveman`). Caveman, superpowers, and obsidian-brain postures behave like Codex/Claude:
+Skills are invoked with `@slug` (e.g. `@code-review`, `@caveman`). Caveman, ponytail, superpowers, and obsidian-brain postures behave like Codex/Claude:
 
 - **Caveman** — ON by default at level `lite`. Toggle with natural language (`stop caveman`, `normal mode`) or by mentioning `@caveman`.
+- **Ponytail** — ON by default at level `full`. Toggle with natural language (`stop ponytail`, `normal mode`) or by mentioning `@ponytail`.
 - **Superpowers** — OFF by default. Activate with `@superpowers` or phrases like `superpowers on`.
 - **Obsidian-brain** — ON when the workspace `CLAUDE.md` or `AGENTS.md` references an Obsidian vault path.
 
-Override defaults with `CAVEMAN_DEFAULT_MODE`, `SUPERPOWERS_DEFAULT_MODE`, or `OBSIDIAN_BRAIN_DEFAULT_MODE`, or the JSON files under `~/.config/caveman/`, `~/.config/superpowers/`, and `~/.config/obsidian-brain/`.
+Override defaults with `CAVEMAN_DEFAULT_MODE`, `PONYTAIL_DEFAULT_MODE`, `SUPERPOWERS_DEFAULT_MODE`, or `OBSIDIAN_BRAIN_DEFAULT_MODE`, or the JSON files under `~/.config/caveman/`, `~/.config/ponytail/`, `~/.config/superpowers/`, and `~/.config/obsidian-brain/`.
 
 Cursor does not support the Claude Code statusline; posture state is stored in flag files under `~/.cursor/` (e.g. `~/.cursor/.caveman-active`).
 
@@ -258,6 +275,12 @@ hooks/
     caveman-activate.js             <- SessionStart hook (on by default)
     caveman-mode-tracker.js         <- UserPromptSubmit hook
     caveman-config.js               <- shared helpers
+  ponytail/
+    ponytail-activate.js            <- SessionStart hook (on by default)
+    ponytail-mode-tracker.js        <- UserPromptSubmit hook
+    ponytail-subagent.js            <- SubagentStart hook (injects ruleset into subagents)
+    ponytail-instructions.js        <- shared instruction builder
+    ponytail-config.js              <- shared helpers
   superpowers/
     superpowers-activate.js         <- SessionStart hook (off by default)
     superpowers-mode-tracker.js     <- UserPromptSubmit hook
@@ -274,6 +297,7 @@ hooks/
     statusline.sh                   <- composer (entry registered in settings.json)
     segments/
       caveman.sh                    <- caveman mode badge segment
+      ponytail.sh                   <- ponytail mode badge segment (verde)
       superpowers.sh                <- superpowers mode badge segment
       obsidian-brain.sh             <- obsidian-brain badge segment (roxo)
       context.sh                    <- context window usage segment

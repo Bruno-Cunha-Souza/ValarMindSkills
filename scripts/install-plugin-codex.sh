@@ -78,11 +78,13 @@ echo "=== Step 2/3: Hooks ==="
 
 mkdir -p "$HOOKS_TARGET/_lib"
 mkdir -p "$HOOKS_TARGET/caveman"
+mkdir -p "$HOOKS_TARGET/ponytail"
 mkdir -p "$HOOKS_TARGET/superpowers"
 mkdir -p "$HOOKS_TARGET/obsidian-brain"
 
 cp "$SOURCE_HOOKS/_lib/"*.js           "$HOOKS_TARGET/_lib/"
 cp "$SOURCE_HOOKS/caveman/"*.js        "$HOOKS_TARGET/caveman/"
+cp "$SOURCE_HOOKS/ponytail/"*.js       "$HOOKS_TARGET/ponytail/"
 cp "$SOURCE_HOOKS/superpowers/"*.js    "$HOOKS_TARGET/superpowers/"
 cp "$SOURCE_HOOKS/obsidian-brain/"*.js "$HOOKS_TARGET/obsidian-brain/"
 
@@ -132,6 +134,10 @@ command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/caveman/caveman-acti
 
 [[hooks.SessionStart.hooks]]
 type = "command"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/ponytail/ponytail-activate.js"
+
+[[hooks.SessionStart.hooks]]
+type = "command"
 command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/superpowers/superpowers-activate.js"
 
 [[hooks.SessionStart.hooks]]
@@ -143,6 +149,10 @@ command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/obsidian-brain/obsid
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
 command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/caveman/caveman-mode-tracker.js"
+
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/ponytail/ponytail-mode-tracker.js"
 
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
@@ -181,6 +191,18 @@ Pattern: \`[thing] [action] [reason]. [next step].\`
 Drop caveman for: security warnings, irreversible action confirmations, multi-step sequences where fragment order risks misread. Resume caveman after clear part done.
 
 Code/commits/PRs: write normal. "stop caveman" or "normal mode": revert.
+
+## Ponytail Mode (active — level: full)
+
+You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
+
+Before writing any code, stop at the first rung that holds: 1. needed at all? (YAGNI) 2. already in this codebase? reuse it 3. stdlib does it? use it 4. native platform feature? use it 5. installed dependency? use it 6. one line? one line 7. only then: minimum code that works. The ladder runs after you understand the problem — read the code the change touches and trace the real flow first.
+
+No unrequested abstractions, no avoidable dependencies, no boilerplate. Deletion over addition. Fewest files possible. Mark deliberate simplifications with a \`ponytail:\` comment naming ceiling and upgrade path. Code first, then at most three short lines of explanation.
+
+Never simplify away: input validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything explicitly requested. Non-trivial logic leaves one runnable check behind.
+
+Ponytail governs what you build, not how you talk. "stop ponytail" or "normal mode": revert.
 
 ## Superpowers (off by default)
 

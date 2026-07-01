@@ -1,6 +1,6 @@
 {
 	"name": "valarmindskills",
-	"description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default), superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default), and obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found).",
+	"description": "ValarMindSkills plugin bundle. Ships all project skills plus caveman auto-activation hooks (SessionStart + UserPromptSubmit, on by default), ponytail lazy-code hooks (SessionStart + UserPromptSubmit + SubagentStart, on by default at level full), superpowers session-toggleable hooks (SessionStart + UserPromptSubmit, off by default), and obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found).",
 	"version": "1.4.0",
 	"author": {
 		"name": "Bruno Cunha Souza",
@@ -21,6 +21,12 @@
 					},
 					{
 						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/ponytail/ponytail-activate.js\"",
+						"timeout": 5,
+						"statusMessage": "Loading ponytail mode..."
+					},
+					{
+						"type": "command",
 						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/superpowers/superpowers-activate.js\"",
 						"timeout": 5,
 						"statusMessage": "Loading superpowers mode..."
@@ -34,6 +40,18 @@
 				]
 			}
 		],
+		"SubagentStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/ponytail/ponytail-subagent.js\"",
+						"timeout": 5,
+						"statusMessage": "Loading ponytail mode..."
+					}
+				]
+			}
+		],
 		"UserPromptSubmit": [
 			{
 				"hooks": [
@@ -42,6 +60,12 @@
 						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/caveman/caveman-mode-tracker.js\"",
 						"timeout": 5,
 						"statusMessage": "Tracking caveman mode..."
+					},
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/ponytail/ponytail-mode-tracker.js\"",
+						"timeout": 5,
+						"statusMessage": "Tracking ponytail mode..."
 					},
 					{
 						"type": "command",
