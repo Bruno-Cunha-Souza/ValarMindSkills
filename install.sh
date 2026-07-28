@@ -10,7 +10,7 @@
 #   - Downloads the source tarball into $VALARMIND_INSTALL_DIR
 #     (default: ~/.valarmindskills).
 #   - Runs scripts/install-all.sh which wires up Claude Code, Codex CLI,
-#     Antigravity, and Cursor IDE (each step is independently graceful —
+#     Antigravity, Cursor IDE, and Zed IDE (each step is independently graceful —
 #     missing CLIs are skipped, not fatal).
 #
 # Environment overrides:

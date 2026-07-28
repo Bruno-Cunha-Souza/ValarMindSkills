@@ -2,6 +2,17 @@
 
 # Full plugin install for OpenAI Codex CLI
 # Installs: skills, hooks (via config.toml [[hooks]]), and AGENTS.md postures
+#
+# Codex discovers skills in $HOME/.agents/skills, in .agents/skills from the CWD
+# up to the repo root, and in /etc/codex/skills — see
+# https://learn.chatgpt.com/docs/build-skills. ~/.codex/skills is NOT a discovery
+# path, so earlier releases installed to a directory Codex no longer scans; any
+# ValarMind skills left there are removed below. Hooks and AGENTS.md stay under
+# $CODEX_HOME.
+#
+# Overrides:
+#   CODEX_HOME         config root. Default: ~/.codex
+#   CODEX_SKILLS_HOME  skills root. Default: ~/.agents/skills
 
 set -e
 
@@ -10,16 +21,20 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SOURCE_SKILLS="$REPO_DIR/skills"
 SOURCE_HOOKS="$REPO_DIR/hooks"
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-SKILLS_TARGET="$CODEX_HOME/skills"
+SKILLS_TARGET="${CODEX_SKILLS_HOME:-$HOME/.agents/skills}"
+LEGACY_SKILLS_DIR="$CODEX_HOME/skills"
 HOOKS_TARGET="$CODEX_HOME/hooks"
 CONFIG_TOML="$CODEX_HOME/config.toml"
 AGENTS_MD="$CODEX_HOME/AGENTS.md"
 
 # shellcheck source=_lib/ensure-rust.sh
 source "$SCRIPT_DIR/_lib/ensure-rust.sh"
+# shellcheck source=_lib/agents-skills.sh
+source "$SCRIPT_DIR/_lib/agents-skills.sh"
 
 echo "Installing ValarMindSkills plugin in Codex CLI..."
-echo "CODEX_HOME: $CODEX_HOME"
+echo "CODEX_HOME:    $CODEX_HOME"
+echo "Skills target: $SKILLS_TARGET"
 echo ""
 
 # ──────────────────────────────────────────────────────────────
@@ -31,43 +46,25 @@ echo "=== Step 1/3: Skills ==="
 # a freshly-compiled binary alongside the source files.
 build_all_skill_binaries "$SOURCE_SKILLS"
 
-mkdir -p "$SKILLS_TARGET"
+# ~/.agents/skills is shared with Zed (and any other agent following the
+# convention), so pruning is manifest driven — see _lib/agents-skills.sh.
+install_agents_skills "$SOURCE_SKILLS" "$SKILLS_TARGET"
 
-installed_skills=()
-for skill_dir in "$SOURCE_SKILLS"/*/; do
-  [ -f "$skill_dir/SKILL.md" ] || continue
-  slug="$(basename "$skill_dir")"
-  dest="$SKILLS_TARGET/$slug"
-  # Wipe pre-existing dest — `cp -R src/ dest` on macOS BSD nests when dest
-  # already exists, creating $dest/$slug on re-runs.
-  rm -rf "$dest"
-  cp -R "$skill_dir" "$dest"
-  installed_skills+=("$slug")
-done
-
-# Prune stale skills no longer present in source (e.g. removed/renamed in newer release).
-pruned_skills=()
-if [ -d "$SKILLS_TARGET" ]; then
-  for existing_dir in "$SKILLS_TARGET"/*/; do
-    [ -d "$existing_dir" ] || continue
-    existing_slug="$(basename "$existing_dir")"
-    found=0
-    for installed in "${installed_skills[@]}"; do
-      if [ "$installed" = "$existing_slug" ]; then
-        found=1
-        break
-      fi
-    done
-    if [ "$found" -eq 0 ]; then
-      rm -rf "$existing_dir"
-      pruned_skills+=("$existing_slug")
-    fi
-  done
+echo "Installed ${#AGENTS_SKILLS_INSTALLED[@]} skills → $SKILLS_TARGET"
+if [ "${#AGENTS_SKILLS_PRUNED[@]}" -gt 0 ]; then
+  echo "Pruned ${#AGENTS_SKILLS_PRUNED[@]} stale skill(s): ${AGENTS_SKILLS_PRUNED[*]}"
+fi
+if [ "${#AGENTS_SKILLS_INVALID[@]}" -gt 0 ]; then
+  echo "Skipped ${#AGENTS_SKILLS_INVALID[@]} skill(s) with an unusable slug: ${AGENTS_SKILLS_INVALID[*]}"
 fi
 
-echo "Installed ${#installed_skills[@]} skills → $SKILLS_TARGET"
-if [ "${#pruned_skills[@]}" -gt 0 ]; then
-  echo "Pruned ${#pruned_skills[@]} stale skill(s): ${pruned_skills[*]}"
+# Drop copies from the pre-.agents layout so the catalog is not duplicated —
+# Codex does not merge same-named skills, both would show in the selector.
+if [ "$LEGACY_SKILLS_DIR" != "$SKILLS_TARGET" ]; then
+  migrate_legacy_skills_dir "$LEGACY_SKILLS_DIR" "$SOURCE_SKILLS"
+  if [ "${#AGENTS_SKILLS_MIGRATED[@]}" -gt 0 ]; then
+    echo "Removed ${#AGENTS_SKILLS_MIGRATED[@]} skill(s) from the legacy $LEGACY_SKILLS_DIR."
+  fi
 fi
 
 # ──────────────────────────────────────────────────────────────
@@ -92,7 +89,11 @@ echo "Hook scripts copied → $HOOKS_TARGET"
 
 # Inject hooks into config.toml using correct schema format:
 # hooks (HooksToml struct) → [[hooks.SessionStart]] MatcherGroup → [[hooks.SessionStart.hooks]] HookHandlerConfig
-# Uses CLAUDE_CONFIG_DIR override so flag files go to $CODEX_HOME instead of ~/.claude/
+# Uses CLAUDE_CONFIG_DIR override so flag files go to $CODEX_HOME instead of ~/.claude/,
+# and VALARMIND_SKILLS_ROOT so the hooks find SKILL.md now that skills live in
+# $SKILLS_TARGET rather than alongside $HOOKS_TARGET — resolve-skill-path.js would
+# otherwise look in $CODEX_HOME/skills, miss it, and inject only the short
+# built-in posture summary instead of the full skill.
 #
 # Block is wrapped in sentinel comments so re-runs strip the previous block
 # and inject a fresh one (idempotent updates).
@@ -130,37 +131,37 @@ $TOML_BEGIN
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/caveman/caveman-activate.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/caveman/caveman-activate.js"
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/ponytail/ponytail-activate.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/ponytail/ponytail-activate.js"
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/superpowers/superpowers-activate.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/superpowers/superpowers-activate.js"
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/obsidian-brain/obsidian-brain-activate.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/obsidian-brain/obsidian-brain-activate.js"
 
 [[hooks.UserPromptSubmit]]
 
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/caveman/caveman-mode-tracker.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/caveman/caveman-mode-tracker.js"
 
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/ponytail/ponytail-mode-tracker.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/ponytail/ponytail-mode-tracker.js"
 
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/superpowers/superpowers-mode-tracker.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/superpowers/superpowers-mode-tracker.js"
 
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/obsidian-brain/obsidian-brain-mode-tracker.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/obsidian-brain/obsidian-brain-mode-tracker.js"
 $TOML_END
 EOF
 echo "Hooks block written → $CONFIG_TOML"

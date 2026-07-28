@@ -1,10 +1,10 @@
 # ValarMindSkills
 
-A library of reusable skills for AI agents. Each skill is a Markdown file with YAML frontmatter that can be invoked as a slash command within Claude Code CLI, Cursor IDE, Codex CLI, or Antigravity IDE.
+A library of reusable skills for AI agents. Each skill is a Markdown file with YAML frontmatter that can be invoked as a slash command within Claude Code CLI, Cursor IDE, Codex CLI, Antigravity IDE, or Zed IDE.
 
 ## Quick install (recommended)
 
-Run the unified installer to set up skills for Claude Code CLI, Codex CLI, Antigravity, and Cursor IDE. The script is idempotent, so you can re-run it anytime to upgrade.
+Run the unified installer to set up skills for Claude Code CLI, Codex CLI, Antigravity, Cursor IDE, and Zed IDE. The script is idempotent, so you can re-run it anytime to upgrade.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Bruno-Cunha-Souza/ValarMindSkills/main/install.sh | bash
@@ -80,7 +80,7 @@ cd ValarMindSkills
 bash scripts/install-plugin-claude.sh
 ```
 
-To install in Claude Code CLI, Codex CLI, Antigravity, and Cursor IDE in one command, use the unified installer:
+To install in Claude Code CLI, Codex CLI, Antigravity, Cursor IDE, and Zed IDE in one command, use the unified installer:
 
 ```bash
 bash scripts/install-all.sh
@@ -172,7 +172,7 @@ cd ValarMindSkills
 bash scripts/install-antigravity.sh
 ```
 
-To install in Claude Code CLI, Codex CLI, and Antigravity in one command, use the unified installer:
+To install in Claude Code CLI, Codex CLI, Antigravity, Cursor IDE, and Zed IDE in one command, use the unified installer:
 
 ```bash
 bash scripts/install-all.sh
@@ -199,7 +199,7 @@ cp -r ValarMindSkills/skills/* .agent/skills/
 
 ### Plugin install (recommended)
 
-Copies all skills to `~/.codex/skills/`, copies the caveman / ponytail / superpowers / obsidian-brain hook scripts to `~/.codex/hooks/`, and injects the corresponding `[[hooks.SessionStart]]` and `[[hooks.UserPromptSubmit]]` entries into `~/.codex/config.toml`. Also writes the matching postures into `~/.codex/AGENTS.md`. Both the `config.toml` block and the `AGENTS.md` block are wrapped in `# >>> VALARMIND BEGIN/END` (or `<!-- VALARMIND BEGIN/END -->`) markers, so re-running the installer rewrites the managed block in place without duplicating entries.
+Copies all skills to `~/.agents/skills/`, copies the caveman / ponytail / superpowers / obsidian-brain hook scripts to `~/.codex/hooks/`, and injects the corresponding `[[hooks.SessionStart]]` and `[[hooks.UserPromptSubmit]]` entries into `~/.codex/config.toml`. Also writes the matching postures into `~/.codex/AGENTS.md`. Both the `config.toml` block and the `AGENTS.md` block are wrapped in `# >>> VALARMIND BEGIN/END` (or `<!-- VALARMIND BEGIN/END -->`) markers, so re-running the installer rewrites the managed block in place without duplicating entries.
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
@@ -207,7 +207,12 @@ cd ValarMindSkills
 bash scripts/install-plugin-codex.sh
 ```
 
-Override the target home with `CODEX_HOME=/custom/path bash scripts/install-plugin-codex.sh`.
+Overrides:
+
+- `CODEX_HOME=/custom/path` — config root for hooks, `config.toml`, `AGENTS.md` (default `~/.codex`)
+- `CODEX_SKILLS_HOME=/custom/path` — skills root (default `~/.agents/skills`)
+
+> **Skills path (changed):** Codex discovers skills in `$HOME/.agents/skills`, in `.agents/skills` from the CWD up to the repo root, and in `/etc/codex/skills` — [see the docs](https://learn.chatgpt.com/docs/build-skills). `~/.codex/skills` is **not** a discovery path, so earlier ValarMind releases installed into a directory Codex no longer scans. Both Codex installers now target `~/.agents/skills` and delete the ValarMind copies left in `~/.codex/skills` (skills you added there yourself are untouched). This matters because Codex does not merge same-named skills — *"both can appear in skill selectors"* — so stale copies would duplicate the catalog. The hook entries pass `VALARMIND_SKILLS_ROOT` so the postures still load the full `SKILL.md` from the new location.
 
 ### Skills-only install (lite)
 
@@ -264,6 +269,77 @@ If you already use Claude Code hooks in `~/.claude/settings.json`, you can enabl
 
 ---
 
+## Installation on Zed IDE
+
+Zed ships native [Agent Skills](https://zed.dev/docs/ai/skills) — the same `SKILL.md` contract this repo already uses — plus [Instructions](https://zed.dev/docs/ai/instructions) for always-on context. It has **no agent lifecycle hooks yet** ([zed-industries/zed#57943](https://github.com/zed-industries/zed/discussions/57943) is still a proposal), so the postures install as static personal instructions instead of `SessionStart` / `UserPromptSubmit` hooks.
+
+### Plugin install (recommended)
+
+Copies all skills to `~/.agents/skills/` and writes the caveman / ponytail / superpowers postures into `~/.config/zed/AGENTS.md` (Zed's personal instructions file), wrapped in `<!-- VALARMIND BEGIN/END -->` markers so re-runs rewrite the block in place.
+
+```bash
+git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
+cd ValarMindSkills
+bash scripts/install-plugin-zed.sh
+```
+
+Overrides:
+
+- `ZED_SKILLS_HOME=/custom/path` — skills root (default `~/.agents/skills`)
+- `ZED_CONFIG_HOME=/custom/path` — config root (default `~/.config/zed`)
+- `VALARMIND_SKIP_INSTRUCTIONS=1` — skills only, leave `AGENTS.md` untouched
+
+### Skills-only install (lite)
+
+```bash
+bash scripts/install-zed.sh
+```
+
+### Per-project installation (optional)
+
+Zed also reads `<worktree>/.agents/skills/` for the open project (trusted worktrees only):
+
+```bash
+ZED_SKILLS_HOME="$PWD/.agents/skills" bash scripts/install-zed.sh
+```
+
+### Safe pruning in a shared skills root
+
+Unlike `~/.cursor/skills`, `~/.agents/skills` is a **shared** root: the Codex CLI installers write there too, and so may other agents. The Zed and Codex installers therefore prune from a manifest (`~/.agents/skills/.valarmind-manifest`) via `scripts/_lib/agents-skills.sh`: only slugs a previous ValarMind run recorded are removed when a skill is renamed or dropped upstream. Third-party skills in the same directory are never touched.
+
+One consequence worth knowing: installing for Zed also surfaces the same skills in Codex CLI, and vice versa — same directory, one copy, no duplication.
+
+#### Modes in Zed
+
+Skills are invoked with `/slug` in the Agent Panel message editor (e.g. `/code-review`, `/caveman`), with `@skill` to browse the catalog, or autonomously by the agent when the task matches a skill description. Manage them under **Settings → AI → Skills** (`zed://settings/agent.skills`).
+
+- **Caveman** — ON at level `lite` via `AGENTS.md`. Switch in-conversation (`caveman full`, `stop caveman`, `normal mode`).
+- **Ponytail** — ON at level `full` via `AGENTS.md`. Same in-conversation switches.
+- **Superpowers** — OFF by default. Activate with `/superpowers` or `superpowers on`.
+- **Obsidian-brain** — no auto-detection without hooks; invoke `/obsidian-brain` when needed.
+
+Because there is no hook layer, `CAVEMAN_DEFAULT_MODE` and friends do not apply here — edit the managed block in `~/.config/zed/AGENTS.md` to change the defaults. Zed has no custom statusline either, so there are no posture badges.
+
+Skills hot-reload (no restart). Instructions are read per thread, so open a new thread after install.
+
+> **Precedence:** a project-level instruction file in the open worktree (`.rules`, `.cursorrules`, `.windsurfrules`, `.clinerules`, `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` — first match wins) overrides the personal `~/.config/zed/AGENTS.md` where the two conflict.
+
+#### Tools (MCP)
+
+Zed exposes external tools through MCP servers under the `context_servers` key in `settings.json` ([docs](https://zed.dev/docs/ai/mcp)). This repo ships skills and postures only — no MCP server — so the installers leave `context_servers` alone.
+
+#### Full hook parity via ACP (optional)
+
+For the dynamic posture tracking that hooks provide, run Claude Code (or Codex) as an [external agent](https://zed.dev/docs/ai/external-agents) inside Zed. External agents run as their own process and keep their own configuration, so the Claude Code plugin — hooks included — applies there:
+
+```bash
+bash scripts/install-plugin-claude.sh   # or install-plugin-codex.sh
+```
+
+Then pick the agent in the Agent Panel. The native Zed agent keeps using the skills + `AGENTS.md` install above.
+
+---
+
 ## Project structure
 
 ```text
@@ -311,7 +387,12 @@ scripts/
   install-plugin-cursor.sh  <- full plugin install for Cursor IDE (skills + hooks.json)
   install-cursor.sh         <- skills-only install for Cursor IDE (no hooks)
   install-antigravity.sh    <- copies skills to Antigravity global directory
-  install-all.sh            <- runs all plugin installers (Claude + Codex + Antigravity + Cursor)
+  install-plugin-zed.sh     <- full plugin install for Zed IDE (skills + AGENTS.md postures)
+  install-zed.sh            <- skills-only install for Zed IDE
+  install-all.sh            <- runs all plugin installers (Claude + Codex + Antigravity + Cursor + Zed)
+  _lib/
+    ensure-rust.sh          <- rustup bootstrap + per-skill cargo build
+    agents-skills.sh        <- ~/.agents/skills copy + manifest prune + legacy-dir migration
 install.sh                  <- curl-bash bootstrap (downloads latest release, runs install-all.sh)
 ```
 
