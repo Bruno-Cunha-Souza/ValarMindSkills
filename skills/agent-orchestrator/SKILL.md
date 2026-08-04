@@ -49,9 +49,13 @@ In order:
 
    Each record carries: objective, files in scope, files out of scope, agent type, dependencies (blocks / blocked by), and one acceptance criterion that fails before and passes after.
 
+   Every record is born in `todo`.
+
    **Gate:** count the records that now exist. `created == planned`, or stop and name the gap. Step 5 does not open before this passes.
-5. **Dispatch via A2A.** One agent per ticket, carrying the ticket id and its full text. Serial for implementation; parallel only when the tickets touch no files in common and have no open dependency.
-6. **Validate.** Check each ticket against its acceptance criterion, require the agent's own command output as evidence, then report.
+5. **Dispatch via A2A.** Move the ticket to `in progress` **before** the agent is sent, not after it answers — a ticket sitting in `todo` while an agent works on it is a lie about the board. One agent per ticket, carrying the ticket id and its full text. Serial for implementation; parallel only when the tickets touch no files in common and have no open dependency.
+6. **Validate.** Check each ticket against its acceptance criterion and require the agent's own command output as evidence. Then move the record: `done` when the evidence holds, back to `todo` when the work must be redispatched, `blocked` when something outside the ticket stops it. Only after the record is moved does the ticket appear in the report.
+
+Status names are whatever the backend exposes; `todo / in progress / done / blocked` is the conceptual mapping. If the backend has no status field, the ticket file carries one.
 
 ## Inputs you may receive after invocation
 
@@ -70,6 +74,7 @@ In order:
 - **Never** dispatch a ticket without an acceptance criterion.
 - **Never** dispatch implementers in parallel when their files overlap, a dependency is still open, or the file list is unknown. Unknown scope means assume collision.
 - **Never** mark a ticket done on the agent's word alone — require the command output.
+- **Never** let the report stand in for the board. Every status in the output table is read back from the record, and no ticket changes state in the report without changing state in the backend first.
 - **Never** report the briefing as complete while a ticket is blocked. Name what is left and why.
 - **Never** invent an agent type, model, or executor that the `Agent Selection Guide` does not define.
 - **Must not** trade a security signal (auth, authz, trust boundary, secrets, new dependency, CI config) for speed — Security Review runs.
@@ -84,6 +89,7 @@ tickets: <N> planned / <N> created @ <where>   dispatched: <N>   blocked: <N>
 | id | agent type | status | evidence |
 | T-001 | Complex Tasks | done | 14 tests pass |
 | T-002 | Simple Tasks | blocked | — |
+| T-003 | Complex Tasks | in progress | — |
 
 Data model:  <N> entities, <M> relations
 Open items:  T-002 — <one-line reason>
