@@ -39,8 +39,18 @@ In order:
 1. **Analyze the briefing.** State what it asks for and what it leaves open.
 2. **Data model.** Entities, fields, relations, invariants. Mark what was inferred.
 3. **Implementation plan.** Ordered milestones plus their dependencies.
-4. **Tickets.** One verifiable outcome each, with the files it touches and an acceptance criterion that fails before and passes after.
-5. **Dispatch via A2A.** One agent per ticket, carrying the full ticket text. Serial for implementation; parallel only when the tickets touch no files in common and have no open dependency.
+4. **Tickets — create them, do not describe them.** Every ticket is its own addressable record, created here, before any dispatch. A table, a list, or a section inside the plan or story document is **not** a ticket: the plan *references* ticket ids, it never *contains* the tickets. Creating them is part of the invocation — never wait for the user to ask.
+
+   Where to create them, first match wins:
+
+   - the workspace exposes a ticket or task artifact type → one artifact per ticket;
+   - the project already tracks tickets somewhere (issue tracker, `tickets/`, `.tasks/`) → follow that convention;
+   - neither → one file per ticket at `tickets/T-00N-<slug>.md`, and say so in the report.
+
+   Each record carries: objective, files in scope, files out of scope, agent type, dependencies (blocks / blocked by), and one acceptance criterion that fails before and passes after.
+
+   **Gate:** count the records that now exist. `created == planned`, or stop and name the gap. Step 5 does not open before this passes.
+5. **Dispatch via A2A.** One agent per ticket, carrying the ticket id and its full text. Serial for implementation; parallel only when the tickets touch no files in common and have no open dependency.
 6. **Validate.** Check each ticket against its acceptance criterion, require the agent's own command output as evidence, then report.
 
 ## Inputs you may receive after invocation
@@ -49,12 +59,14 @@ In order:
 | :--- | :--- | :--- | :--- |
 | Briefing | Yes | — | The user's text in the same turn, or a path they point at. If absent, ask once and stop |
 | Agent Selection Guide | No | absent | If the user has not supplied it, omit the model override on dispatch so each agent inherits the session model |
+| Ticket backend | No | detected | Step 4's first match. Never assume one tracker; use whatever the workspace already exposes |
 | Extra skills per agent type | No | none | Prose: "reviewers also run `@code-optimization`" |
 | Response language | No | environment directive (pt-BR here) | Free-form override |
 
 ## Constraints
 
 - **Never** write, edit, or delete the task code. Not a typo, not a one-liner, not the fix a reviewer just handed you — it goes back to the agent that owns the ticket.
+- **Never** count a described ticket as a created one. No addressable record by id, no ticket — and nothing downstream may report it as created.
 - **Never** dispatch a ticket without an acceptance criterion.
 - **Never** dispatch implementers in parallel when their files overlap, a dependency is still open, or the file list is unknown. Unknown scope means assume collision.
 - **Never** mark a ticket done on the agent's word alone — require the command output.
@@ -67,7 +79,7 @@ In order:
 ```text
 Orchestration — <briefing title>
 skills: ponytail ✓  caveman full ✓  superpowers ✓
-tickets: <N>   dispatched: <N>   blocked: <N>
+tickets: <N> planned / <N> created @ <where>   dispatched: <N>   blocked: <N>
 
 | id | agent type | status | evidence |
 | T-001 | Complex Tasks | done | 14 tests pass |
