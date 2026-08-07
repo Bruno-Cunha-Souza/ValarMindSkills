@@ -18,7 +18,7 @@ The following table estimates token consumption per skill/context at session sta
 
 | Component | Tokens |
 | --- | --- |
-| Skill descriptions (22 skills, YAML frontmatter) | ~ 1,200 |
+| Skill descriptions (21 skills, YAML frontmatter) | ~ 1,200 |
 | Caveman (SessionStart hook) | ~ 2,000 |
 | Ponytail (SessionStart hook) | ~ 2,100 |
 | Superpowers (SessionStart hook) | ~ 3,400 |
@@ -44,7 +44,6 @@ The following table estimates token consumption per skill/context at session sta
 
 | Skill | Description |
 | --- | --- |
-| `agent-orchestrator` | One-command orchestrator posture — loads `ponytail` + `caveman full` + `superpowers`, then reads a briefing, builds the data model, plans, breaks it into tickets, and dispatches each to the right agent type via A2A. Never writes the task code |
 | `caveman` | Terse response mode — drops articles, filler, hedging. Intensity levels: lite / full / ultra |
 | `ci-cd-generator` | GitHub Actions CI/CD generator for Go/Rust/TS — auto-detects language, encodes coverage/race/leak gates, wires SAST/SCA/secret/container/SBOM scans by security level |
 | `clean-code` | Clean Code lifecycle for Go/Rust/TS/Bun/Python — code smells, duplication (literal/logical/structural), dead-code removal with false-positive guardrails, safe refactoring one transformation per commit |
