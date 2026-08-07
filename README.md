@@ -47,7 +47,7 @@ The following table estimates token consumption per skill/context at session sta
 | `agent-orchestrator` | One-command orchestrator posture — loads `ponytail` + `caveman full` + `superpowers`, then reads a briefing, builds the data model, plans, breaks it into tickets, and dispatches each to the right agent type via A2A. Never writes the task code |
 | `caveman` | Terse response mode — drops articles, filler, hedging. Intensity levels: lite / full / ultra |
 | `ci-cd-generator` | GitHub Actions CI/CD generator for Go/Rust/TS — auto-detects language, encodes coverage/race/leak gates, wires SAST/SCA/secret/container/SBOM scans by security level |
-| `clean-code` | Applies Clean Code principles for quality, readability, and maintainability |
+| `clean-code` | Clean Code lifecycle for Go/Rust/TS/Bun/Python — code smells, duplication (literal/logical/structural), dead-code removal with false-positive guardrails, safe refactoring one transformation per commit |
 | `code-debugger` | Debugging specialist for errors, test failures, and unexpected behavior |
 | `code-optimization` | Lifecycle performance & efficiency audit for Go (Gin/Fiber/fx), Rust (Axum/Actix/Tokio), TypeScript (Node/Bun/Elysia/Fastify), Python (FastAPI/Django/Flask, CPython 3.13/3.14 incl. free-threaded 3.14t) — profiling, duplication/leaks/N+1/CPU-bound/blocking-I/O sweeps, tri-axis Impact × Risk × Effort classification, optional WebSearch + context7 validation, writes `OPTIMIZATION_REPORT.md` at project root |
 | `code-review` | Lifecycle code review (Go/Rust/TS) with severity-ranked findings, risk tags, and `references/NEXTJS.md` for Next.js 16.2.x performance audits (RSC, `<img>`, Turbopack) |

@@ -69,11 +69,11 @@ If two archetypes seem to fit, pick the more specific one. If nothing fits, defa
 ## Constraints
 ```
 
-**Typical line count.** 290–700 lines. Almost always paired with 3–6 `references/` files.
+**Typical line count.** 290–700 lines. Almost always paired with 3–9 `references/` files.
 
 **Examples in the repo.**
 
-- `skills/clean-code/` (293 lines + 6 references) — Lifecycle with multi-language branching via per-language references (`GOLANG.md`, `TYPESCRIPT.md`, `RUST.md`, `BUN.md`, plus `PRINCIPLES.md` and `PATTERNS.md`).
+- `skills/clean-code/` (303 lines + 9 references) — Lifecycle with multi-language branching via per-language references (`GOLANG.md`, `TYPESCRIPT.md`, `RUST.md`, `BUN.md`, `PYTHON.md`) plus topic references (`PRINCIPLES.md`, `PATTERNS.md`, `DUPLICATION.md`, `DEAD_CODE.md`). The reference-heaviest Lifecycle in the repo; sets the precedent for splitting a phase's depth into topic references when the phase covers two distinct sweeps.
 - `skills/code-security-review/` (~200 lines + 4 generic references + `references/golang/` + `references/nextjs/` subfolders) — Lifecycle with Phase 0 stack detection that branches into stack-specific reference bundles. The largest Lifecycle in the repo when both stack folders are loaded; sets the precedent for subfolder organization when the Lifecycle covers more than one framework.
 - `skills/prompt-engineering/` (468 lines + 4 references + `EXAMPLE.md`) — Lifecycle with Phase 0..6 audit pipeline (capture → translate → clarity → anti-hallucination → structure → token economy → output). Catalog (`STRATEGIES.md`) + use-case skeletons (`USE_CASES.md`) + checklist (`CHECKLIST.md`) + severity rubric (`SEVERITY_RUBRIC.md`). Sets the precedent for audit-shaped Lifecycle skills with 5-block structured output.
 - `skills/context-optimization/` (~470 lines + 5 references + `EXAMPLE.md` + `scripts/`) — Lifecycle with hybrid Audit + Guide modes. Phase 0..6 audit pipeline + technique catalog (`TECHNIQUES.md` §1..§13). Adds `scripts/` mirroring `code-security-review/scripts/` for evidence-based audit (file-size scan + token count + dedup detection). Sets the precedent for Lifecycle skills with both audit and guide modes.

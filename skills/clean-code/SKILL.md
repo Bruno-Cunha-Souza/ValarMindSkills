@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: "Clean code principles — writing, reviewing, refactoring. Naming, functions, DRY, code smells, safe refactoring."
+description: "Clean code lifecycle for Go/Rust/TypeScript/Bun/Python — writing, reviewing, refactoring. Naming, functions, DRY, code smells, duplication (literal/logical/structural), dead-code removal with false-positive guardrails, safe refactoring. Triggers: 'clean code', 'código limpo', 'refactor', 'refatorar', 'remove duplication', 'remover duplicação', 'dead code', 'código morto', 'code smells', '/clean-code'."
 source: ValarMindSkills
 ---
 
@@ -27,6 +27,8 @@ source: ValarMindSkills
 | `clippy` | Rust idiomatic linter (500+ lints) | `rustup component add clippy` |
 | `biome` | Fast TS/JS linter + formatter | `bun install -D @biomejs/biome` / `npm install -D @biomejs/biome` |
 | `knip` | Find unused TS exports/deps/files | `bunx knip` / `npx knip` |
+| `ruff` | Python linter — unused imports/vars, dedup hints | `pipx install ruff` |
+| `vulture` | Python dead-code detection with confidence tiers | `pipx install vulture` |
 | Project linter | Language-specific checks | Check project config (`.eslintrc`, `.golangci.yml`, `biome.json`, `pyproject.toml`) |
 
 ## Phase 0 — Project Context Discovery
@@ -109,63 +111,38 @@ For language-specific smells, idioms, and detection commands:
 - **Rust**: See [references/RUST.md](references/RUST.md) — `unwrap()` abuse, unnecessary `clone()`, stringly typed APIs, `Arc<Mutex<>>` overuse, monolithic error enums, boolean parameters
 - **TypeScript**: See [references/TYPESCRIPT.md](references/TYPESCRIPT.md) — `any` abuse, excessive type assertions, enum vs union, barrel file bloat, god interfaces, class overuse
 - **Bun**: See [references/BUN.md](references/BUN.md) — Node.js APIs vs Bun natives, unnecessary polyfills, `dotenv`/`jest`/`express` replacements, `Bun.file`/`Bun.serve`/`Bun.password`
+- **Python**: See [references/PYTHON.md](references/PYTHON.md) — dict-as-object, `if/elif` dispatch chains, `**kwargs` soup, boolean flag params, stateless classes, import-time side effects, sync/async twins
 
-## Phase 2 — Duplication Detection
+## Phase 2 — Duplication & Dead Code Detection
 
-### Types of Duplication
+Duplication is the same knowledge, logic, or intent expressed in more than one place. Dead code is a symbol nothing reaches. Both inflate the change surface — find them before Phase 3 touches anything.
 
-| Type | Description | How to Detect |
-|------|-------------|---------------|
-| **Exact clones** | Identical blocks copied verbatim | `npx jscpd ./src`, PMD CPD, `flay` (Ruby), `dupfinder` (C#) |
-| **Structural clones** | Same structure, different variable names | Review functions with similar signatures and bodies |
-| **Semantic duplicates** | Same logic, different implementation | Functions that accomplish the same task under different names |
-| **Data duplication** | Constants, configs, or URLs repeated across files | `rg -c '"[^"]{10,}"' --type ts \| sort -t: -k2 -rn \| head -20` |
+### 2.1 Duplication
 
-### Detection Commands
+| Class | Signature | Cost of leaving it |
+|-------|-----------|--------------------|
+| **Literal** | Identical blocks copied verbatim | Copies drift; the next fix lands in one of them, not all |
+| **Logical** | Same outcome, different names or control flow | Invisible to clone tools — only reading similar signatures finds it |
+| **Structural** | Repeated `if/else` or `switch` chains spelling out the same decision | Adding one case means editing N sites; one gets forgotten |
+| **Data** | Constants, URLs, configs, error envelopes repeated across files | Values drift silently; the copies disagree |
 
-```bash
-# Multi-language clone detection
-npx jscpd --min-lines 5 --min-tokens 50 ./src
+Detection commands per class, how to read the Structural signal from commit history, and the **when NOT to deduplicate** rules: [references/DUPLICATION.md](references/DUPLICATION.md).
 
-# Find functions with similar names (Go)
-rg 'func (get|fetch|retrieve|load)(User|Account|Profile)' --type go
+> **Rule of Three.** Tolerate two copies. Extract on the third. A premature abstraction — the shared function that needs 4 parameters and 2 boolean flags to serve every caller — is worse than the duplication it removed.
 
-# Find functions with similar names (Rust)
-rg 'fn (get|fetch|retrieve|load)_(user|account|profile)' --type rust
+### 2.2 Dead Code
 
-# Find functions with similar names (TypeScript)
-rg '(function|const) (get|fetch|retrieve|load)(User|Account|Profile)' --type ts
+| Type | Example |
+|------|---------|
+| **Unreferenced function / type** | No call site in source, tests, templates, config, or CI |
+| **Unused import** | Flagged by the linter, with no side-effect or re-export role |
+| **Assigned-never-read variable / unused parameter** | Flagged by the linter, not fixed by an interface signature |
+| **Unreachable branch** | Dead feature flag, code after `return`, provably constant guard |
+| **Unused dependency / orphan file** | Manifest or module graph shows zero importers |
 
-# Find similar exported functions (TypeScript)
-rg 'export (async )?function (get|fetch|retrieve|load)' --type ts
+Command matrix per language, plus the twelve false-positive guardrails that must clear before any deletion: [references/DEAD_CODE.md](references/DEAD_CODE.md).
 
-# Detect repeated magic strings (top 20)
-rg -c '"[^"]{10,}"' --type ts | sort -t: -k2 -rn | head -20
-
-# Detect repeated string literals (Rust)
-rg -c '"[^"]{10,}"' --type rust | sort -t: -k2 -rn | head -20
-
-# Find Bun-replaceable npm packages
-rg '"(node-fetch|cross-fetch|dotenv|better-sqlite3|glob|fast-glob|bcrypt|jest|ts-jest|nodemon)"' package.json
-
-# Detect repeated URLs and endpoints
-rg '(http://|https://)[a-zA-Z0-9./-]+' -o | sort | uniq -c | sort -rn | head -10
-
-# Detect repeated struct/object literals (Go)
-rg -U 'gin\.H\{"error"' --type go | sort | uniq -c | sort -rn
-
-# Detect repeated error patterns (Rust)
-rg '\.map_err\(|\.with_context\(' --type rust --count-matches | sort -t: -k2 -rn | head -10
-```
-
-### When NOT to Deduplicate
-
-Not all repetition is bad. Before extracting, ask:
-
-- **Accidental vs real duplication**: Two blocks look the same *today* but represent different domain concepts that will evolve independently. Coupling them creates fragility.
-- **Rule of Three**: Tolerate 2 copies. Extract on the 3rd. The pattern needs to prove itself.
-- **Different rate of change**: If similar pieces belong to different bounded contexts or teams, keeping them separate avoids shotgun surgery across team boundaries.
-- **Premature abstraction**: If the "shared" function needs 4 parameters and 2 boolean flags to handle all cases, the cure is worse than the disease.
+> **Rule: two independent signals before deleting.** A tool finding plus a manual sweep of non-source assets. Reflection, DI registries, framework decorators, serialization, and string-based routing are invisible to every dead-code tool — deleting a live symbol passes the test suite and breaks production.
 
 ## Phase 3 — Safe Refactoring
 
@@ -179,6 +156,8 @@ Apply refactoring patterns to resolve the issues found in Phases 1 and 2. For co
 | **Extract Constant/Config** | Magic values repeated across files | `30 * time.Second` in 3 files → `config.DefaultTimeout` |
 | **Generic/Parameterized Function** | Near-identical functions differing by one call | `GetUser`, `GetOrder` → `getByID[T]` |
 | **Template Method / Strategy** | Similar flows with one varying step | PDF/CSV generators → `GenerateReport(data, renderer)` |
+| **Substitute Algorithm** | Two functions reach the same result by different means | Two CSV parsers → keep the streaming one, delete the other |
+| **Replace Conditional with Polymorphism** | The same `switch`/`if-elif` chain repeated across files | Channel switch in 3 handlers → dispatch table, then interface |
 
 ### Step 1 — Secure the starting point
 
@@ -209,7 +188,7 @@ Each refactoring step must be **atomic** — a single, small, independently veri
 | 1 | Extract function / constant / type | Run tests |
 | 2 | Replace first call site with the new abstraction | Run tests |
 | 3 | Replace next call site | Run tests |
-| 4 | Remove old dead code | Run tests |
+| 4 | Remove old dead code — follow the [DEAD_CODE.md](references/DEAD_CODE.md) protocol: two signals, guardrails cleared, own commit | Run tests |
 | 5 | Commit | `git commit -m "refactor: extract getByID generic handler"` |
 
 **Never batch multiple extractions into a single step.**
@@ -239,6 +218,12 @@ bunx tsc --noEmit          # or: npx tsc --noEmit
 bunx biome check .         # or: npx eslint .
 bun test                   # or: npx vitest run
 
+# Python: type check + lint + test
+ruff check .
+ruff format --check .
+mypy --strict .
+pytest -q
+
 # Find unused exports and dependencies (TypeScript / Bun)
 bunx knip
 
@@ -250,6 +235,8 @@ go vet ./...                                            # Go
 cargo machete                                           # Rust
 bunx knip                                               # TypeScript / Bun
 npx eslint --rule '{"no-unused-vars": "error"}' src/    # TypeScript (eslint)
+ruff check --select=F401,F841,ARG .                     # Python — unused imports/vars/params
+vulture src/ tests/ --min-confidence 90                 # Python — dead symbols
 ```
 
 ### Step 4 — Rollback strategy
@@ -275,6 +262,26 @@ The branch-per-refactoring approach means you never risk `main`.
 - **Big-bang refactoring**: Rewriting an entire module at once. Prefer the Strangler Fig pattern — replace piece by piece.
 - **Skipping the test run**: "It's just a rename." Type aliases, reflection, serialization, string-based routing — all break on renames.
 
+### Plan-only mode
+
+Composing `/clean-code /only-plan` suppresses every write in Phase 3 — no branch, no commits, no edits. Phases 0–2 run normally, and each planned transformation becomes a numbered step in the single `IMPLEMENTATION_PLAN.md` at the project root, following `@only-plan`'s section contract. This skill writes no file of its own in either mode.
+
+## Related Skills
+
+- `@only-plan` — compose as `/clean-code /only-plan` for a refactor plan at the project root instead of applied edits.
+- `@ponytail-review` — the complementary lens: what to **delete** (speculative abstractions, dependencies the stdlib replaces, config nobody sets) rather than what to restructure.
+- `@code-optimization` — when duplication or a smell has a measurable performance cost; it grades Impact and writes `OPTIMIZATION_REPORT.md`.
+- `@code-review` — broad severity-ranked review; its Rule-of-Three findings hand off here for the refactor mechanics.
+- `@code-debugger` — a smell that is actually a live defect belongs there first. Refactor after the fix is green.
+
+## References
+
+- [PRINCIPLES](references/PRINCIPLES.md) — the eight Clean Code principle families
+- [PATTERNS](references/PATTERNS.md) — six refactoring patterns with before/after diffs
+- [DUPLICATION](references/DUPLICATION.md) — taxonomy, detection probes, when NOT to deduplicate
+- [DEAD_CODE](references/DEAD_CODE.md) — per-language detection, false-positive guardrails, removal protocol
+- [GOLANG](references/GOLANG.md) · [RUST](references/RUST.md) · [TYPESCRIPT](references/TYPESCRIPT.md) · [BUN](references/BUN.md) · [PYTHON](references/PYTHON.md) — language-specific smells and idioms
+
 ## Implementation Checklist
 
 - [ ] Is this function smaller than 30 lines?
@@ -287,6 +294,9 @@ The branch-per-refactoring approach means you never risk `main`.
 - [ ] Are magic strings/numbers extracted into named constants?
 - [ ] Did I check for existing utilities before writing a new helper?
 - [ ] If I extracted a shared abstraction, is it used in 3+ places (Rule of Three)?
+- [ ] Did two independent signals confirm each dead symbol before deleting it (tool finding + non-source sweep)?
+- [ ] Did I clear the false-positive guardrails (reflection, DI, framework decorators, serialization, entry points, published API)?
+- [ ] Is each deletion in its own commit, separate from any refactor?
 - [ ] Did I run all tests before AND after refactoring?
 - [ ] Is each refactoring step in its own commit (one transformation per commit)?
 - [ ] Did I avoid mixing behavior changes with structural refactoring?
