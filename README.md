@@ -18,7 +18,7 @@ The following table estimates token consumption per skill/context at session sta
 
 | Component | Tokens |
 | --- | --- |
-| Skill descriptions (21 skills, YAML frontmatter) | ~ 1,200 |
+| Skill descriptions (22 skills, YAML frontmatter) | ~ 1,250 |
 | Caveman (SessionStart hook) | ~ 2,000 |
 | Ponytail (SessionStart hook) | ~ 2,100 |
 | Superpowers (SessionStart hook) | ~ 3,400 |
@@ -55,6 +55,7 @@ The following table estimates token consumption per skill/context at session sta
 | `github-commit` | Generates commit messages following Conventional Commits |
 | `github-pr-review` | Performs structured code review of Pull Requests |
 | `code-security-review` | Web+API+Go+Next.js+Python security lifecycle (FastAPI, Gin, Fiber, Elysia, Next.js 16 App Router) — Phase 0 stack + AI/CI-surface detection branches into `references/golang/` or `references/nextjs/`; generic design controls + active testing + 100-vuln catalog + supply-chain/CI-CD hardening + LLM/agentic/MCP coverage. OWASP Web Top 10 2025 + API 2023 + LLM 2025 + Agentic 2026; static probes for deps, CI workflows, secrets, AI |
+| `mcp-builder` | Build MCP servers — research → implement → test → evaluate, in Rust (`rmcp`, default), TypeScript, or Python. Tool design, strict schemas, pagination, spec `2026-07-28` transports, and a 10-question evaluation that scores the result |
 | `obsidian-bases` | Create and edit Obsidian Bases (.base files) with views, filters, formulas, and summaries |
 | `obsidian-brain` | Token-efficient session-memory for Obsidian-vault projects — auto-detects, lazy-loads index, writes atomic notes for sessions/topics/decisions. **ON by default** when vault detected |
 | `obsidian-cli` | Interact with Obsidian vaults via the Obsidian CLI — read, create, search, manage notes and plugins |
@@ -72,7 +73,7 @@ The following table estimates token consumption per skill/context at session sta
 
 ### Plugin install (manual, from source)
 
-Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 21 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), the ponytail lazy-code hooks (`SessionStart` + `UserPromptSubmit` + `SubagentStart`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
+Registers the repository as a local Claude Code marketplace and installs `valarmindskills@valarmindskills`. Brings all 22 skills under the `/valarmindskills:<slug>` namespace and enables the caveman auto-activation hooks (`SessionStart` + `UserPromptSubmit`), the ponytail lazy-code hooks (`SessionStart` + `UserPromptSubmit` + `SubagentStart`), plus the obsidian-brain hooks (`SessionStart` detection + `UserPromptSubmit` toggle, ON by default).
 
 ```bash
 git clone https://github.com/Bruno-Cunha-Souza/ValarMindSkills.git
