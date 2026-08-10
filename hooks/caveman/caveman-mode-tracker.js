@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { getDefaultMode, safeWriteFlag, readFlag } = require('./caveman-config');
+const { matchIntent } = require('../_lib/posture-intent');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.caveman-active');
@@ -23,18 +24,22 @@ process.stdin.on('end', () => {
     const data = JSON.parse(input);
     const prompt = (data.prompt || '').trim().toLowerCase();
 
-    // Natural language activation
-    if (/\b(activate|enable|turn on|start|talk like|fale como|ative|ativar)\b.*\bcaveman\b/i.test(prompt) ||
-        /\bcaveman\b.*\b(mode|modo|activate|enable|turn on|start)\b/i.test(prompt)) {
-      if (!/\b(stop|disable|turn off|deactivate|parar|desativar|normal mode|modo normal)\b/i.test(prompt)) {
-        const mode = getDefaultMode();
-        if (mode !== 'off') {
-          safeWriteFlag(flagPath, mode);
-        }
+    // Natural language toggle. The matcher is posture-aware: a prompt that
+    // names another posture ("stop ponytail, keep caveman") no longer clears
+    // this flag as collateral damage. Activation never clobbers an explicit
+    // level — mentioning caveman must not reset `/caveman ultra` to the default.
+    const intent = matchIntent(prompt, 'caveman');
+    if (intent === 'on' && !readFlag(flagPath)) {
+      const mode = getDefaultMode();
+      if (mode !== 'off') {
+        safeWriteFlag(flagPath, mode);
       }
+    } else if (intent === 'off') {
+      try { fs.unlinkSync(flagPath); } catch (e) {}
     }
 
-    // Match slash commands — both bare and plugin-namespaced.
+    // Slash commands win over natural language — explicit beats inferred.
+    // Both bare and plugin-namespaced.
     // (?=\s|$) prevents partial matches like /caveman-commit from being
     // treated as /caveman with arg "-commit".
     const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?caveman(?=\s|$)\s*(\S*)/);
@@ -55,13 +60,6 @@ process.stdin.on('end', () => {
       }
     }
 
-    // Natural language deactivation
-    if (/\b(stop|disable|deactivate|turn off|parar|desativar)\b.*\bcaveman\b/i.test(prompt) ||
-        /\bcaveman\b.*\b(stop|disable|deactivate|turn off)\b/i.test(prompt) ||
-        /\b(normal mode|modo normal)\b/i.test(prompt)) {
-      try { fs.unlinkSync(flagPath); } catch (e) {}
-    }
-
     // Per-turn reinforcement
     const VALID_MODES = new Set(['lite', 'full', 'ultra']);
     const activeMode = readFlag(flagPath);
@@ -70,8 +68,9 @@ process.stdin.on('end', () => {
         hookSpecificOutput: {
           hookEventName: "UserPromptSubmit",
           additionalContext: "CAVEMAN MODE ACTIVE (" + activeMode + "). " +
-            "Drop articles/filler/pleasantries/hedging. Fragments OK. " +
-            "Code/commits/security: write normal."
+            "Prose posture: drop articles/filler/pleasantries/hedging. Fragments OK. " +
+            "Never compress code, commit messages, or security warnings — reproduce verbatim. " +
+            "Says nothing about how much code to write; that is ponytail's call."
         }
       }));
     }

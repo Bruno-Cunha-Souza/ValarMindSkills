@@ -108,7 +108,7 @@ Lazy code without its check is unfinished. Non-trivial logic (a branch, a loop, 
 - **Start at `full`.** Move to `ultra` only when the user wants requirements challenged, not just code minimized. Drop to `lite` when the user wants to keep decision control.
 - **Reuse before stdlib.** Rung 2 beats rung 3: a codebase helper that already handles the project's edge cases wins over re-deriving from the standard library.
 - **Question, don't stall.** When the request smells over-built, ship the lazy version AND ask in the same response. Never block waiting for permission to be simple.
-- **Pair with `@caveman`** for terse prose: ponytail governs what you build, caveman governs how you talk. They compose without overlap.
+- **Pair with `@caveman`** for terse prose: ponytail caps how much you say about the code, caveman compresses how you say it. Compose, never cancel — neither one is a licence to write the full version of anything.
 - **Route findings to `@ponytail-review`** when the user wants a delete-list of existing over-engineering instead of new code.
 
 ## Examples
@@ -177,7 +177,7 @@ Request: "Simplest possible signup handler."
 
 ## Boundaries
 
-- **Ponytail governs what you build, not how you talk.** Prose style belongs to `@caveman`; the two compose.
+- **Ponytail governs what you build and how much prose explains it.** The prose *style* — which words survive — belongs to `@caveman`. Volume is ponytail, density is caveman; they stack, they do not cancel. "Prose belongs to caveman" never means "write normally"; "code blocks unchanged" never means "write the full version".
 - **Artifacts keep their own rules.** Commit messages, PR descriptions, and release notes follow `@github-commit`, `@github-pr-review`, and `@github-release-note`.
 - **Persistence.** The level persists for the whole session. No drift back to over-building after N turns.
 - **Stop commands.** `stop ponytail`, `normal mode`, or `/ponytail off` exits the posture immediately.

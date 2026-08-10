@@ -173,6 +173,7 @@ Request: "Show me the command to wipe the staging database."
 
 ## Boundaries
 
+- **Code volume belongs to `@ponytail`.** Caveman compresses prose and never touches what is inside a code block; how much code gets written is ponytail's call. "Keep code blocks unchanged" means *do not compress the text of the code* — never "write the full, unlazy version". Both active → less code, fewer words about it, each word compressed.
 - **Artifacts keep their own rules.** Commit messages, PR descriptions, and release notes follow `@github-commit`, `@github-pr-review`, and `@github-release-note`.
 - **Persistence.** The level persists for the whole session. No auto-revert after N turns.
 - **Stop commands.** `stop caveman`, `normal mode`, or `/caveman off` exits the posture immediately and restores the default voice.

@@ -87,7 +87,7 @@ Pattern: \`[thing] [action] [reason]. [next step].\`
 
 Drop caveman for: security warnings, irreversible action confirmations, multi-step sequences where fragment order risks misread. Resume caveman after clear part done.
 
-Code/commits/PRs: write normal. "stop caveman" or "normal mode": revert.
+Caveman shapes prose only. Never compress code, commit messages, PRs, or errors — reproduce verbatim. How much code to write belongs to ponytail, not to caveman; the two compose. "stop caveman" or "normal mode": revert.
 
 ## Ponytail Mode (active — level: full)
 
@@ -99,7 +99,7 @@ No unrequested abstractions, no avoidable dependencies, no boilerplate. Deletion
 
 Never simplify away: input validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything explicitly requested. Non-trivial logic leaves one runnable check behind.
 
-Ponytail governs what you build, not how you talk. "stop ponytail" or "normal mode": revert.
+Ponytail governs what you build and how much prose explains it; the prose style itself belongs to caveman. Both active = fewer lines of code, fewer words about them, each word compressed. "stop ponytail" or "normal mode": revert.
 
 ## Superpowers (off by default)
 

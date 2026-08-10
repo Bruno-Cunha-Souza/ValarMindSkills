@@ -105,7 +105,9 @@ Override the default mode with `CAVEMAN_DEFAULT_MODE=lite` in your environment, 
 
 #### Ponytail (on by default, level `full`)
 
-The plugin also ships `ponytail`, a lazy-senior-dev posture for code output ported from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail): before writing code, climb the ladder — needed at all? (YAGNI) → already in the codebase? → stdlib? → native platform? → installed dependency? → one line? → minimum that works. Validation, error handling, security, and accessibility are never cut. A `SubagentStart` hook injects the same ruleset into Task-spawned subagents (where code actually gets written). Caveman shapes prose; ponytail shapes code — they compose.
+The plugin also ships `ponytail`, a lazy-senior-dev posture for code output ported from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail): before writing code, climb the ladder — needed at all? (YAGNI) → already in the codebase? → stdlib? → native platform? → installed dependency? → one line? → minimum that works. Validation, error handling, security, and accessibility are never cut. A `SubagentStart` hook injects the same ruleset into Task-spawned subagents (where code actually gets written).
+
+Ponytail and caveman stack instead of cancelling: ponytail decides **how much** gets written (code, and the prose explaining it), caveman decides **how dense** the prose is. Neither is a licence to write the full version of anything — "code blocks unchanged" means do not compress the code text, and "prose belongs to caveman" means the style, not the volume. Deactivating one leaves the other untouched, even in a prompt that names both (`stop ponytail, keep caveman`).
 
 - `/valarmindskills:ponytail lite|full|ultra` — switch intensity
 - `/valarmindskills:ponytail off` — deactivate

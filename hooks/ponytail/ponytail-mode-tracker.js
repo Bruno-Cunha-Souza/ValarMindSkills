@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { getDefaultMode, safeWriteFlag, readFlag } = require('./ponytail-config');
+const { matchIntent } = require('../_lib/posture-intent');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.ponytail-active');
@@ -25,19 +26,23 @@ process.stdin.on('end', () => {
     const data = JSON.parse(input);
     const prompt = (data.prompt || '').trim().toLowerCase();
 
-    // Natural language activation
-    if (/\b(activate|enable|turn on|start|ative|ativar)\b.*\bponytail\b/i.test(prompt) ||
-        /\bponytail\b.*\b(mode|modo|activate|enable|turn on|start)\b/i.test(prompt) ||
-        /^(lazy mode|modo lazy|be lazy)[.!?\s]*$/i.test(prompt)) {
-      if (!/\b(stop|disable|turn off|deactivate|parar|desativar)\b/i.test(prompt)) {
-        const mode = getDefaultMode();
-        if (mode !== 'off') {
-          safeWriteFlag(flagPath, mode);
-        }
+    // Natural language toggle. The matcher is posture-aware: a prompt that
+    // names another posture ("stop caveman, keep ponytail") no longer clears
+    // this flag as collateral damage. Activation never clobbers an explicit
+    // level — mentioning ponytail must not reset `/ponytail ultra` to the default.
+    const isLazyAlias = /^(lazy mode|modo lazy|be lazy)[.!?\s]*$/i.test(prompt);
+    const intent = matchIntent(prompt, 'ponytail');
+    if ((intent === 'on' || (isLazyAlias && intent !== 'off')) && !readFlag(flagPath)) {
+      const mode = getDefaultMode();
+      if (mode !== 'off') {
+        safeWriteFlag(flagPath, mode);
       }
+    } else if (intent === 'off') {
+      try { fs.unlinkSync(flagPath); } catch (e) {}
     }
 
-    // Match slash commands — both bare and plugin-namespaced.
+    // Slash commands win over natural language — explicit beats inferred.
+    // Both bare and plugin-namespaced.
     // (?=\s|$) prevents partial matches like /ponytail-review from being
     // treated as /ponytail with arg "-review".
     const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?ponytail(?=\s|$)\s*(\S*)/);
@@ -58,13 +63,6 @@ process.stdin.on('end', () => {
       }
     }
 
-    // Natural language deactivation
-    if (/\b(stop|disable|deactivate|turn off|parar|desativar)\b.*\bponytail\b/i.test(prompt) ||
-        /\bponytail\b.*\b(stop|disable|deactivate|turn off)\b/i.test(prompt) ||
-        /\b(normal mode|modo normal)\b/i.test(prompt)) {
-      try { fs.unlinkSync(flagPath); } catch (e) {}
-    }
-
     // Per-turn reinforcement
     const VALID_MODES = new Set(['lite', 'full', 'ultra']);
     const activeMode = readFlag(flagPath);
@@ -73,8 +71,9 @@ process.stdin.on('end', () => {
         hookSpecificOutput: {
           hookEventName: "UserPromptSubmit",
           additionalContext: "PONYTAIL MODE ACTIVE (" + activeMode + "). " +
-            "Code output: climb the ladder first — needed at all? / already in codebase? / stdlib? / native platform? / installed dep? / one line? / minimum. " +
-            "Never cut validation, error handling, security, accessibility. Prose style unchanged."
+            "Code posture: climb the ladder first — needed at all? / already in codebase? / stdlib? / native platform? / installed dep? / one line? / minimum. " +
+            "Never cut validation, error handling, security, accessibility. " +
+            "Caps how much prose explains the code, never its style; the style is caveman's call."
         }
       }));
     }

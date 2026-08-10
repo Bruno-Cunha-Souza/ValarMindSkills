@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { safeWriteFlag, readFlag } = require('./superpowers-config');
+const { matchIntent } = require('../_lib/posture-intent');
 
 const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const flagPath = path.join(claudeDir, '.superpowers-active');
@@ -24,15 +25,17 @@ process.stdin.on('end', () => {
     const data = JSON.parse(input);
     const prompt = (data.prompt || '').trim().toLowerCase();
 
-    // Natural language activation (PT + EN)
-    if (/\b(activate|enable|turn on|start|ative|ativar|ligar)\b.*\bsuperpowers\b/i.test(prompt) ||
-        /\bsuperpowers\b.*\b(mode|modo|activate|enable|turn on|start|on)\b/i.test(prompt)) {
-      if (!/\b(stop|disable|turn off|deactivate|parar|desativar|desligar|off)\b/i.test(prompt)) {
-        safeWriteFlag(flagPath, 'on');
-      }
+    // Natural language toggle (PT + EN). The matcher is posture-aware: a prompt
+    // that names another posture ("stop caveman, keep superpowers") no longer
+    // clears this flag as collateral damage.
+    const intent = matchIntent(prompt, 'superpowers');
+    if (intent === 'on') {
+      safeWriteFlag(flagPath, 'on');
+    } else if (intent === 'off') {
+      try { fs.unlinkSync(flagPath); } catch (e) {}
     }
 
-    // Match slash commands — both bare and plugin-namespaced
+    // Slash commands win over natural language — both bare and plugin-namespaced
     const slashMatch = prompt.match(/^\/(?:valarmind(?:skills)?:)?superpowers\b\s*(\S*)/);
     if (slashMatch) {
       const arg = slashMatch[1] || '';
@@ -46,12 +49,6 @@ process.stdin.on('end', () => {
       } else if (mode === 'off') {
         try { fs.unlinkSync(flagPath); } catch (e) {}
       }
-    }
-
-    // Natural language deactivation (PT + EN)
-    if (/\b(stop|disable|deactivate|turn off|parar|desativar|desligar)\b.*\bsuperpowers\b/i.test(prompt) ||
-        /\bsuperpowers\b.*\b(stop|disable|deactivate|turn off|off)\b/i.test(prompt)) {
-      try { fs.unlinkSync(flagPath); } catch (e) {}
     }
 
     // Per-turn reinforcement when active

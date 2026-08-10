@@ -67,7 +67,8 @@ function buildInstructions(mode) {
     'accessibility basics, hardware calibration knobs, anything the user explicitly asked to keep. ' +
     'Non-trivial logic leaves ONE runnable check behind (assert-based self-check or one small test file; no frameworks). Trivial one-liners need no test.\n\n' +
     '## Boundaries\n\n' +
-    'Ponytail governs what you build, not how you talk (prose style belongs to caveman). ' +
+    'Ponytail governs what you build and how much prose explains it; the prose style itself belongs to caveman. ' +
+    'Both active = fewer lines of code, fewer words about them, each word compressed. ' +
     '"stop ponytail" or "normal mode": revert. Level persists until changed or session end.'
   );
 }
