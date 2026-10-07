@@ -2,14 +2,14 @@
 # Cursor sessionStart wrapper — runs ValarMind *-activate.js hooks and emits
 # Cursor-compatible JSON ({ "additional_context": "...", "continue": true }).
 #
-# Usage (from ~/.cursor/ as CWD): ./hooks/_cursor/wrap-session.sh caveman|ponytail|superpowers|obsidian-brain
+# Usage (from ~/.cursor/ as CWD): ./hooks/_cursor/wrap-session.sh obsidian-brain
 
 set -euo pipefail
 
-HOOK_NAME="${1:?usage: wrap-session.sh caveman|ponytail|superpowers|obsidian-brain}"
+HOOK_NAME="${1:?usage: wrap-session.sh obsidian-brain}"
 
 case "$HOOK_NAME" in
-  caveman|ponytail|superpowers|obsidian-brain) ;;
+  obsidian-brain) ;;
   *)
     echo '{"continue":true}' >&1
     exit 0
@@ -17,7 +17,6 @@ case "$HOOK_NAME" in
 esac
 
 CURSOR_HOME="${CURSOR_HOME:-${CLAUDE_CONFIG_DIR:-$HOME/.cursor}}"
-SKILLS_ROOT="${VALARMIND_SKILLS_ROOT:-$CURSOR_HOME/skills}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOOKS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -49,10 +48,7 @@ fi
 tmp_out="$(mktemp)"
 trap 'rm -f "$tmp_out"' EXIT
 
-if ! CLAUDE_CONFIG_DIR="$CURSOR_HOME" \
-     VALARMIND_SKILLS_ROOT="$SKILLS_ROOT" \
-     VALARMIND_HOOK_RUNTIME=cursor \
-     node "$ACTIVATE" >"$tmp_out" 2>/dev/null; then
+if ! CLAUDE_CONFIG_DIR="$CURSOR_HOME" node "$ACTIVATE" >"$tmp_out" 2>/dev/null; then
   emit_json ""
   exit 0
 fi

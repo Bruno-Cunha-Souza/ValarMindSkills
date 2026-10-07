@@ -21,7 +21,7 @@ Trigger: user pastes session/RAG template, statusline shows ≥ 80% utilization,
 ## Do not use when
 
 - Audit target is a **single prompt** (clarity, refusal hooks, schema) — use `@prompt-engineering`.
-- User wants response brevity — use `@caveman`.
+- User wants response brevity — out of scope; this skill compresses input (context), not output.
 - User wants new skill scaffold — use `@skill-creator`.
 - Phase 0.5 triage gate fires (trivial context).
 - Domain has stricter compliance than the skill can verify (legal hold, audit trail).
@@ -152,7 +152,6 @@ Three load-bearing rules (full 15-rule list in [CHECKLIST §Skill self-audit](re
 ## Related Skills
 
 - `@prompt-engineering` — primary sibling. Audits single prompts; this skill audits whole context. Run `@prompt-engineering` first to fix the prompt; then `/valarmindskills:context-optimization` to optimize the surrounding context.
-- `@caveman` — compresses **response** (output). This skill compresses **input** (context).
 - `@skill-creator` — scaffolds new skills.
 - `@code-security-review` — pattern source for `scripts/` architecture.
 

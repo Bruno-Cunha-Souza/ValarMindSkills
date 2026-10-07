@@ -36,7 +36,7 @@ Trigger scenarios:
 - The user wants to **review code**, not a prompt — use `@code-review`.
 - The user wants to **debug** an LLM agent's runtime behavior — start with `@code-debugger` for the orchestration layer; this skill only fixes the prompt itself.
 - The user only wants **token compression of conversation context** (KV-cache reuse, observation masking, partitioning) — that is `@context-optimization`, not prompt rewriting.
-- The user wants a **shorter response style for the assistant**, not a better prompt — that is `@caveman`.
+- The user wants a **shorter response style for the assistant**, not a better prompt — out of scope; this skill rewrites prompts, not response style.
 - The prompt is a one-line throwaway with no agent or system context behind it (e.g., `"summarize this PDF"`) — the audit overhead exceeds the value; tell the user and stop.
 - The prompt is for a domain with stricter compliance requirements (legal, medical, financial advice) than the skill can verify — surface the gap and recommend domain expert review before deployment.
 
@@ -364,7 +364,7 @@ The proposed rewrite, fenced, complete enough to copy-paste. EN by default. Incl
 | Never compress `never` rule into positive instruction | `never X` ≠ `always not-X` to a model; keep negation |
 | Always emit Blocks 1–4 verbatim | Even on zero findings |
 | Always cap rewrite ≤ use-case budget | Per [Phase 5.3](#53-token-budget-per-use-case); `2× original` generic; user override allowed with rationale |
-| Always cross-link sibling skill | When finding belongs to its domain (`@context-optimization`, `@clean-code`, `@code-review`, `@caveman`, `@superpowers`) |
+| Always cross-link sibling skill | When finding belongs to its domain (`@context-optimization`, `@clean-code`, `@code-review`) |
 
 ## Output format
 
@@ -456,8 +456,6 @@ A second auditor reading only Block 1 should be able to reach the same conclusio
 - `@context-optimization` — for whole-context compression (KV-cache reuse, observation masking, partitioning). Runs **after** this skill if the prompt-revised conversation still exceeds the context budget.
 - `@clean-code` — for naming conventions inside prompt templates with embedded code or pseudocode.
 - `@code-review` — when the audit target is code-review prompts and the user wants the meta-review of the methodology used.
-- `@caveman` — sibling discipline that compresses the *response*, not the prompt.
-- `@superpowers` — engineering posture (TDD, evidence-first) for the human iterating on the prompt.
 
 ## References
 

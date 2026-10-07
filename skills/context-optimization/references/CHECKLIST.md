@@ -72,7 +72,7 @@ Apply only the techniques listed for the declared use case (see [TECHNIQUES.md m
 - [ ] Block 3 — Optimization plan, fenced, ordered by ROI, copy-paste ready
 - [ ] Block 4 — Summary table (cost lever coverage / token delta / cache-hit projection / risk tag / confidence)
 - [ ] Block 5 — Verification suggestions (**REQUIRED** if overall risk = `REVIEW` or `BREAKING`; **OPTIONAL** if `SAFE`)
-- [ ] Cross-links to sibling skills where domain overlap exists (`@prompt-engineering`, `@caveman`, `@skill-creator`)
+- [ ] Cross-links to sibling skills where domain overlap exists (`@prompt-engineering`, `@skill-creator`)
 
 ## Skill self-audit (the audit of the audit)
 

@@ -464,7 +464,6 @@ Info-level observations are allowed after the LGTM only when grounded in exact f
 - `@code-security-review` — multi-language + Go (Gin/Fiber) + Python (FastAPI/Django/Flask, `references/python/`) + Next.js 16 App Router security lifecycle: design patterns + active runtime testing + stack-specific vulns + 100-vuln catalog (`references/WEB_VULNERABILITIES.md`) for cross-linking findings.
 - `@github-pr-review` — GitHub-flavored PR review (posts comments via `gh`).
 - `@github-commit` — when the author wants help drafting the fix commit.
-- `@superpowers` — engineering posture (TDD, evidence-first) for the author addressing findings.
 
 ## References
 

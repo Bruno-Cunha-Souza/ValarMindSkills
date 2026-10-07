@@ -306,6 +306,6 @@ For prompts that mix classes (e.g., a skill that internally embeds a RAG sub-pro
 ## Hand-offs
 
 - The prompt is a **skill scaffold** (file does not yet exist) → use `@skill-creator` first to scaffold; then this skill audits the draft.
-- The prompt is a **conversation / response style preference** → use `@caveman`, not this skill.
+- The prompt is a **conversation / response style preference** → out of scope; this skill does not tune response style.
 - The prompt is fine but the **conversation context is too long** → use `@context-optimization`.
 - The prompt is for **code review or debugging methodology** itself → use `@code-review` or `@code-debugger`; this skill audits the prompt that drives them.

@@ -1,7 +1,7 @@
 #!/bin/bash
 # obsidian-brain — segmento de statusline. Renderiza o badge [OBSIDIAN-BRAIN]
 # sempre visível: roxo (cor 99 ≈ #875FFF, próxima do roxo oficial do Obsidian)
-# quando on, cinza dim (240) quando off ou ausente — paralelo ao superpowers.sh.
+# quando on, cinza dim (240) quando off ou ausente.
 #
 # Trade-off da cor on: 99 é o melhor compromisso ANSI-256 para o roxo Obsidian.
 # Alternativas se o terminal estiver com tema agressivo: 105 (lavender claro)

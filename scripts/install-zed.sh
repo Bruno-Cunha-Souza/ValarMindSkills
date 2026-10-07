@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Skills-only install for Zed IDE (no AGENTS.md instructions block).
-# For the full plugin (skills + postures), use install-plugin-zed.sh.
+# For the full plugin (skills + AGENTS.md note), use install-plugin-zed.sh.
 #
 # Zed loads Agent Skills from ~/.agents/skills (global). Override the target
 # with ZED_SKILLS_HOME, e.g. for a project-local install:
@@ -33,5 +33,5 @@ echo "Done! Skills reload live — no Zed restart needed."
 echo "Invoke with /<slug> in the Agent Panel message editor, or @skill to browse."
 echo "Manage them under Settings → AI → Skills (zed://settings/agent.skills)."
 echo ""
-echo "For the caveman/ponytail/superpowers/obsidian-brain postures, run:"
+echo "For the AGENTS.md skills note, run:"
 echo "  bash scripts/install-plugin-zed.sh"

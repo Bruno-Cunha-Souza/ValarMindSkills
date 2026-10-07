@@ -1,12 +1,11 @@
 #!/bin/bash
 
 # Full plugin install for Zed IDE.
-# Installs: skills → ~/.agents/skills/, postures → ~/.config/zed/AGENTS.md
+# Installs: skills → ~/.agents/skills/, skills note → ~/.config/zed/AGENTS.md
 #
 # Zed has no agent lifecycle hooks yet (proposed in zed-industries/zed#57943),
-# so the caveman / ponytail / superpowers postures ship as static personal
-# instructions instead of SessionStart + UserPromptSubmit hooks. Everything else
-# (skill catalog, /slash invocation, @skill mentions) is native.
+# so no hooks are installed. Everything else (skill catalog, /slash invocation,
+# @skill mentions) is native.
 #
 # Overrides:
 #   ZED_SKILLS_HOME               skills root.   Default: ~/.agents/skills
@@ -53,7 +52,7 @@ if [ "${#AGENTS_SKILLS_INVALID[@]}" -gt 0 ]; then
 fi
 
 # ──────────────────────────────────────────────────────────────
-# Step 2/2 — Personal instructions (postures)
+# Step 2/2 — Personal instructions (skills note)
 # ──────────────────────────────────────────────────────────────
 if [ "${VALARMIND_SKIP_INSTRUCTIONS:-${VALARMIND_SKIP_HOOKS:-0}}" = "1" ]; then
   echo ""
@@ -73,43 +72,9 @@ AGENTS_END="<!-- VALARMIND END -->"
 
 AGENTS_BLOCK=$(cat << AGENTS_EOF
 $AGENTS_BEGIN
-# ValarMindSkills Postures
+# ValarMindSkills
 
-## Caveman Mode (active — level: lite)
-
-Respond terse like smart caveman. All technical substance stay. Only fluff die.
-
-Active every response. No revert after many turns. No filler drift. Off only: "stop caveman" / "normal mode".
-
-Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.
-
-Pattern: \`[thing] [action] [reason]. [next step].\`
-
-Drop caveman for: security warnings, irreversible action confirmations, multi-step sequences where fragment order risks misread. Resume caveman after clear part done.
-
-Caveman shapes prose only. Never compress code, commit messages, PRs, or errors — reproduce verbatim. How much code to write belongs to ponytail, not to caveman; the two compose. "stop caveman" or "normal mode": revert.
-
-## Ponytail Mode (active — level: full)
-
-You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
-
-Before writing any code, stop at the first rung that holds: 1. needed at all? (YAGNI) 2. already in this codebase? reuse it 3. stdlib does it? use it 4. native platform feature? use it 5. installed dependency? use it 6. one line? one line 7. only then: minimum code that works. The ladder runs after you understand the problem — read the code the change touches and trace the real flow first.
-
-No unrequested abstractions, no avoidable dependencies, no boilerplate. Deletion over addition. Fewest files possible. Mark deliberate simplifications with a \`ponytail:\` comment naming ceiling and upgrade path. Code first, then at most three short lines of explanation.
-
-Never simplify away: input validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything explicitly requested. Non-trivial logic leaves one runnable check behind.
-
-Ponytail governs what you build and how much prose explains it; the prose style itself belongs to caveman. Both active = fewer lines of code, fewer words about them, each word compressed. "stop ponytail" or "normal mode": revert.
-
-## Superpowers (off by default)
-
-To activate: say \`superpowers on\`, or invoke \`/superpowers\`.
-
-## Skills
-
-ValarMindSkills installed under \`~/.agents/skills/\`. Invoke with \`/<slug>\` in the message editor (e.g. \`/code-review\`, \`/caveman\`, \`/github-commit\`), or \`@skill\` to browse. The agent may also load one on its own when the task matches a skill description.
-
-Zed has no lifecycle hooks yet, so posture levels here are static. Switch level in-conversation ("caveman full", "ponytail lite", "normal mode") or edit this block.
+ValarMindSkills installed under \`~/.agents/skills/\`. Invoke with \`/<slug>\` in the message editor (e.g. \`/code-review\`, \`/github-commit\`), or \`@skill\` to browse. The agent may also load one on its own when the task matches a skill description.
 $AGENTS_END
 AGENTS_EOF
 )
@@ -132,7 +97,7 @@ if [ -f "$AGENTS_MD" ]; then
       { while (blanks-- > 0) print ""; blanks = 0; print }
     ' "$AGENTS_MD" > "$tmp_md"
     mv "$tmp_md" "$AGENTS_MD"
-    echo "Existing ValarMind postures stripped from AGENTS.md."
+    echo "Existing ValarMind block stripped from AGENTS.md."
   fi
 
   # Single blank-line separator only when prior user content exists.
@@ -140,7 +105,7 @@ if [ -f "$AGENTS_MD" ]; then
     printf '\n' >> "$AGENTS_MD"
   fi
   printf '%s\n' "$AGENTS_BLOCK" >> "$AGENTS_MD"
-  echo "ValarMindSkills postures written → $AGENTS_MD"
+  echo "ValarMindSkills block written → $AGENTS_MD"
 else
   printf "%s\n" "$AGENTS_BLOCK" > "$AGENTS_MD"
   echo "AGENTS.md created → $AGENTS_MD"
@@ -154,9 +119,6 @@ report_agents_skills "$ZED_SKILLS_HOME"
 echo ""
 echo "Done! Skills reload live — no restart needed."
 echo "Instructions load per thread: open a new thread in the Agent Panel to pick up AGENTS.md."
-echo ""
-echo "Caveman posture: ON (level = lite). Ponytail: ON (level = full). Superpowers: OFF."
-echo "Switch in-conversation (\"caveman full\", \"normal mode\") or edit $AGENTS_MD."
 echo ""
 echo "Note: a project-level instruction file (.rules, .cursorrules, AGENT.md, AGENTS.md,"
 echo "CLAUDE.md, ...) in the open worktree takes precedence over this personal AGENTS.md"

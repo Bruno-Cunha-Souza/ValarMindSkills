@@ -228,6 +228,6 @@ For contexts that **mix classes** (e.g., a long-conv agent embedding a RAG sub-p
 ## Hand-offs
 
 - The audit target is a **single prompt** → `@prompt-engineering`.
-- The audit target is a **conversation style preference** (response brevity) → `@caveman`.
+- The audit target is a **conversation style preference** (response brevity) → out of scope; this skill compresses input, not output.
 - The audit target is **safety / refusal hooks** in a long-conv agent → `@prompt-engineering` for the safety rules; `@context-optimization` for the surrounding context size.
 - The audit target is a **skill scaffold** that doesn't yet exist → `@skill-creator`.

@@ -1,11 +1,10 @@
 // Shared activate/deactivate intent matcher for the ValarMind posture trackers.
 //
-// Every tracker used to test /VERB\b.*\bNAME\b/ against the prompt. The
-// unbounded `.*` made a prompt that names two postures match both patterns, so
-// "stop ponytail, keep caveman" cleared the caveman flag too — the postures
-// cancelled each other. All posture names are registered here, which lets the
-// gap between the verb and the name be required to name no *other* posture.
-// Reverse order ("caveman off") must be adjacent for the same reason.
+// A bare /VERB\b.*\bNAME\b/ test lets a prompt that names two postures match
+// both, so "stop X, keep Y" would clear Y too. Every posture name is registered
+// here, which lets the gap between the verb and the name be required to name no
+// *other* posture. Reverse order ("obsidian-brain off") must be adjacent for the
+// same reason.
 //
 // Ambiguous prompts return null and leave the flag untouched: changing posture
 // state needs an unambiguous ask.
@@ -13,22 +12,13 @@
 // Self-check: `node hooks/_lib/posture-intent.js`
 
 const NAMES = {
-  caveman: 'caveman',
-  ponytail: 'ponytail',
-  superpowers: 'superpowers',
   'obsidian-brain': 'obsidian[ -]?brain|c[eé]rebro do obsidian',
 };
 
-const ON_VERBS = 'activate|enable|turn on|start|talk like|fale como|ative|ativar|ligar';
+const ON_VERBS = 'activate|enable|turn on|start|ative|ativar|ligar';
 const OFF_VERBS = 'stop|disable|deactivate|turn off|parar|desativar|desligar';
 const ON_SUFFIX = 'mode|modo|on|activate|enable|turn on|start';
 const OFF_SUFFIX = 'off|stop|disable|deactivate|turn off|parar|desativar|desligar';
-
-// "normal mode" is a documented exit for caveman and ponytail only (their
-// SKILL.md lists it). superpowers and obsidian-brain never honoured it and keep
-// their own toggles — do not widen the blast radius here.
-const RESET = /\b(normal mode|modo normal)\b/i;
-const RESET_SLUGS = new Set(['caveman', 'ponytail']);
 
 // Filler tolerated between verb and name ("stop the ", "desativar o ").
 const MAX_GAP = 40;
@@ -48,7 +38,11 @@ function patternsFor(slug) {
     .filter(k => k !== slug)
     .map(k => NAMES[k])
     .join('|');
-  const gap = `(?:(?!${others})[\\s\\S]){0,${MAX_GAP}}`;
+  // With a single registered posture there is nothing to exclude — `(?!)`
+  // would reject every character and collapse the gap to zero.
+  const gap = others
+    ? `(?:(?!${others})[\\s\\S]){0,${MAX_GAP}}`
+    : `[\\s\\S]{0,${MAX_GAP}}`;
   const name = `(?:${self})`;
 
   const built = {
@@ -65,8 +59,6 @@ function patternsFor(slug) {
 // 'off' wins over 'on' when both match — the safe direction.
 function matchIntent(prompt, slug) {
   const text = String(prompt || '');
-  if (RESET_SLUGS.has(slug) && RESET.test(text)) return 'off';
-
   const re = patternsFor(slug);
   if (re.offBefore.test(text) || re.offAfter.test(text)) return 'off';
   if (re.onBefore.test(text) || re.onAfter.test(text)) return 'on';
@@ -78,30 +70,16 @@ module.exports = { matchIntent, POSTURE_SLUGS: Object.keys(NAMES) };
 if (require.main === module) {
   const assert = require('assert');
   const cases = [
-    // The reported bug: naming both postures must not clear the untargeted one.
-    ['stop ponytail, keep caveman', 'ponytail', 'off'],
-    ['stop ponytail, keep caveman', 'caveman', null],
-    ['stop caveman but keep ponytail', 'caveman', 'off'],
-    ['stop caveman but keep ponytail', 'ponytail', null],
-    ['turn off superpowers, keep caveman', 'caveman', null],
-    ['turn off obsidian-brain, keep ponytail', 'ponytail', null],
-    // Merely discussing the postures toggles nothing.
-    ['o ponytail e o caveman estao em conflito', 'caveman', null],
-    ['o ponytail e o caveman estao em conflito', 'ponytail', null],
-    // Single-posture commands still work, both orders, both languages.
-    ['stop caveman', 'caveman', 'off'],
-    ['desativar o ponytail', 'ponytail', 'off'],
-    ['caveman off', 'caveman', 'off'],
-    ['ponytail off', 'ponytail', 'off'],
-    ['caveman mode', 'caveman', 'on'],
-    ['ativar caveman', 'caveman', 'on'],
-    ['fale como caveman', 'caveman', 'on'],
-    ['superpowers on', 'superpowers', 'on'],
+    // Both orders, both languages, filler between verb and name.
+    ['stop obsidian-brain', 'obsidian-brain', 'off'],
+    ['stop the obsidian brain', 'obsidian-brain', 'off'],
+    ['desativar o obsidian-brain', 'obsidian-brain', 'off'],
+    ['obsidian-brain off', 'obsidian-brain', 'off'],
     ['obsidian brain on', 'obsidian-brain', 'on'],
-    // "normal mode" exits caveman and ponytail, and only those two.
-    ['normal mode', 'caveman', 'off'],
-    ['modo normal', 'ponytail', 'off'],
-    ['normal mode', 'superpowers', null],
+    ['ativar o cérebro do obsidian', 'obsidian-brain', 'on'],
+    // Merely discussing the posture toggles nothing.
+    ['o obsidian-brain anotou a sessão de ontem', 'obsidian-brain', null],
+    // "normal mode" is not an obsidian-brain exit.
     ['normal mode', 'obsidian-brain', null],
   ];
 

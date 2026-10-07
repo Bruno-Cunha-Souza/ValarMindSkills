@@ -116,7 +116,6 @@ The skill must not break under adversarial extra prompts. Confirm at least one o
 ## Repo-level integration
 
 - [ ] Skill registered in `README.md` "Available skills" table
-- [ ] Skill registered in `skills/superpowers/references/SKILL_MAP.md` §1 Stage 4 conditional + §2 new CI/CD trigger block
 - [ ] Install scripts auto-discover by directory (no manual list update needed):
       ```bash
       find skills -name SKILL.md -maxdepth 2 | grep ci-cd-generator

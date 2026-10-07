@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Full plugin install for OpenAI Codex CLI
-# Installs: skills, hooks (via config.toml [[hooks]]), and AGENTS.md postures
+# Installs: skills, hooks (via config.toml [[hooks]]), and an AGENTS.md skills note
 #
 # Codex discovers skills in $HOME/.agents/skills, in .agents/skills from the CWD
 # up to the repo root, and in /etc/codex/skills — see
@@ -74,26 +74,16 @@ echo ""
 echo "=== Step 2/3: Hooks ==="
 
 mkdir -p "$HOOKS_TARGET/_lib"
-mkdir -p "$HOOKS_TARGET/caveman"
-mkdir -p "$HOOKS_TARGET/ponytail"
-mkdir -p "$HOOKS_TARGET/superpowers"
 mkdir -p "$HOOKS_TARGET/obsidian-brain"
 
 cp "$SOURCE_HOOKS/_lib/"*.js           "$HOOKS_TARGET/_lib/"
-cp "$SOURCE_HOOKS/caveman/"*.js        "$HOOKS_TARGET/caveman/"
-cp "$SOURCE_HOOKS/ponytail/"*.js       "$HOOKS_TARGET/ponytail/"
-cp "$SOURCE_HOOKS/superpowers/"*.js    "$HOOKS_TARGET/superpowers/"
 cp "$SOURCE_HOOKS/obsidian-brain/"*.js "$HOOKS_TARGET/obsidian-brain/"
 
 echo "Hook scripts copied → $HOOKS_TARGET"
 
 # Inject hooks into config.toml using correct schema format:
 # hooks (HooksToml struct) → [[hooks.SessionStart]] MatcherGroup → [[hooks.SessionStart.hooks]] HookHandlerConfig
-# Uses CLAUDE_CONFIG_DIR override so flag files go to $CODEX_HOME instead of ~/.claude/,
-# and VALARMIND_SKILLS_ROOT so the hooks find SKILL.md now that skills live in
-# $SKILLS_TARGET rather than alongside $HOOKS_TARGET — resolve-skill-path.js would
-# otherwise look in $CODEX_HOME/skills, miss it, and inject only the short
-# built-in posture summary instead of the full skill.
+# Uses CLAUDE_CONFIG_DIR override so flag files go to $CODEX_HOME instead of ~/.claude/.
 #
 # Block is wrapped in sentinel comments so re-runs strip the previous block
 # and inject a fresh one (idempotent updates).
@@ -131,43 +121,19 @@ $TOML_BEGIN
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/caveman/caveman-activate.js"
-
-[[hooks.SessionStart.hooks]]
-type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/ponytail/ponytail-activate.js"
-
-[[hooks.SessionStart.hooks]]
-type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/superpowers/superpowers-activate.js"
-
-[[hooks.SessionStart.hooks]]
-type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/obsidian-brain/obsidian-brain-activate.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/obsidian-brain/obsidian-brain-activate.js"
 
 [[hooks.UserPromptSubmit]]
 
 [[hooks.UserPromptSubmit.hooks]]
 type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/caveman/caveman-mode-tracker.js"
-
-[[hooks.UserPromptSubmit.hooks]]
-type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/ponytail/ponytail-mode-tracker.js"
-
-[[hooks.UserPromptSubmit.hooks]]
-type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/superpowers/superpowers-mode-tracker.js"
-
-[[hooks.UserPromptSubmit.hooks]]
-type = "command"
-command = "CLAUDE_CONFIG_DIR=$CODEX_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node $HOOKS_TARGET/obsidian-brain/obsidian-brain-mode-tracker.js"
+command = "CLAUDE_CONFIG_DIR=$CODEX_HOME node $HOOKS_TARGET/obsidian-brain/obsidian-brain-mode-tracker.js"
 $TOML_END
 EOF
 echo "Hooks block written → $CONFIG_TOML"
 
 # ──────────────────────────────────────────────────────────────
-# Step 3/3 — AGENTS.md (static postures as fallback)
+# Step 3/3 — AGENTS.md (skills note)
 # ──────────────────────────────────────────────────────────────
 echo ""
 echo "=== Step 3/3: AGENTS.md ==="
@@ -177,41 +143,9 @@ AGENTS_END="<!-- VALARMIND END -->"
 
 AGENTS_BLOCK=$(cat << AGENTS_EOF
 $AGENTS_BEGIN
-# ValarMindSkills Postures
+# ValarMindSkills
 
-## Caveman Mode (active — level: lite)
-
-Respond terse like smart caveman. All technical substance stay. Only fluff die.
-
-Active every response. No revert after many turns. No filler drift. Off only: "stop caveman" / "normal mode".
-
-Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Technical terms exact. Code blocks unchanged. Errors quoted exact.
-
-Pattern: \`[thing] [action] [reason]. [next step].\`
-
-Drop caveman for: security warnings, irreversible action confirmations, multi-step sequences where fragment order risks misread. Resume caveman after clear part done.
-
-Caveman shapes prose only. Never compress code, commit messages, PRs, or errors — reproduce verbatim. How much code to write belongs to ponytail, not to caveman; the two compose. "stop caveman" or "normal mode": revert.
-
-## Ponytail Mode (active — level: full)
-
-You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
-
-Before writing any code, stop at the first rung that holds: 1. needed at all? (YAGNI) 2. already in this codebase? reuse it 3. stdlib does it? use it 4. native platform feature? use it 5. installed dependency? use it 6. one line? one line 7. only then: minimum code that works. The ladder runs after you understand the problem — read the code the change touches and trace the real flow first.
-
-No unrequested abstractions, no avoidable dependencies, no boilerplate. Deletion over addition. Fewest files possible. Mark deliberate simplifications with a \`ponytail:\` comment naming ceiling and upgrade path. Code first, then at most three short lines of explanation.
-
-Never simplify away: input validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything explicitly requested. Non-trivial logic leaves one runnable check behind.
-
-Ponytail governs what you build and how much prose explains it; the prose style itself belongs to caveman. Both active = fewer lines of code, fewer words about them, each word compressed. "stop ponytail" or "normal mode": revert.
-
-## Superpowers (off by default)
-
-To activate: \`superpowers on\` or \`/valarmindskills:superpowers on\`
-
-## Skills
-
-ValarMindSkills installed. Available as @slug (e.g. @code-review, @caveman, @github-commit).
+ValarMindSkills installed. Available as @slug (e.g. @code-review, @github-commit).
 $AGENTS_END
 AGENTS_EOF
 )
@@ -234,7 +168,7 @@ if [ -f "$AGENTS_MD" ]; then
       { while (blanks-- > 0) print ""; blanks = 0; print }
     ' "$AGENTS_MD" > "$tmp_md"
     mv "$tmp_md" "$AGENTS_MD"
-    echo "Existing ValarMind postures stripped from AGENTS.md."
+    echo "Existing ValarMind block stripped from AGENTS.md."
   fi
 
   # Single blank-line separator only when prior user content exists.
@@ -242,7 +176,7 @@ if [ -f "$AGENTS_MD" ]; then
     printf '\n' >> "$AGENTS_MD"
   fi
   printf '%s\n' "$AGENTS_BLOCK" >> "$AGENTS_MD"
-  echo "ValarMindSkills postures written → $AGENTS_MD"
+  echo "ValarMindSkills block written → $AGENTS_MD"
 else
   printf "%s\n" "$AGENTS_BLOCK" > "$AGENTS_MD"
   echo "AGENTS.md created → $AGENTS_MD"

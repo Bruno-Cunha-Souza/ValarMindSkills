@@ -4,7 +4,7 @@
 # Registers the repository as a local marketplace and installs the
 # `valarmindskills@valarmindskills` plugin, which wires up:
 #   - All skills under skills/<slug>/
-#   - Caveman auto-activation hooks (SessionStart + UserPromptSubmit)
+#   - Obsidian-brain hooks (SessionStart + UserPromptSubmit)
 #
 # Exports slash commands as /valarmindskills:<slug> (plugin namespace).
 
@@ -71,23 +71,14 @@ echo " Plugin installed."
 echo "========================================"
 echo ""
 echo "Slash commands: /$MARKETPLACE_NAME:<skill>"
-echo "  e.g. /$MARKETPLACE_NAME:caveman, /$MARKETPLACE_NAME:github-commit"
-echo ""
-echo "Caveman auto-activation: ON (default level = lite)."
-echo "Override via env: export CAVEMAN_DEFAULT_MODE=lite|full|ultra|off"
-echo "Or create ~/.config/caveman/config.json with {\"defaultMode\": \"full\"}"
-echo ""
-echo "Superpowers auto-activation: OFF (default mode = off)."
-echo "Activate per-session: /valarmindskills:superpowers on"
-echo "Override default via env: export SUPERPOWERS_DEFAULT_MODE=on"
-echo "Or create ~/.config/superpowers/config.json with {\"defaultMode\": \"on\"}"
+echo "  e.g. /$MARKETPLACE_NAME:code-review, /$MARKETPLACE_NAME:github-commit"
 echo ""
 echo "Obsidian-brain auto-activation: ON when CLAUDE.md/AGENTS.md references a vault."
 echo "Disable per-session: /valarmindskills:obsidian-brain off"
 echo "Override default via env: export OBSIDIAN_BRAIN_DEFAULT_MODE=off"
 echo "Or create ~/.config/obsidian-brain/config.json with {\"defaultMode\": \"off\"}"
 echo ""
-echo "Step 4/4 — configuring statusline (caveman + superpowers + obsidian-brain badges + context window usage)"
+echo "Step 4/4 — configuring statusline (obsidian-brain badge + context window usage)"
 SETTINGS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 SETTINGS_FILE="$SETTINGS_DIR/settings.json"
 STATUSLINE_CMD="bash \"$REPO_DIR/hooks/statusline/statusline.sh\""

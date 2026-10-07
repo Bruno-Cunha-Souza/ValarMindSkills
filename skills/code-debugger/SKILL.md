@@ -409,7 +409,6 @@ When the skill cannot reach root cause, print the same skeleton truncated at the
 - `@clean-code` — when the root cause is a maintainability smell that recurred (god function, unclear name, hidden dependency).
 - `@code-security-review` — when the bug is in the API surface and security review (design + active testing) helps. Go-specific runtime bugs (race, slowloris, pprof) — see `references/golang/`. Next.js App Router security-driven runtime bugs (RSC, Server Actions, `proxy.ts`) — see `references/nextjs/`. Python (FastAPI/Django/Flask) security-driven runtime bugs (pickle/yaml deserialization, JWT alg confusion, blocking sync in async route, free-threaded races on `python3.14t`) — see `references/python/`.
 - `@github-commit` — when the user wants help drafting the fix commit.
-- `@superpowers` — engineering posture (TDD, evidence-first) for the user fixing more bugs of the same class.
 - `@ci-cd-generator` — to add the lint / test that would have caught this class of bug to the pipeline.
 
 ## References

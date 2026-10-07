@@ -78,16 +78,10 @@ fi
 echo ""
 echo "=== Step 2/2: Hooks ==="
 
-mkdir -p "$HOOKS_TARGET/caveman"
-mkdir -p "$HOOKS_TARGET/ponytail"
-mkdir -p "$HOOKS_TARGET/superpowers"
 mkdir -p "$HOOKS_TARGET/obsidian-brain"
 mkdir -p "$HOOKS_TARGET/_cursor"
 mkdir -p "$HOOKS_TARGET/_lib"
 
-cp "$SOURCE_HOOKS/caveman/"*.js        "$HOOKS_TARGET/caveman/"
-cp "$SOURCE_HOOKS/ponytail/"*.js       "$HOOKS_TARGET/ponytail/"
-cp "$SOURCE_HOOKS/superpowers/"*.js    "$HOOKS_TARGET/superpowers/"
 cp "$SOURCE_HOOKS/obsidian-brain/"*.js "$HOOKS_TARGET/obsidian-brain/"
 cp "$SOURCE_HOOKS/_cursor/"*.sh        "$HOOKS_TARGET/_cursor/"
 cp "$SOURCE_HOOKS/_lib/"*.js           "$HOOKS_TARGET/_lib/"
@@ -98,9 +92,6 @@ echo "Hook scripts copied → $HOOKS_TARGET"
 # ValarMind hook entries (paths relative to CURSOR_HOME — Cursor CWD for user hooks)
 VALARMIND_SESSION_START=$(cat <<EOF
 [
-  {"command": "./hooks/_cursor/wrap-session.sh caveman", "timeout": 5},
-  {"command": "./hooks/_cursor/wrap-session.sh ponytail", "timeout": 5},
-  {"command": "./hooks/_cursor/wrap-session.sh superpowers", "timeout": 5},
   {"command": "./hooks/_cursor/wrap-session.sh obsidian-brain", "timeout": 5}
 ]
 EOF
@@ -108,10 +99,7 @@ EOF
 
 VALARMIND_BEFORE_SUBMIT=$(cat <<EOF
 [
-  {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/caveman/caveman-mode-tracker.js", "timeout": 5},
-  {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/ponytail/ponytail-mode-tracker.js", "timeout": 5},
-  {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/superpowers/superpowers-mode-tracker.js", "timeout": 5},
-  {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME VALARMIND_SKILLS_ROOT=$SKILLS_TARGET node ./hooks/obsidian-brain/obsidian-brain-mode-tracker.js", "timeout": 5}
+  {"command": "CLAUDE_CONFIG_DIR=$CURSOR_HOME node ./hooks/obsidian-brain/obsidian-brain-mode-tracker.js", "timeout": 5}
 ]
 EOF
 )
@@ -145,6 +133,8 @@ if [ -f "$HOOKS_JSON" ]; then
   cp "$HOOKS_JSON" "$backup"
   echo "Backed up existing hooks.json → $backup"
 
+  # Strips every prior ValarMind entry — including the caveman / ponytail /
+  # superpowers hooks older releases installed — before appending fresh ones.
   tmp_json=$(mktemp)
   jq \
     --argjson session "$VALARMIND_SESSION_START" \
@@ -184,15 +174,6 @@ fi
 
 echo ""
 echo "Done! Restart Cursor to load skills and hooks."
-echo ""
-echo "Caveman auto-activation: ON (default level = lite)."
-echo "Override via env: export CAVEMAN_DEFAULT_MODE=lite|full|ultra|off"
-echo ""
-echo "Ponytail auto-activation: ON (default level = full)."
-echo "Override via env: export PONYTAIL_DEFAULT_MODE=lite|full|ultra|off"
-echo ""
-echo "Superpowers auto-activation: OFF (default)."
-echo "Activate per-session: mention @superpowers or 'superpowers on'"
 echo ""
 echo "Obsidian-brain: ON when CLAUDE.md/AGENTS.md references a vault in the workspace."
 echo ""

@@ -269,7 +269,6 @@ Composing `/clean-code /only-plan` suppresses every write in Phase 3 — no bran
 ## Related Skills
 
 - `@only-plan` — compose as `/clean-code /only-plan` for a refactor plan at the project root instead of applied edits.
-- `@ponytail-review` — the complementary lens: what to **delete** (speculative abstractions, dependencies the stdlib replaces, config nobody sets) rather than what to restructure.
 - `@code-optimization` — when duplication or a smell has a measurable performance cost; it grades Impact and writes `OPTIMIZATION_REPORT.md`.
 - `@code-review` — broad severity-ranked review; its Rule-of-Three findings hand off here for the refactor mechanics.
 - `@code-debugger` — a smell that is actually a live defect belongs there first. Refactor after the fix is green.

@@ -113,7 +113,7 @@ If you discover prior bullets are wrong, **add a correction below**, do not edit
 
 ### Multiple sessions per day
 
-If a single day has two distinct sessions, append a `<short-slug-2>` to the second filename: `2026-04-24-superpowers.md` and `2026-04-24-bases-rewrite.md`.
+If a single day has two distinct sessions, append a `<short-slug-2>` to the second filename: `2026-04-24-auth-refactor.md` and `2026-04-24-bases-rewrite.md`.
 
 ## Atomic-rewrite topics
 

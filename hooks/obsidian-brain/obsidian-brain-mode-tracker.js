@@ -28,9 +28,7 @@ process.stdin.on('end', () => {
     const data = JSON.parse(input);
     const prompt = (data.prompt || '').trim().toLowerCase();
 
-    // Natural language toggle (PT + EN). The matcher is posture-aware: a prompt
-    // that names another posture ("stop caveman, keep obsidian-brain") no longer
-    // clears this flag as collateral damage.
+    // Natural language toggle (PT + EN).
     const intent = matchIntent(prompt, 'obsidian-brain');
     if (intent === 'on') {
       safeWriteFlag(flagPath, 'on');

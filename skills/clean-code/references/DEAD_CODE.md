@@ -133,5 +133,3 @@ Each item below is a way a symbol is reached without appearing in the static cal
 6. **When in doubt, deprecate instead of deleting.** Mark it, log a warning on call, ship, wait one release, then delete with production evidence of zero calls. Cheaper than an incident.
 
 Dead code is deleted, not commented out — git already keeps the history, and a commented block is dead code that survives every future sweep.
-
-For what else is worth deleting beyond dead symbols — speculative abstractions, dependencies the standard library replaces, config nobody sets — run `@ponytail-review`.
