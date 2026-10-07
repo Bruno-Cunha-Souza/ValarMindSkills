@@ -49,6 +49,28 @@ claude plugins validate "$REPO_DIR" || {
 
 echo ""
 echo "Step 2/4 — registering local marketplace"
+# A marketplace registered from another source (e.g. the curl install in
+# ~/.valarmindskills) turns the update below into a silent no-op for this tree,
+# and step 4 would then point the statusline at a copy the plugin doesn't load.
+if command -v jq >/dev/null 2>&1; then
+  registered_src=$(claude plugins marketplace list --json 2>/dev/null \
+    | jq -r --arg n "$MARKETPLACE_NAME" \
+      '.[] | select(.name == $n) | .path // ((.source // "?") + ":" + (.repo // .url // "?"))' \
+    2>/dev/null) || registered_src=""
+  if [ -n "$registered_src" ] \
+     && [ "$(cd "$registered_src" 2>/dev/null && pwd -P)" != "$(cd "$REPO_DIR" && pwd -P)" ]; then
+    echo "Error: marketplace '$MARKETPLACE_NAME' is registered from another source."
+    echo "  registered: $registered_src"
+    echo "  this repo:  $REPO_DIR"
+    echo "Installing from here would leave the plugin loading that copy."
+    echo "Update that copy with its own installer (curl install: re-run install.sh),"
+    echo "or switch the plugin to this repo:"
+    echo "  claude plugins uninstall $PLUGIN_REF"
+    echo "  claude plugins marketplace remove $MARKETPLACE_NAME"
+    echo "  bash \"$SCRIPT_DIR/install-plugin-claude.sh\""
+    exit 1
+  fi
+fi
 if claude plugins marketplace list 2>/dev/null | grep -qE "[[:space:]]${MARKETPLACE_NAME}\$"; then
   echo "Marketplace '$MARKETPLACE_NAME' already registered — updating"
   claude plugins marketplace update "$MARKETPLACE_NAME" || true
