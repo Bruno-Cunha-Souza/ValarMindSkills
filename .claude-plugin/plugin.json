@@ -1,7 +1,7 @@
 {
   "name": "valarmindskills",
   "description": "ValarMindSkills plugin bundle. Ships all project skills plus obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found) and a SessionStart hint when the statusline is not configured.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "Bruno Cunha Souza",
     "url": "https://github.com/Bruno-Cunha-Souza"
