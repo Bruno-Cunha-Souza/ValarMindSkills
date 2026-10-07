@@ -1,13 +1,9 @@
-// Shared activate/deactivate intent matcher for the ValarMind posture trackers.
+// Activate/deactivate intent matcher for the ValarMind posture trackers.
 //
-// A bare /VERB\b.*\bNAME\b/ test lets a prompt that names two postures match
-// both, so "stop X, keep Y" would clear Y too. Every posture name is registered
-// here, which lets the gap between the verb and the name be required to name no
-// *other* posture. Reverse order ("obsidian-brain off") must be adjacent for the
-// same reason.
-//
-// Ambiguous prompts return null and leave the flag untouched: changing posture
-// state needs an unambiguous ask.
+// The gap between verb and name is capped at MAX_GAP, and reverse order
+// ("obsidian-brain off") must be adjacent, so a passing mention followed by an
+// unrelated "off" toggles nothing. Ambiguous prompts return null and leave the
+// flag untouched: changing posture state needs an unambiguous ask.
 //
 // Self-check: `node hooks/_lib/posture-intent.js`
 
@@ -34,15 +30,7 @@ function patternsFor(slug) {
   const self = NAMES[slug];
   if (!self) throw new Error(`unknown posture slug: ${slug}`);
 
-  const others = Object.keys(NAMES)
-    .filter(k => k !== slug)
-    .map(k => NAMES[k])
-    .join('|');
-  // With a single registered posture there is nothing to exclude — `(?!)`
-  // would reject every character and collapse the gap to zero.
-  const gap = others
-    ? `(?:(?!${others})[\\s\\S]){0,${MAX_GAP}}`
-    : `[\\s\\S]{0,${MAX_GAP}}`;
+  const gap = `[\\s\\S]{0,${MAX_GAP}}`;
   const name = `(?:${self})`;
 
   const built = {
@@ -65,7 +53,7 @@ function matchIntent(prompt, slug) {
   return null;
 }
 
-module.exports = { matchIntent, POSTURE_SLUGS: Object.keys(NAMES) };
+module.exports = { matchIntent };
 
 if (require.main === module) {
   const assert = require('assert');
@@ -79,6 +67,7 @@ if (require.main === module) {
     ['ativar o cérebro do obsidian', 'obsidian-brain', 'on'],
     // Merely discussing the posture toggles nothing.
     ['o obsidian-brain anotou a sessão de ontem', 'obsidian-brain', null],
+    ['o obsidian-brain anotou tudo, pode desligar o servidor', 'obsidian-brain', null],
     // "normal mode" is not an obsidian-brain exit.
     ['normal mode', 'obsidian-brain', null],
   ];
