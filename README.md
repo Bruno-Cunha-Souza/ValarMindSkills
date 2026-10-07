@@ -100,7 +100,7 @@ The plugin ships a composable statusline that combines the obsidian-brain badge 
 
 - `[OBSIDIAN-BRAIN]` — roxo (cor 99 ≈ #875FFF, próxima do roxo Obsidian), hidden when no vault is detected or the user opted out.
 
-`scripts/install-plugin-claude.sh` configures it automatically: it adds `statusLine` to `~/.claude/settings.json` (creating the file if needed, backing it up if it already exists). If `statusLine` is already set to a different command, the installer leaves it untouched and prints both values so you can choose. Set `VALARMIND_SKIP_STATUSLINE=1` to opt out, or remove it manually:
+`scripts/install-plugin-claude.sh` configures it automatically: it adds `statusLine` to `~/.claude/settings.json` (creating the file if needed, backing it up if it already exists). If `statusLine` is already set to a different command, the installer leaves it untouched and prints both values so you can choose. Set `VALARMIND_SKIP_STATUSLINE=1` to opt out, or remove it manually. If the plugin was installed without the script and `statusLine` is missing, a `SessionStart` hook hands the agent this snippet so it can offer to set it up:
 
 ```json
 "statusLine": {
@@ -302,6 +302,7 @@ hooks/
     posture-intent.js               <- natural-language on/off matcher
   statusline/
     statusline.sh                   <- composer (entry registered in settings.json)
+    statusline-nudge.js             <- SessionStart hint when statusLine is not configured
     segments/
       obsidian-brain.sh             <- obsidian-brain badge segment (roxo)
       context.sh                    <- context window usage segment
