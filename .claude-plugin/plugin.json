@@ -1,44 +1,44 @@
 {
-	"name": "valarmindskills",
-	"description": "ValarMindSkills plugin bundle. Ships all project skills plus obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found) and a SessionStart hint when the statusline is not configured.",
-	"version": "1.7.0",
-	"author": {
-		"name": "Bruno Cunha Souza",
-		"url": "https://github.com/Bruno-Cunha-Souza"
-	},
-	"homepage": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
-	"repository": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
-	"license": "MIT",
-	"hooks": {
-		"SessionStart": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-activate.js\"",
-						"timeout": 5,
-						"statusMessage": "Loading obsidian-brain..."
-					},
-					{
-						"type": "command",
-						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline/statusline-nudge.js\"",
-						"timeout": 5,
-						"statusMessage": "Checking statusline..."
-					}
-				]
-			}
-		],
-		"UserPromptSubmit": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-mode-tracker.js\"",
-						"timeout": 5,
-						"statusMessage": "Tracking obsidian-brain mode..."
-					}
-				]
-			}
-		]
-	}
+  "name": "valarmindskills",
+  "description": "ValarMindSkills plugin bundle. Ships all project skills plus obsidian-brain hooks (SessionStart + UserPromptSubmit, on by default — auto-detects projects whose CLAUDE.md/AGENTS.md references an Obsidian vault and clears the active flag when none is found) and a SessionStart hint when the statusline is not configured.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Bruno Cunha Souza",
+    "url": "https://github.com/Bruno-Cunha-Souza"
+  },
+  "homepage": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
+  "repository": "https://github.com/Bruno-Cunha-Souza/ValarMindSkills",
+  "license": "MIT",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading obsidian-brain..."
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/statusline/statusline-nudge.js\"",
+            "timeout": 5,
+            "statusMessage": "Checking statusline..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/obsidian-brain/obsidian-brain-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking obsidian-brain mode..."
+          }
+        ]
+      }
+    ]
+  }
 }
