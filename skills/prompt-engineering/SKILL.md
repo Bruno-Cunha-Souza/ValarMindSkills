@@ -14,7 +14,7 @@ The skill exists because LLM-facing prompts written by hand drift toward the sam
 
 This skill is built for four primary classes of prompt — see [references/USE_CASES.md](references/USE_CASES.md) for the per-class strategy subset, canonical skeleton, and findings catalog.
 
-1. **Skill prompts (`SKILL.md` and equivalents).** Short-lived, slash-command-triggered LLM-agent skills: Claude Code skills, ChatGPT GPTs, Cursor rules. Pairs with `@skill-creator` (which scaffolds the file; this skill audits the prompt content inside it).
+1. **Skill prompts (`SKILL.md` and equivalents).** Short-lived, slash-command-triggered LLM-agent skills: Claude Code skills, ChatGPT GPTs, Cursor rules. Pairs with `@celebrimbor` (which generates project-specific skills and agent role files; this skill audits the prompt content inside them).
 2. **RAG prompts.** System / user templates that wrap retrieved chunks before sending to the model. Heavy emphasis on prompt-injection guards, citation requirements, and structured input parsing.
 3. **Agent tool descriptions.** The `description` fields on functions / tools that drive when and how a model calls them. Emphasis on disambiguation, side-effect declaration, and "do not use when" antipatterns.
 4. **Agent base / system prompts.** Long-running agent identity prompts (Claude Code subagents, custom GPT system prompts, LangGraph node prompts) — define persona, capabilities, tool map, refusal hooks, and plan/act/verify workflow for the entire session. Distinct from (1): skill prompts are short and slash-triggered; agent base prompts frame the session itself. Distinct from (3): tool descriptions are read by the agent to decide whether to call a tool; agent base prompts define the agent that does the calling.
@@ -452,7 +452,7 @@ A second auditor reading only Block 1 should be able to reach the same conclusio
 
 ## Related Skills
 
-- `@skill-creator` — **primary sibling**. Scaffolds new skills (file layout, frontmatter, references); this skill audits the prompt content inside the scaffolded `SKILL.md`. Run `@skill-creator` first to scaffold; then `/valarmindskills:prompt-engineering` to harden.
+- `@celebrimbor` — **primary sibling**. Generates project-specific skills (use case 1) and agent role files (use case 4) in a target project and calls this skill to audit each before reporting.
 - `@context-optimization` — for whole-context compression (KV-cache reuse, observation masking, partitioning). Runs **after** this skill if the prompt-revised conversation still exceeds the context budget.
 - `@clean-code` — for naming conventions inside prompt templates with embedded code or pseudocode.
 - `@code-review` — when the audit target is code-review prompts and the user wants the meta-review of the methodology used.

@@ -211,7 +211,7 @@ Brain (including the index, sessions, topics, and decisions) is a **closed graph
 
 | Forbidden wikilink target | Why |
 | :--- | :--- |
-| Project skill notes (`[[prompt-engineering]]`, `[[skill-creator]]`) | Belongs to the docs graph; mention in prose with backticks instead. |
+| Project skill notes (`[[prompt-engineering]]`, `[[celebrimbor]]`) | Belongs to the docs graph; mention in prose with backticks instead. |
 | MOCs (`[[Skills]]`, `[[ValarMindSkills]]`) | Same — there is no boundary node; brain is fully isolated. |
 | Architecture / general docs (`[[Arquitetura]]`, `[[CLAUDE.md]]`) | Same. |
 
