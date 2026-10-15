@@ -10,7 +10,7 @@ End-to-end run of `@celebrimbor` on `orders-api`: Go/Gin REST API, Postgres with
 # 1  go.mod  go.sum  go.mod:3:go 1.23
 # 2  go.mod:6: github.com/gin-gonic/gin v1.10.0   go.mod:8: github.com/golang-jwt/jwt/v5 v5.2.1
 #    go.mod:9: github.com/jackc/pgx/v5 v5.7.1     go.mod:10: github.com/pressly/goose/v3 v3.22.1
-# 3  db/migrations  Dockerfile                      (no openapi.*, no compose, no *.tf)
+# 3  db/migrations  Dockerfile  (no openapi.*, no compose, no *.tf)   internal/http/router.go:21: r.GET("/api/v1/orders", …)   Dockerfile (no USER line)
 # 4  .github/workflows/ci.yml (no scanner hits)   .github/workflows/ci.yml:12: - uses: actions/checkout@v4
 # 6  README.md  34 README.md (no CONTRIBUTING*, SECURITY*, docs/)   # 7  .env.example  gitignore_covers_env: true
 # 8  CLAUDE.md  .claude (no AGENTS.md, skills/agents dirs, marker)   installed: ci-cd-generator code-security-review prompt-engineering
@@ -99,36 +99,37 @@ OUT_DIR="${OUT_DIR:-$(dirname "$0")/out}"; mkdir -p "$OUT_DIR"; printf '*\n' > "
 FINDINGS="$OUT_DIR/findings.jsonl"; : > "$FINDINGS"; ROOT="${PROJECT_ROOT:-$PWD}"
 [ -d "$ROOT" ] || { echo "config: PROJECT_ROOT not found: $ROOT" >&2; exit 1; }
 command -v jq >/dev/null || { echo "config: jq is required" >&2; exit 1; }
-redact() { local s="$1"; if [ ${#s} -le 8 ]; then printf '****'; else printf '%s…%s' "${s:0:4}" "${s: -4}"; fi; }
 emit() { # id severity evidence impact remediation
   jq -nc --arg id "$1" --arg severity "$2" --arg evidence "$3" --arg impact "$4" \
     --arg remediation "$5" --arg timestamp "$(date -u +%FT%TZ)" '$ARGS.named' >> "$FINDINGS"; }
 
 if command -v gitleaks >/dev/null; then
   r="$OUT_DIR/.gitleaks.json"
-  if ! gitleaks detect --source "$ROOT" --no-banner --report-format json --report-path "$r" >/dev/null 2>&1; then
-    jq -r '.[] | "\(.File):\(.StartLine)\t\(.Secret)"' "$r" | while IFS=$'\t' read -r loc sec; do
-      emit SEC-GL-001 high "$loc $(redact "$sec")" "Committed secret." "Rotate it, then purge it from history."
-    done
-  fi
+  gitleaks detect --source "$ROOT" --no-banner --report-format json --report-path "$r" >/dev/null 2>&1 || true   # exit 1 = leaks found
+  if [ -s "$r" ]; then   # redact inside jq: a multi-line secret must never reach `read`
+    jq -r '.[] | [.File+":"+(.StartLine|tostring), (.Secret | if length<=8 then "****" else .[0:4]+"…"+.[-4:] end)] | @tsv' "$r" \
+      | while IFS=$'\t' read -r loc sec; do emit SEC-GL-001 high "$loc $sec" "Committed secret." "Rotate it, then purge it from history."; done
+  else echo "skip: gitleaks produced no report" >&2; fi
   rm -f "$r"   # raw report holds unredacted values
 else echo "skip: gitleaks not installed" >&2; fi
 
 if [ -f "$ROOT/go.mod" ] && command -v govulncheck >/dev/null; then
-  (cd "$ROOT" && govulncheck ./...) > "$OUT_DIR/govulncheck.txt" 2>&1 \
-    || emit SEC-GV-001 high "go.mod (see out/govulncheck.txt)" "Reachable vulnerable dependency." "Upgrade the modules govulncheck names."
+  (cd "$ROOT" && govulncheck ./...) > "$OUT_DIR/govulncheck.txt" 2>&1 && rc=0 || rc=$?   # 0 clean · 3 vulns found · else build/config error
+  case $rc in 0) ;; 3) emit SEC-GV-001 high "go.mod (see out/govulncheck.txt)" "Reachable vulnerable dependency." "Upgrade the modules govulncheck names." ;;
+    *) echo "skip: govulncheck exit $rc (see out/govulncheck.txt)" >&2 ;; esac
 else echo "skip: govulncheck not installed or no go.mod" >&2; fi
 
 if command -v trivy >/dev/null; then
   r="$OUT_DIR/.trivy.json"
-  trivy fs --quiet --scanners vuln,misconfig --format json --output "$r" "$ROOT"
-  jq -r '.Results[]? | .Target as $t
-    | (.Vulnerabilities[]? | [$t, .Severity, "\(.PkgName) \(.InstalledVersion) \(.VulnerabilityID)", "Upgrade to \(.FixedVersion // "a fixed release")."]),
-      (.Misconfigurations[]? | ["\($t):\(.CauseMetadata.StartLine // 1)", .Severity, "\(.ID) \(.Title)", .Resolution])
-    | @tsv' "$r" | while IFS=$'\t' read -r loc sev what fix; do
-    sev="$(printf '%s' "$sev" | tr '[:upper:]' '[:lower:]')"; [ "$sev" = unknown ] && sev=info
-    emit SEC-TV-001 "$sev" "$loc $what" "Known vulnerable package or Dockerfile misconfiguration." "$fix"
-  done
+  if trivy fs --quiet --scanners vuln,misconfig --format json --output "$r" "$ROOT" 2>/dev/null; then
+    jq -r '.Results[]? | .Target as $t
+      | (.Vulnerabilities[]? | [$t, .Severity, "\(.PkgName) \(.InstalledVersion) \(.VulnerabilityID)", "Upgrade to \(.FixedVersion // "a fixed release")."]),
+        (.Misconfigurations[]? | ["\($t):\(.CauseMetadata.StartLine // 1)", .Severity, "\(.ID) \(.Title)", .Resolution])
+      | @tsv' "$r" | while IFS=$'\t' read -r loc sev what fix; do
+      sev="$(printf '%s' "$sev" | tr '[:upper:]' '[:lower:]')"; [ "$sev" = unknown ] && sev=info
+      emit SEC-TV-001 "$sev" "$loc $what" "Known vulnerable package or Dockerfile misconfiguration." "$fix"
+    done
+  else echo "skip: trivy failed (vulnerability database offline?)" >&2; fi
   rm -f "$r"
 else echo "skip: trivy not installed" >&2; fi
 exit 0
@@ -146,7 +147,7 @@ OUT_DIR="${OUT_DIR:-$(dirname "$0")/out}"; mkdir -p "$OUT_DIR"; printf '*\n' > "
 host="${TARGET#*://}"; host="${host%%[/?#]*}"; host="${host##*@}"
 case "$host" in '[::1]'|'[::1]:'*) host='[::1]' ;; *) host="${host%%:*}" ;; esac
 case "$host" in localhost|127.0.0.1|'[::1]'|*.localhost|*.test) ;; *) echo "refusing: TARGET is not local" >&2; exit 2 ;; esac
-# … redact()/emit() as in sec-static-scan; zap-baseline.py -t "$TARGET"; JWT alg=none/expired/missing-token probes
+# … emit() as in sec-static-scan (token values redacted in jq before emit); zap-baseline.py -t "$TARGET"; JWT alg=none/expired/missing-token probes
 exit 0
 ```
 
@@ -186,7 +187,7 @@ Skills: `.agents/skills/<name>/SKILL.md`. Agents: `.agents/agents/<name>.md` —
 | --- | --- | --- |
 | 'security check', 'verificar segurança', 'pentest local' | `.agents/agents/security-sentinel.md` | agent |
 | 'varrer segredos', 'scan secrets', 'dependency audit' | `.agents/skills/sec-static-scan/SKILL.md` | skill |
-| 'pentest local', 'testar JWT', 'local pentest' | `.agents/skills/sec-pentest-local/SKILL.md` | skill |
+| 'testar JWT', 'JWT probes', 'local pentest' | `.agents/skills/sec-pentest-local/SKILL.md` | skill |
 <!-- CELEBRIMBOR END -->
 ```
 
@@ -209,7 +210,7 @@ Use case 1 for both SKILL.md files, use case 4 for the agent; metrics are in the
 | Section | Result |
 | --- | --- |
 | Profile · Suggestions · Generated skills · Agent role files | evidence on every field and row; all schema fields; approval `S1,S2,S3` recorded; frontmatter parses, name == dir, triggers present; no `tools:`; `skills:`/`scripts:` resolve |
-| AGENTS.md block · Tool scripts | one BEGIN, one END, nothing outside the markers (`PRE_HASH` none: file created); `bash -n` clean; forbidden-token and prefix-glob greps empty; gate in sec-pentest-local; redaction; `out/` ignored |
+| AGENTS.md block · Tool scripts | one BEGIN then one END, nothing outside the markers (`PRE_HASH` none: file created); `bash -n` clean; forbidden-token and prefix-glob greps empty; gate in sec-pentest-local; redaction; `out/` ignored |
 | Adapters · Overwrite · Prompt audit | 3 symlinks resolve; all paths new, CLAUDE.md touched only after its own yes; 3 audit lines |
 
 ## Final report
@@ -224,7 +225,7 @@ Profile:
 
 Generated:
   .agents/skills/sec-static-scan/SKILL.md          (52 lines, archetype: Procedural)
-  .agents/skills/sec-static-scan/scripts/run.sh    (40 lines, wraps: gitleaks, govulncheck, trivy)
+  .agents/skills/sec-static-scan/scripts/run.sh    (41 lines, wraps: gitleaks, govulncheck, trivy)
   .agents/skills/sec-pentest-local/SKILL.md        (61 lines, archetype: Procedural)
   .agents/skills/sec-pentest-local/scripts/run.sh  (79 lines, wraps: zap-baseline, curl)
   .agents/agents/security-sentinel.md              (15 lines, skills: sec-static-scan, sec-pentest-local)

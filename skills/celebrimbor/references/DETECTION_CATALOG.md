@@ -34,7 +34,7 @@ agent_config:
   agents_md: AGENTS.md|null
   claude_md: CLAUDE.md|null             # and whether it already imports @AGENTS.md
   cursor_rules: [.cursor/rules/*.mdc]
-  existing_skills: [{name, path}]       # .agents/skills, .claude/skills, .cursor/skills, .agent/skills
+  existing_skills: [{name, path}]       # .agents/skills, .claude/skills, .cursor/skills, .agent/skills — `name` is the only dedupe key
   existing_agents: [{name, path}]       # .agents/agents, .claude/agents
   celebrimbor_block: present|absent     # marker already in AGENTS.md
   runtimes_detected: [codex, cursor]    # from dirs above; drives adapter defaults
@@ -69,7 +69,7 @@ Manifests: `go.mod`, `Cargo.toml`, `package.json`, `pyproject.toml requirements*
 | Signal (glob / grep) | Profile field | Default suggestion (type:name) | Active target? |
 | --- | --- | --- | --- |
 | `.github/workflows/` absent | `surfaces.ci_cd.present: false` | `skill:ci-audit` | no |
-| CI ~ `uses: [^@]+@(v?[0-9.]+\|main\|master)\s*$` (tag, not SHA) | `surfaces.ci_cd.workflows` | `skill:ci-audit` | no |
+| CI ~ `uses: [^@]+@(v?[0-9][0-9.]*\|main\|master)\b` (tag, not SHA) | `surfaces.ci_cd.workflows` | `skill:ci-audit` | no |
 | CI !~ `^permissions:`; CI ~ `pull_request_target` | `surfaces.ci_cd.workflows` | `skill:ci-audit` | no |
 | `.gitlab-ci.yml\|.circleci/config.yml\|Jenkinsfile\|azure-pipelines.yml\|bitbucket-pipelines.yml` | `surfaces.ci_cd.platform` | `skill:ci-audit` | no |
 | `.github/dependabot.yml\|renovate.json*` absent | `surfaces.ci_cd` | `skill:ci-audit` | no |
@@ -146,5 +146,5 @@ Manifests: `go.mod`, `Cargo.toml`, `package.json`, `pyproject.toml requirements*
 | `.mcp.json\|.cursor/mcp.json`; manifests ~ `modelcontextprotocol` | `surfaces.ai_llm.detail: mcp` | `skill:prompt-asset-review` | no |
 | `**/prompts/**\|**/*.prompt\|**/*.prompt.md\|**/system_prompt*` | `surfaces.ai_llm.detail: prompts` | `skill:prompt-asset-review` | no |
 
-Dedupe: before emitting a row's suggestion, apply the dedupe rule in [ARTIFACT_FORMATS.md](ARTIFACT_FORMATS.md) against `agent_config.existing_*`.
+Dedupe: before emitting a row's suggestion, apply the name-match dedupe rule in [ARTIFACT_FORMATS.md](ARTIFACT_FORMATS.md) against `agent_config.existing_*`; overlap under another name is a `uses_existing` note, not a skip.
 Ceiling: one row per signal, defaults only; when the catalog grows past ~120 rows, split it into one file per family.

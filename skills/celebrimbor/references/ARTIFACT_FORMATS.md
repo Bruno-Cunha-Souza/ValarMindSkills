@@ -31,7 +31,7 @@ One record per suggestion; the report renders them as a table with a `status` co
 - `generates` lists canonical paths only; adapter paths follow from `portability` (§2).
 - `uses_existing` names optional accelerators. Generated artifacts must work when none of them is installed.
 
-**Dedupe rule.** Same `name`, or same `family` + `type`, already present in `agent_config.existing_skills` / `existing_agents` → do not propose a new artifact. List it with `status: skipped`, `rationale` starting `extend:` and naming the existing path and what it already covers. The user may approve it by ID in chat, which means editing the existing artifact under §7, not creating a second one.
+**Dedupe rule.** A candidate `name` already present in `agent_config.existing_skills` / `existing_agents` → do not propose a new artifact. List it with `status: skipped`, `rationale` starting `extend:` and naming the existing path and what it already covers. The user may approve it by ID in chat, which means editing the existing artifact under §7, not creating a second one. Dedupe is by `name` only: `existing_*` records carry no `family`, and an overlapping artifact under another name goes into `uses_existing` as `<path> (overlaps: <what>)` with `path:line` evidence — the row stays `proposed`, never silently dropped.
 
 ## 2. Generated layout and adapters
 
@@ -144,8 +144,9 @@ Skills: `.agents/skills/<name>/SKILL.md`. Agents: `.agents/agents/<name>.md` —
 - `AGENTS.md` absent → create it with a one-line heading plus the block.
 - Markers absent → append the block after one blank line.
 - Markers present → replace BEGIN..END inclusive at the same position (strip and rewrite). Content outside the markers stays byte-identical; never reorder, reformat or edit it. Verify with a hash that drops trailing blank lines, so the blank separator before an appended block is ignored: `sed '/^<!-- CELEBRIMBOR BEGIN/,/^<!-- CELEBRIMBOR END -->/d' AGENTS.md | awk 'NF{for(;n;n--)print "";print;next}{n++}' | shasum` (equal before and after).
+- Markers malformed (zero or several BEGIN/END lines, or END before BEGIN) → never auto-repair: stop and ask the user to fix `AGENTS.md` first. The sed range above would otherwise delete to EOF while the hash still matches.
 - Rows = rows of the previous block + this run's approved artifacts, deduped by `Load` path, dropping rows whose path no longer exists. A scoped re-run (`security only`) never erases other families.
-- Agents first, then skills; trigger phrases copied from each artifact's `description`.
+- Agents first, then skills; trigger phrases copied from each artifact's `description`. A trigger phrase appears in exactly one row: when an agent and a skill it lists share a phrase, the agent row keeps it and the skill row drops it (the agent loads the skill).
 
 ## 6. Tool script contract
 
@@ -159,7 +160,7 @@ Applies to every generated `scripts/*.sh`. Default is a thin wrapper (~50-80 lin
 | Findings | One JSON object per line in `$OUT_DIR/findings.jsonl`: `id`, `severity` (`critical`/`high`/`medium`/`low`/`info`), `evidence` (`file:line` + redacted excerpt), `impact`, `remediation`, `timestamp` (UTC ISO 8601) |
 | Exit codes | `0` ran cleanly, regardless of findings · `1` invalid config (missing env var, required helper, bad root) · `2` refused (authorization or non-local target) |
 | Missing tools | Wrap `gitleaks`, `govulncheck`, `npm audit`, `semgrep`, `trivy`, `zap-baseline`, `hadolint`, ...; when absent print `skip: <tool> not installed` to stderr and continue |
-| Secrets | Never write a matched secret value; redact to first 4 + last 4 chars (`****` when ≤8) or use the tool's own redaction |
+| Secrets | Never write a matched secret value; redact to first 4 + last 4 chars (`****` when ≤8) inside the jq filter that reads the tool report and emit `@tsv` — never pipe raw values through `read` (a multi-line secret splits across reads and the overflow escapes redaction) |
 
 Findings are output, not errors: CI gates by counting severities with `jq` over the JSONL.
 
@@ -198,24 +199,24 @@ ROOT="${PROJECT_ROOT:-$PWD}"
 [ -d "$ROOT" ] || { echo "config: PROJECT_ROOT not found: $ROOT" >&2; exit 1; }
 command -v jq >/dev/null || { echo "config: jq is required" >&2; exit 1; }
 
-redact() { local s="$1"; if [ ${#s} -le 8 ]; then printf '****'; else printf '%s…%s' "${s:0:4}" "${s: -4}"; fi; }
 emit() { # id severity evidence impact remediation
   jq -nc --arg id "$1" --arg severity "$2" --arg evidence "$3" --arg impact "$4" \
     --arg remediation "$5" --arg timestamp "$(date -u +%FT%TZ)" '$ARGS.named' >> "$FINDINGS"; }
 
 if command -v gitleaks >/dev/null; then
   r="$OUT_DIR/.gitleaks.json"
-  if ! gitleaks detect --source "$ROOT" --no-banner --report-format json --report-path "$r" >/dev/null 2>&1; then
-    jq -r '.[] | "\(.File):\(.StartLine)\t\(.Secret)"' "$r" | while IFS=$'\t' read -r loc sec; do
-      emit SEC-GL-001 high "$loc $(redact "$sec")" "Committed secret." "Rotate it, then purge it from history."
-    done
-  fi
+  gitleaks detect --source "$ROOT" --no-banner --report-format json --report-path "$r" >/dev/null 2>&1 || true   # exit 1 = leaks found
+  if [ -s "$r" ]; then   # redact inside jq: a multi-line secret must never reach `read`
+    jq -r '.[] | [.File+":"+(.StartLine|tostring), (.Secret | if length<=8 then "****" else .[0:4]+"…"+.[-4:] end)] | @tsv' "$r" \
+      | while IFS=$'\t' read -r loc sec; do emit SEC-GL-001 high "$loc $sec" "Committed secret." "Rotate it, then purge it from history."; done
+  else echo "skip: gitleaks produced no report" >&2; fi
   rm -f "$r"   # raw report holds unredacted values
 else echo "skip: gitleaks not installed" >&2; fi
 
 if [ -f "$ROOT/go.mod" ] && command -v govulncheck >/dev/null; then
-  (cd "$ROOT" && govulncheck ./...) > "$OUT_DIR/govulncheck.txt" 2>&1 \
-    || emit SEC-GV-001 high "go.mod (see out/govulncheck.txt)" "Reachable vulnerable dependency." "Upgrade the modules govulncheck names."
+  (cd "$ROOT" && govulncheck ./...) > "$OUT_DIR/govulncheck.txt" 2>&1 && rc=0 || rc=$?   # 0 clean · 3 vulns found · else build/config error
+  case $rc in 0) ;; 3) emit SEC-GV-001 high "go.mod (see out/govulncheck.txt)" "Reachable vulnerable dependency." "Upgrade the modules govulncheck names." ;;
+    *) echo "skip: govulncheck exit $rc (see out/govulncheck.txt)" >&2 ;; esac
 else echo "skip: govulncheck not installed or no go.mod" >&2; fi
 exit 0
 ```

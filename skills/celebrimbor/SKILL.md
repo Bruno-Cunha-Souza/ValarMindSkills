@@ -51,10 +51,10 @@ Overridable knobs. Extra prompt text after invocation overrides the default (e.g
 Run from the target root. Probes only list, test, and grep; nothing is written. `.env*` files are listed by name only — their contents are never read or printed. Run this block with `bash` (e.g. `bash <<'SH' … SH`), never zsh: zsh aborts a whole line on an unmatched glob such as `requirements*.txt`, hiding real hits.
 
 ```bash
-# helper: rg if present, grep fallback; prints file:line:match for evidence
+# helper: rg if present, grep fallback; prints file:line:match for evidence. Accepts files or dirs; never reads .env*
 hits() { local p="$1"; shift
-  if command -v rg >/dev/null; then rg -n --no-heading -e "$p" "$@" 2>/dev/null
-  else grep -HnE "$p" "$@" 2>/dev/null; fi; }
+  if command -v rg >/dev/null; then rg -n --no-heading -g '!.env*' -e "$p" "$@" 2>/dev/null
+  else grep -rHnE --exclude='.env*' --exclude-dir={node_modules,.git,vendor,target,dist,.venv} "$p" "$@" 2>/dev/null; fi; }
 PRUNE='( -name node_modules -o -name .git -o -name vendor -o -name target -o -name dist -o -name .venv ) -prune'
 
 # 1 — manifests, lockfiles, runtime pins
@@ -68,45 +68,62 @@ hits '^go [0-9]+\.[0-9]+|"engines"|requires-python' go.mod package.json pyprojec
 # 2 — frameworks and libs of interest (manifests only)
 M="go.mod package.json pyproject.toml Cargo.toml Gemfile pom.xml composer.json"
 M="$M $(ls requirements*.txt 2>/dev/null)"
-hits 'gin-gonic|gofiber|labstack/echo|go-chi|fastapi|django|flask|"next"|"react"|"vue"|"svelte"|express|fastify|hono|elysia|nestjs|actix|axum|rails|spring' $M
-hits 'gorm|sqlx|pgx|prisma|drizzle|typeorm|sequelize|sqlalchemy|alembic|goose|diesel|migrate' $M
-hits 'jsonwebtoken|golang-jwt|jose|passlib|next-auth|authlib|oauth|passport' $M
-hits 'openai|anthropic|langchain|llamaindex|litellm|"ai"|mcp' $M
-hits 'opentelemetry|prometheus|sentry|datadog' $M
+hits 'gin-gonic|gofiber|labstack/echo|go-chi|fastapi|django|flask|"next"|"react"|"vue"|"svelte"|express|fastify|hono|elysia|nestjs|actix|axum|rocket|rails|spring|laravel|symfony' $M
+hits 'gorm|sqlx|pgx|prisma|drizzle|typeorm|sequelize|knex|kysely|sea-orm|sqlalchemy|alembic|[Ff]lask-[Mm]igrate|goose|diesel|migrate' $M
+hits 'jsonwebtoken|golang-jwt|jose|passlib|PyJWT|next-auth|authlib|oauth|passport|devise|spring-security' $M
+hits 'openai|anthropic|langchain|llamaindex|llama-index|litellm|pydantic-ai|instructor|@ai-sdk|"ai"|mcp|modelcontextprotocol' $M
+hits 'opentelemetry|prometheus|prom-client|sentry|datadog|pino|structlog|micrometer|actuator|tracing-subscriber' $M
+hits 'swaggo/swag|utoipa|drf-spectacular|springdoc-openapi|@nestjs/swagger|@apollo/server|graphql-yoga|strawberry|graphene' $M   # spec generators, graphql
+hits 'axe-core|lighthouse|@playwright/test' $M
 
 # 3 — surfaces: database, API contracts, frontend, infra
-ls -1d migrations db/migrations prisma/schema.prisma alembic.ini alembic 2>/dev/null
-ls -1 openapi.* swagger.* schema.graphql 2>/dev/null; find . $PRUNE -o -name '*.proto' -print 2>/dev/null | head -5
-ls -1 next.config.* vite.config.* tailwind.config.* 2>/dev/null; ls -1d app pages src/app 2>/dev/null
-ls -1d Dockerfile* docker-compose* compose.y*ml k8s helm charts Pulumi.* 2>/dev/null
+ls -1d migrations db/migrations db/migrate database/migrations prisma/schema.prisma drizzle.config.* sqlc.yaml alembic.ini alembic 2>/dev/null
+find . $PRUNE -o \( -path '*/migrations/0*.py' -o -path '*/db/migration/V*.sql' \) -print 2>/dev/null | head -3
+hits 'image: (postgres|mysql|mariadb|mongo)' docker-compose*.y*ml compose*.y*ml
+ls -1 openapi.* swagger.* schema.graphql buf.yaml gqlgen.yml 2>/dev/null
+find . $PRUNE -o \( -name '*.proto' -o -name 'openapi.*' -o -name 'swagger.*' -o -name '*.graphql' \) -print 2>/dev/null | head -5
+hits '\.(GET|POST|PUT|DELETE)\(|@(app|router)\.(get|post)\(|Route::|FastAPI\(' . | head -5    # routes; no spec file → api-contracts
+hits '"/(healthz|health|readyz|metrics)"' . | head -3                                           # health/metrics endpoints
+ls -1 next.config.* vite.config.* svelte.config.* nuxt.config.* astro.config.* angular.json tailwind.config.* 2>/dev/null
+ls -1d app pages src/app templates app/views resources/views 2>/dev/null; hits '@import "tailwindcss"' . | head -2
+ls -1d Dockerfile* .dockerignore docker-compose* compose*.y*ml k8s helm charts kustomization.yaml Chart.yaml \
+      .terraform.lock.hcl Pulumi.* cdk.json serverless.yml fly.toml 2>/dev/null
+hits '^FROM .*:latest|^USER ' Dockerfile*; hits '^kind: (Deployment|StatefulSet)' . | head -3
 find . $PRUNE -o -name '*.tf' -print 2>/dev/null | head -5
 
 # 4 — CI/CD and release
-ls -1 .github/workflows/*.y*ml .gitlab-ci.yml Jenkinsfile azure-pipelines.yml 2>/dev/null; ls -1d .circleci 2>/dev/null
-hits 'gitleaks|semgrep|codeql|trivy|govulncheck|npm audit|pip-audit|bandit|--cov|coverage' .github/workflows/*.y*ml
-hits 'uses: [^@]+@(v[0-9]|main|master)' .github/workflows/*.y*ml | head -5          # unpinned (tag, not SHA) actions
-ls -1 CHANGELOG* .goreleaser.y*ml .releaserc* 2>/dev/null; git tag --list 'v*' 2>/dev/null | tail -3
+ls -1 .github/workflows/*.y*ml .gitlab-ci.yml Jenkinsfile azure-pipelines.yml bitbucket-pipelines.yml .github/dependabot.yml renovate.json* 2>/dev/null; ls -1d .circleci 2>/dev/null
+hits 'gitleaks|semgrep|codeql|trivy|govulncheck|cargo audit|npm audit|pip-audit|bandit|-coverprofile|--cov|coverage|llvm-cov|tarpaulin' .github/workflows/*.y*ml
+hits 'uses: [^@]+@(v?[0-9][0-9.]*|main|master)\b' .github/workflows/*.y*ml | head -5          # unpinned (tag, not SHA) actions
+hits '^permissions:|pull_request_target|tags:|release:|workflow_dispatch:' .github/workflows/*.y*ml | head -8
+ls -1 CHANGELOG* .goreleaser.y*ml .releaserc* release-plz.toml cliff.toml release-please-config.json 2>/dev/null; ls -1d .changeset 2>/dev/null
+git tag --list 'v*' 2>/dev/null | tail -3; hits '^version =|"version"|__version__ =' Cargo.toml pyproject.toml package.json
 
 # 5 — tests
-ls -1 jest.config.* vitest.config.* pytest.ini conftest.py playwright.config.* .coveragerc 2>/dev/null
-find . $PRUNE -o \( -name '*_test.go' -o -name '*.test.*' -o -name '*.spec.*' -o -name 'test_*.py' \) -print 2>/dev/null | head -5
+ls -1 jest.config.* vitest.config.* pytest.ini conftest.py playwright.config.* .coveragerc bunfig.toml phpunit.xml* 2>/dev/null; ls -1d src/test/java spec 2>/dev/null
+hits '^\[tool\.pytest|^\[test\]' pyproject.toml bunfig.toml
+find . $PRUNE -o \( -name '*_test.go' -o -name '*.test.*' -o -name '*.spec.*' -o -name 'test_*.py' -o -name 'tests.py' -o -name '*_spec.rb' -o -path '*/tests/*.rs' \) -print 2>/dev/null | head -5
+hits '#\[cfg\(test\)\]' src | head -2
 
 # 6 — docs and purpose
-ls -1 README* CONTRIBUTING* SECURITY* 2>/dev/null; ls -1d docs docs/adr adr 2>/dev/null
+ls -1 README* CONTRIBUTING* SECURITY* Makefile 2>/dev/null; ls -1d docs docs/adr docs/decisions adr 2>/dev/null
 wc -l README.md 2>/dev/null; head -20 README.md 2>/dev/null
+hits 'make \w+|npm run \w+|go run|cargo run|uv run' README.md | head -5                       # cross-check against Makefile / package.json scripts
 
 # 7 — secrets hygiene (NAMES ONLY — never cat/grep .env* contents)
 ls -1a .env* 2>/dev/null
 git check-ignore -q .env 2>/dev/null && echo "gitignore_covers_env: true"
 
 # 8 — agent configuration already present
-ls -1d AGENTS.md CLAUDE.md .agents .claude .cursor .agent .cursorrules .mcp.json 2>/dev/null
+ls -1d AGENTS.md CLAUDE.md .agents .claude .cursor .agent .cursorrules .mcp.json .cursor/mcp.json 2>/dev/null
 ls -1 .agents/skills .claude/skills .cursor/skills .agent/skills .agents/agents .claude/agents .cursor/rules 2>/dev/null
-hits 'CELEBRIMBOR BEGIN' AGENTS.md; hits '^@AGENTS\.md' CLAUDE.md
-ls -1 "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.cursor/skills" 2>/dev/null | sort -u   # installed skills
+awk '/^<!-- CELEBRIMBOR BEGIN/{b++;bl=NR}/^<!-- CELEBRIMBOR END -->/{e++;el=NR}END{print (b+e==0)?"celebrimbor_block: absent":(b==1&&e==1&&bl<el)?"celebrimbor_block: present":"celebrimbor_block: BROKEN begin="b" end="e}' AGENTS.md 2>/dev/null
+hits '^@AGENTS\.md' CLAUDE.md
+ls -1 "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.cursor/skills" "${VALARMIND_INSTALL_DIR:-$HOME/.valarmindskills}/skills" 2>/dev/null | sort -u   # installed skills
+find . $PRUNE -o \( -name prompts -o -name '*.prompt' -o -name '*.prompt.md' -o -name 'system_prompt*' \) -print 2>/dev/null | head -5   # prompt assets (ai-llm)
 ```
 
-Map every hit to a profile field using [DETECTION_CATALOG §Catalog](references/DETECTION_CATALOG.md), which is the source of truth for signals → profile field → family → default suggestion. Absences are evidence too: record them as `<path> (absent)`. In a monorepo, run Phase 0 once per project root.
+Map every hit to a profile field using [DETECTION_CATALOG §Catalog](references/DETECTION_CATALOG.md), which is the source of truth for signals → profile field → family → default suggestion. Absences are evidence too: record them as `<path> (absent)`. In a monorepo, run Phase 0 once per project root. Every catalog row has a probe above; a new catalog row ships with its probe.
 
 ## Phase 1 — Profile and dedupe
 
@@ -118,7 +135,7 @@ Assemble the project profile (schema in [DETECTION_CATALOG §Profile schema](ref
 4. **Installed ValarMindSkills** — from probe 8 or the session's available-skills list. An installed sibling covering a family (e.g., `@code-security-review` → security, `@ci-cd-generator` → ci-cd, `@github-release-note` → release) becomes an `uses_existing` note on related suggestions, never a hard dependency.
 5. **`runtimes_detected`** — from config dirs: `.claude/` → claude, `.cursor/` → cursor, `.agent/` → antigravity; `AGENTS.md`-native runtimes (Codex, Zed) are always served by `.agents/` + the block.
 
-Dedupe: a candidate with the same `name`, or the same `family` + `type` as an existing artifact, becomes an **extend** row — listed with `status: skipped` and a note naming what exists. It is never re-created.
+Dedupe: a candidate whose `name` equals an existing skill or agent name becomes an **extend** row — listed with `status: skipped` and a note naming the existing path. It is never re-created. Nothing else suppresses a candidate: an existing artifact that overlaps in scope (judged from its `description`, cited as `path:line`) is recorded in the candidate's `uses_existing` as `<path> (overlaps: <what>)` and the row stays `proposed`.
 
 ## Phase 2 — Suggest, then stop
 
@@ -139,7 +156,7 @@ Generate in dependency order, so every reference resolves when written:
 1. **Tools** — `.agents/skills/<name>/scripts/run.sh` (+ helpers) per the tool contract in [ARTIFACT_FORMATS §6 Tool script contract](references/ARTIFACT_FORMATS.md): thin wrappers over installed scanners, skip-with-note when a binary is absent, `set -euo pipefail`, findings to `$OUT_DIR/findings.jsonl`, secret values redacted, exit `0` clean / `1` config / `2` refused, `out/` gitignored. Scripts that send traffic also carry the local-target gate per §6: `I_HAVE_AUTHORIZATION=1` and an exact-host match on `TARGET` (`localhost`, `127.0.0.1`, `[::1]`, `*.localhost`, `*.test` after stripping scheme, path, userinfo, and port).
 2. **Skills** — `.agents/skills/<name>/SKILL.md`: frontmatter `name` (== dir), `description` (third person, ends with triggers), `source: celebrimbor`; archetype per the 3-row table in [ARTIFACT_FORMATS §3 Generated SKILL.md format](references/ARTIFACT_FORMATS.md) (Procedural for tool wrappers, Lifecycle for workflows, Reference for docs/contracts). `scripts/` inside the skill is the tool convention. Knobs go in `Inputs` with defaults; non-negotiables go in `Constraints` with `Never`. Stack-specific detail from the profile belongs here, with evidence paths.
 3. **Agents** — `.agents/agents/<name>.md` per [ARTIFACT_FORMATS §4 Agent role file](references/ARTIFACT_FORMATS.md): frontmatter `name`, `description`, `skills`, `scripts`; body sections Purpose, Workflow, Boundaries, Output.
-4. **AGENTS.md block** — before writing, if `AGENTS.md` exists, compute `sed '/^<!-- CELEBRIMBOR BEGIN/,/^<!-- CELEBRIMBOR END -->/d' AGENTS.md | awk 'NF{for(;n;n--)print "";print;next}{n++}' | shasum` (trailing blank lines dropped, so an appended block's separator does not change it) and write it to the report file as `PRE_HASH: <value>`; Phase 5 exports it as `PRE_HASH` before running the CHECKLIST block (empty when `AGENTS.md` was absent). Then write the routing table between `<!-- CELEBRIMBOR BEGIN … -->` and `<!-- CELEBRIMBOR END -->` per [ARTIFACT_FORMATS §5 AGENTS.md routing block](references/ARTIFACT_FORMATS.md). One row per generated skill/agent with its triggers.
+4. **AGENTS.md block** — before writing, if `AGENTS.md` exists, first require the Phase 0 probe to say `celebrimbor_block: present` or `absent` — on `BROKEN` (zero or several BEGIN/END lines, or END before BEGIN) stop and ask the user to repair `AGENTS.md` by hand; never auto-repair, never write (the sed range below would swallow everything to EOF and the hash check would still pass). Then compute `sed '/^<!-- CELEBRIMBOR BEGIN/,/^<!-- CELEBRIMBOR END -->/d' AGENTS.md | awk 'NF{for(;n;n--)print "";print;next}{n++}' | shasum` (trailing blank lines dropped, so an appended block's separator does not change it) and write it to the report file as `PRE_HASH: <value>`; Phase 5 exports it as `PRE_HASH` before running the CHECKLIST block (empty when `AGENTS.md` was absent). Then write the routing table between `<!-- CELEBRIMBOR BEGIN … -->` and `<!-- CELEBRIMBOR END -->` per [ARTIFACT_FORMATS §5 AGENTS.md routing block](references/ARTIFACT_FORMATS.md). One row per generated skill/agent with its triggers.
 5. **Adapters** — only for targets in `portability`, per [ARTIFACT_FORMATS §2 Generated layout and adapters](references/ARTIFACT_FORMATS.md): relative symlinks `.claude/skills/<name>`, `.claude/agents/<name>.md`, `.cursor/skills/<name>` → the `.agents/` copy (fall back to a copy if `ln -s` fails, and say so); `.agent/skills/<name>/` is always a copy (Antigravity does not follow symlinks).
 6. **CLAUDE.md import** — only if `CLAUDE.md` exists and does not already import it: propose the single line `@AGENTS.md`, asked as a separate yes/no. Never create `CLAUDE.md`.
 
@@ -150,6 +167,7 @@ Overwrite rules (full detail in [ARTIFACT_FORMATS §7 Overwrite rules](reference
 | Target path does not exist | Write it |
 | Target path exists | Show a unified diff, ask per file; on "no", skip and record it |
 | `AGENTS.md` has the markers | Replace only the content between markers; everything outside stays byte-identical |
+| `AGENTS.md` markers malformed (count ≠ 1 each, or END before BEGIN) | Stop; ask the user to repair by hand — never auto-repair |
 | `AGENTS.md` exists without markers | Append the block at the end (diff shown, confirmation asked) |
 | `AGENTS.md` absent | Create it containing only a one-line heading plus the block |
 | Adapter path exists and is not our symlink | Skip and report — never replace a foreign file or dir |
@@ -171,7 +189,7 @@ If `@prompt-engineering` is not available, record `prompt audit: skipped — not
 
 ## Phase 5 — Validate and report
 
-Walk [references/CHECKLIST.md](references/CHECKLIST.md) item by item; fix failures before reporting. Run its bash block from the target root: any output line is a failure, except `rm -rf` scoped to `"$OUT_DIR"`. CHECKLIST.md is the single source of truth for these checks.
+Walk [references/CHECKLIST.md](references/CHECKLIST.md) item by item over this run's artifacts only: export `PRE_HASH` and `GENERATED` (the `generates` paths of all `approved` rows) from the report, then run its bash block from the target root. Any output line is a failure, except `rm -rf` scoped to `"$OUT_DIR"`. Fix failures in generated files before reporting; a pre-existing user file is never edited — if a failure lives in one, report it as skipped with the path. CHECKLIST.md is the single source of truth for these checks.
 
 Then emit the Output format block and update the report file's `status` column with what was generated or skipped.
 
