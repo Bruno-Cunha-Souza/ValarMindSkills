@@ -41,7 +41,7 @@ Overridable knobs. Extra prompt text after invocation overrides the default (e.g
 | Input | Default | Override example |
 | --- | --- | --- |
 | Target root | Current working directory | `in ../payments-api` |
-| Scope filter | All families in [DETECTION_CATALOG](references/DETECTION_CATALOG.md) | `security only`, `testing and ci-cd` |
+| Scope filter | All families in [DETECTION_CATALOG](references/DETECTION_CATALOG.md); the `review` baseline is never filtered out | `security only`, `testing and ci-cd` |
 | Portability targets | `agent_config.runtimes_detected` (AGENTS.md block always) | `also cursor`, `no adapters` |
 | Report file | `CELEBRIMBOR_REPORT.md` at target root | `report to docs/celebrimbor.md` |
 | Generated prose language | English; triggers bilingual PT/EN | `prose in Portuguese` |
@@ -112,12 +112,13 @@ hits 'make \w+|npm run \w+|go run|cargo run|uv run' README.md | head -5         
 
 # 7 — secrets hygiene (NAMES ONLY — never cat/grep .env* contents)
 ls -1a .env* 2>/dev/null
-git check-ignore -q .env 2>/dev/null && echo "gitignore_covers_env: true"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then git check-ignore -q .env && echo "gitignore_covers_env: true" || echo "gitignore_covers_env: false"
+else hits '^/?\.env' .gitignore || echo "gitignore_covers_env: false (not a git repo, no .env rule in .gitignore)"; fi
 
 # 8 — agent configuration already present
 ls -1d AGENTS.md CLAUDE.md .agents .claude .cursor .agent .cursorrules .mcp.json .cursor/mcp.json 2>/dev/null
 ls -1 .agents/skills .claude/skills .cursor/skills .agent/skills .agents/agents .claude/agents .cursor/rules 2>/dev/null
-awk '/^<!-- CELEBRIMBOR BEGIN/{b++;bl=NR}/^<!-- CELEBRIMBOR END -->/{e++;el=NR}END{print (b+e==0)?"celebrimbor_block: absent":(b==1&&e==1&&bl<el)?"celebrimbor_block: present":"celebrimbor_block: BROKEN begin="b" end="e}' AGENTS.md 2>/dev/null
+awk '/^<!-- CELEBRIMBOR BEGIN/{b++;bl=NR}/^<!-- CELEBRIMBOR END -->/{e++;el=NR}END{print (b+e==0)?"celebrimbor_block: absent":(b==1&&e==1&&bl<el)?"celebrimbor_block: present":"celebrimbor_block: BROKEN begin="b+0" end="e+0}' AGENTS.md 2>/dev/null
 hits '^@AGENTS\.md' CLAUDE.md
 ls -1 "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.cursor/skills" "${VALARMIND_INSTALL_DIR:-$HOME/.valarmindskills}/skills" 2>/dev/null | sort -u   # installed skills
 find . $PRUNE -o \( -name prompts -o -name '*.prompt' -o -name '*.prompt.md' -o -name 'system_prompt*' \) -print 2>/dev/null | head -5   # prompt assets (ai-llm)
@@ -140,10 +141,11 @@ Dedupe: a candidate whose `name` equals an existing skill or agent name becomes 
 ## Phase 2 — Suggest, then stop
 
 1. For each family in scope, walk its catalog rows against the profile and emit suggestions per the schema in [ARTIFACT_FORMATS §1 Suggestion schema](references/ARTIFACT_FORMATS.md): `id`, `type`, `name`, `family`, `priority`, `rationale`, `evidence`, `triggers`, `depends_on`, `uses_existing`, `portability`, `generates`, `status`.
-2. **Priority** — P1: gap with concrete risk (e.g., web API + no secret scan in CI). P2: recurring chore the project already does by hand. P3: nice-to-have.
-3. **Dependencies** — agents depend on the skills they orchestrate; skills depend on their tool scripts. Record them in `depends_on`.
-4. **Names** — kebab-case, ≤64 chars, no collision with `existing_skills` / `existing_agents`.
-5. Write the report file: profile summary + one suggestions table (`id | type | name | family | priority | evidence | depends_on | generates | status`), followed by one YAML record per row with all schema fields ([ARTIFACT_FORMATS §1 Suggestion schema](references/ARTIFACT_FORMATS.md)); all rows `status: proposed` except dedupe rows. If the report file already exists, show a diff and write only on an explicit yes; on no, print the report in chat instead.
+2. **Baseline** — every run emits the two `review` rows, even with no matching signal or under a scope filter. `code-review` is a Lifecycle skill that reviews a diff with this project's own lint, type-check and test commands plus stack-specific checks. `code-security-review` is a Lifecycle skill that reviews the surfaces present (API, auth, database, AI, secrets). It runs the `scripts/` of the security-family skills generated in the same run and skips, with a note, those that were not; it has no `depends_on` on them, so it can be approved alone. When a security agent (e.g., `security-sentinel`) is suggested, that agent `depends_on` `code-security-review` and lists it in `skills:`, so the agent row owns shared triggers ([ARTIFACT_FORMATS §5](references/ARTIFACT_FORMATS.md)). Priority: P2, except `code-security-review` is P1 when `surfaces.web_api` or `surfaces.auth` is present and CI runs no scanner. Both rows start `proposed`, never pre-approved.
+3. **Priority** — P1: gap with concrete risk (e.g., web API + no secret scan in CI). P2: recurring chore the project already does by hand. P3: nice-to-have.
+4. **Dependencies** — agents depend on the skills they orchestrate; skills depend on their tool scripts. Record them in `depends_on`.
+5. **Names** — kebab-case, ≤64 chars. Dedupe runs on the default name first: a match in `existing_skills` / `existing_agents` makes an `extend` row. Otherwise, when the name matches an installed skill (probe 8), prefix it with `project.name` in kebab-case (lowercase, each run of other characters → `-`, e.g., `@acme/orders-api` → `acme-orders-api-code-review`), truncated to 64. In Claude Code a personal skill shadows a project skill of the same name.
+6. Write the report file: profile summary + one suggestions table (`id | type | name | family | priority | evidence | depends_on | generates | status`), followed by one YAML record per row with all schema fields ([ARTIFACT_FORMATS §1 Suggestion schema](references/ARTIFACT_FORMATS.md)); all rows `status: proposed` except dedupe rows. If the report file already exists, show a diff and write only on an explicit yes; on no, print the report in chat instead.
 
 **Stop here.** Print the suggestions table and ask for an explicit approval list (e.g., `S1,S2,S3`, `all P1`, `none`). Do not generate anything until the user answers. Silence, "looks good", or approval of the report file is not approval of suggestions — ask again for IDs.
 
@@ -189,7 +191,7 @@ If `@prompt-engineering` is not available, record `prompt audit: skipped — not
 
 ## Phase 5 — Validate and report
 
-Walk [references/CHECKLIST.md](references/CHECKLIST.md) item by item over this run's artifacts only: export `PRE_HASH` and `GENERATED` (the `generates` paths of all `approved` rows) from the report, then run its bash block from the target root. Any output line is a failure, except `rm -rf` scoped to `"$OUT_DIR"`. Fix failures in generated files before reporting; a pre-existing user file is never edited — if a failure lives in one, report it as skipped with the path. CHECKLIST.md is the single source of truth for these checks.
+Walk [references/CHECKLIST.md](references/CHECKLIST.md) item by item over this run's artifacts only: export `PRE_HASH` and `GENERATED` (the `generates` paths of all `approved` rows) from the report, then run its bash block from the target root. Any output line is a failure, except `rm -rf` scoped to `"$OUT_DIR"` and `skip:` lines (reported as skipped with their reason). Fix failures in generated files before reporting; a pre-existing user file is never edited — if a failure lives in one, report it as skipped with the path. CHECKLIST.md is the single source of truth for these checks.
 
 Then emit the Output format block and update the report file's `status` column with what was generated or skipped.
 
@@ -203,6 +205,7 @@ Then emit the Output format block and update the report file's `status` column w
 - **Never** print secret values — `.env*` are listed by name, generated scripts redact matches
 - **Never** make generated artifacts depend on ValarMindSkills — siblings appear only as optional accelerators in `uses_existing`; every artifact runs standalone
 - **Never** emit a suggestion without `evidence`
+- **Never** drop the `review` baseline rows (`code-review`, `code-security-review`) from a run's suggestions
 - **Never** use `tools:` in agent frontmatter (Claude Code reads it as a tool allowlist)
 - **Never** commit — hand off to `@github-commit` when the user asks
 

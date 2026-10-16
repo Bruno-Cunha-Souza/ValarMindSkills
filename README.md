@@ -53,7 +53,7 @@ The following table estimates token consumption per skill/context at session sta
 | `obsidian-markdown` | Obsidian Flavored Markdown reference — wikilinks, embeds, callouts, properties |
 | `only-plan` | Read-only planning modifier — never edits project files; writes a step-by-step implementation plan to a single new `IMPLEMENTATION_PLAN.md` at the project root. Composable with other skills: `/code-security-review /only-plan` |
 | `prompt-engineering` | Audits, hardens, and rewrites LLM prompts (`SKILL.md`, RAG, tool descriptions, agent base prompts) — severity-ranked findings with risk tags, rewritten prompt, token delta |
-| `celebrimbor` | Analyzes a target project and forges project-specific skills, agents, and tool scripts — suggestion report first, then generates approved artifacts in a portable `.agents/` layout with an AGENTS.md routing block |
+| `celebrimbor` | Analyzes a target project and forges project-specific skills, agents, and tool scripts — suggestion report first (always proposes project-tailored `code-review` and `code-security-review`), then generates approved artifacts in a portable `.agents/` layout with an AGENTS.md routing block |
 
 ---
 

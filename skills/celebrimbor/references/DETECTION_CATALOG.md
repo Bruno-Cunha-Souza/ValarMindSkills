@@ -36,7 +36,7 @@ agent_config:
   cursor_rules: [.cursor/rules/*.mdc]
   existing_skills: [{name, path}]       # .agents/skills, .claude/skills, .cursor/skills, .agent/skills — `name` is the only dedupe key
   existing_agents: [{name, path}]       # .agents/agents, .claude/agents
-  celebrimbor_block: present|absent     # marker already in AGENTS.md
+  celebrimbor_block: present|absent|BROKEN   # marker state in AGENTS.md; BROKEN stops Phase 3
   runtimes_detected: [codex, cursor]    # from dirs above; drives adapter defaults
 secrets_hygiene:                        # names only, never values
   env_examples: [.env.example]
@@ -46,6 +46,14 @@ secrets_hygiene:                        # names only, never values
 ## Catalog
 
 Manifests: `go.mod`, `Cargo.toml`, `package.json`, `pyproject.toml requirements*.txt`, `pom.xml build.gradle*`, `Gemfile`, `composer.json`. `CI` = `.github/workflows/*.y*ml`. `Active target? yes` = the generated tool needs a running local `TARGET` (see ARTIFACT_FORMATS.md, tool script contract).
+
+### review (every run)
+Baseline: both rows are emitted on every run, whatever the signals or the scope filter. `code-review` evidence comes from probes 1, 2, 4 and 5 (manifests, frameworks, CI, test config); `code-security-review` evidence from probes 2, 3 and 7 (auth libs, routes and surfaces, secrets hygiene).
+
+| Signal (glob / grep) | Profile field | Default suggestion (type:name) | Active target? |
+| --- | --- | --- | --- |
+| always — manifests, lint/type-check/test config and CI steps set the review commands | `stack`, `surfaces.tests`, `surfaces.ci_cd` | `skill:code-review` | no |
+| always — `surfaces.web_api`, `surfaces.auth`, `surfaces.database`, `surfaces.ai_llm`, `secrets_hygiene` set the checks | `surfaces`, `secrets_hygiene` | `skill:code-security-review` | no |
 
 ### security
 | Signal (glob / grep) | Profile field | Default suggestion (type:name) | Active target? |

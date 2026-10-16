@@ -2,7 +2,7 @@
 
 # Checklist
 
-Phase 5 walks every item from the target root. A failing item blocks the report until it is fixed or recorded as skipped with a reason; every output line of the bash block below is a failure, except `rm -rf` hits scoped to `"$OUT_DIR"`. Formats: [ARTIFACT_FORMATS](ARTIFACT_FORMATS.md).
+Phase 5 walks every item from the target root. A failing item blocks the report until it is fixed or recorded as skipped with a reason; every output line of the bash block below is a failure, except `rm -rf` hits scoped to `"$OUT_DIR"` and `skip:` lines (record those as skipped with their reason). Formats: [ARTIFACT_FORMATS](ARTIFACT_FORMATS.md).
 
 ## Profile
 
@@ -13,12 +13,13 @@ Phase 5 walks every item from the target root. A failing item blocks the report 
 
 - [ ] Every row has all schema fields: `id`, `type`, `name`, `family`, `priority`, `rationale`, `evidence`, `triggers`, `depends_on`, `uses_existing`, `portability`, `generates`, `status`
 - [ ] `evidence` is non-empty on every row
+- [ ] Both `review` baseline rows are present (`code-review`, `code-security-review`, or `<project>-` prefixed when an installed skill has the name), `proposed` or dedupe `skipped`
 - [ ] Dedupe applied: a `name` already in `existing_skills` / `existing_agents` is an `extend` row, `skipped` by default; overlapping artifacts under other names appear in `uses_existing` with `path:line`, never as a silent drop
 - [ ] The approval list the user gave (IDs) is recorded; only `approved` rows were generated
 
 ## Generated skills
 
-- [ ] Frontmatter parses with `yaml.safe_load` and holds only `name`, `description`, `source: celebrimbor`
+- [ ] Frontmatter parses with `yaml.safe_load` (skipped when PyYAML is absent) and holds only `name`, `description`, `source: celebrimbor`
 - [ ] `name` equals the directory name (kebab, ≤64, no `claude` / `anthropic`)
 - [ ] `description` is third person and ends with `Triggers: '...', '/<name>'.` (PT and EN)
 - [ ] Every `references/*.md` opens with the companion banner
@@ -65,7 +66,7 @@ Run with `bash`, never zsh (zsh aborts a line on an unmatched glob). Export two 
 skills=$(printf '%s\n' $GENERATED | grep -o '^\.agents/skills/[^/]*' | sort -u)
 agents=$(printf '%s\n' $GENERATED | grep '^\.agents/agents/[^/]*\.md$' | sort -u)
 scripts=$(printf '%s\n' $GENERATED | grep '/scripts/[^/]*\.sh$')
-python3 - $(printf '%s/SKILL.md\n' $skills) $agents <<'PY'   # frontmatter, name == dir, triggers, tools:, paths
+if python3 -c 'import yaml' 2>/dev/null; then python3 - $(printf '%s/SKILL.md\n' $skills) $agents <<'PY'   # frontmatter, name == dir, triggers, tools:, paths
 import os, sys, yaml
 for p in (a for a in sys.argv[1:] if os.path.isfile(a)):
     t, agent = open(p).read(), "/agents/" in p
@@ -79,6 +80,7 @@ for p in (a for a in sys.argv[1:] if os.path.isfile(a)):
     errs += [f"missing {k} {v}" for k, f in (("skills", ".agents/skills/{}/SKILL.md"), ("scripts", "{}")) for v in (fm.get(k) or []) if not os.path.isfile(f.format(v))]
     for e in errs: print(f"{p}: {e}")
 PY
+else echo "skip: PyYAML not installed — frontmatter check not run"; fi
 for d in $skills; do for r in "$d"/references/*.md; do [ -f "$r" ] && ! head -1 "$r" | grep -q '^> Reference companion for the \[' && echo "BANNER: $r"; done; done
 for s in $scripts; do [ -f "$s" ] && { bash -n "$s" || echo "SYNTAX: $s"; }; done
 [ -z "$scripts" ] || grep -nE 'rm -rf|git (push|reset --hard|clean)|sudo |chmod 777|(curl|wget)[^|]*\| *(ba)?sh|DROP |TRUNCATE ' $scripts
@@ -92,6 +94,6 @@ for p in $skills $agents; do for a in ".claude/${p#.agents/}" ".cursor/${p#.agen
   [ -e "$a" ] || [ -L "$a" ] || continue
   if [ -L "$a" ]; then [ -e "$a" ] || echo "BROKEN LINK: $a"; case $a in .agent/*) echo "ANTIGRAVITY SYMLINK: $a" ;; esac
   else diff -rq "$p" "$a"; fi; done; done
-[ ! -f AGENTS.md ] || awk '/^<!-- CELEBRIMBOR BEGIN/{b++;bl=NR}/^<!-- CELEBRIMBOR END -->/{e++;el=NR}END{if(b!=1||e!=1||bl>el)print "MARKERS: need exactly one BEGIN then one END (begin="b" end="e")"}' AGENTS.md
+[ ! -f AGENTS.md ] || awk '/^<!-- CELEBRIMBOR BEGIN/{b++;bl=NR}/^<!-- CELEBRIMBOR END -->/{e++;el=NR}END{if(b!=1||e!=1||bl>el)print "MARKERS: need exactly one BEGIN then one END (begin="b+0" end="e+0")"}' AGENTS.md
 [ -z "${PRE_HASH:-}" ] || [ "$(sed '/^<!-- CELEBRIMBOR BEGIN/,/^<!-- CELEBRIMBOR END -->/d' AGENTS.md | awk 'NF{for(;n;n--)print "";print;next}{n++}' | shasum)" = "$PRE_HASH" ] || echo "OUTSIDE-MARKERS CHANGED"
 ```

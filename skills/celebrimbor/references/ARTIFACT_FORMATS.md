@@ -12,7 +12,7 @@ One record per suggestion; the report renders them as a table with a `status` co
 - id: S1
   type: agent | skill | tool                  # `skill` may bundle its own `scripts/` tool; a separate `tool` row is only for a script shared by several skills
   name: security-sentinel                     # kebab, ≤64, no collisions with existing_skills/agents
-  family: security | testing | ci-cd | database | api-contracts | frontend | infra | docs | release | observability | ai-llm
+  family: review | security | testing | ci-cd | database | api-contracts | frontend | infra | docs | release | observability | ai-llm
   priority: P1 | P2 | P3                      # P1 = gap with concrete risk; P2 = recurring chore; P3 = nice-to-have
   rationale: "<1-2 sentences>"
   evidence: [go.mod:14, .github/workflows (absent), .env.example:3]

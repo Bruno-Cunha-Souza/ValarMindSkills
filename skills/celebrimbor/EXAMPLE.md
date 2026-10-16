@@ -43,11 +43,13 @@ secrets_hygiene: {env_examples: [.env.example], gitignore_covers_env: true}  # .
 
 | id | type | name | family | priority | evidence | depends_on | generates | status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| S1 | agent | security-sentinel | security | P1 | go.mod:6, go.mod:8 | S2, S3 | `.agents/agents/security-sentinel.md` | proposed |
+| S1 | agent | security-sentinel | security | P1 | go.mod:6, go.mod:8 | S2, S3, S7 | `.agents/agents/security-sentinel.md` | proposed |
 | S2 | skill | sec-static-scan | security | P1 | ci.yml (no gitleaks/govulncheck/trivy), Dockerfile:1 | — | `.agents/skills/sec-static-scan/{SKILL.md,scripts/run.sh}` | proposed |
 | S3 | skill | sec-pentest-local | security | P2 | go.mod:8, internal/http/middleware/auth.go:14 | — | `.agents/skills/sec-pentest-local/{SKILL.md,scripts/run.sh}` | proposed |
 | S4 | skill | db-migration-check | database | P2 | go.mod:10, db/migrations | — | `.agents/skills/db-migration-check/SKILL.md` | proposed |
 | S5 | skill | docs-sync | docs | P3 | CONTRIBUTING.md (absent), openapi.* (absent) | — | `.agents/skills/docs-sync/SKILL.md` | proposed |
+| S6 | skill | code-review | review | P2 | go.mod:3, .github/workflows/ci.yml | — | `.agents/skills/code-review/SKILL.md` | proposed |
+| S7 | skill | orders-api-code-security-review | review | P1 | go.mod:8, internal/http/router.go:21 | — | `.agents/skills/orders-api-code-security-review/SKILL.md` | proposed |
 
 ```yaml
 - {id: S2, type: skill, name: sec-static-scan, family: security, priority: P1, status: proposed, rationale: "Gin API with JWT auth, but CI runs no secret, dependency or container scan.",
@@ -57,20 +59,21 @@ secrets_hygiene: {env_examples: [.env.example], gitignore_covers_env: true}  # .
    generates: [.agents/skills/sec-static-scan/SKILL.md, .agents/skills/sec-static-scan/scripts/run.sh]}
 ```
 
-Each skill bundles its own `scripts/` tool, so `type` stays `skill`. Infra rows fold into S2 (`trivy` misconfig scans the Dockerfile); ci-cd and coverage rows point to the installed `@ci-cd-generator` instead of a new skill.
+S6 and S7 are the `review` baseline, proposed on every run. `code-security-review` is already installed, so S7 carries the `orders-api-` prefix. S7 runs whichever of S2 and S3 get generated, so it needs no `depends_on`; S1 depends on S7, so the agent row owns the shared security triggers. Each skill bundles its own `scripts/` tool, so `type` stays `skill`. Infra rows fold into S2 (`trivy` misconfig scans the Dockerfile); ci-cd and coverage rows point to the installed `@ci-cd-generator` instead of a new skill.
 
 **Stop.** "Which suggestion IDs should I generate? (e.g., `S1,S2,S3`, `all P1`, `none`)"
 
-> S1, S2 e S3
+> S1, S2, S3 e S7
 
-## Phase 3 — Generate (S1 plus its dependencies S2, S3; S4 and S5 skipped — not approved)
+## Phase 3 — Generate (S1 plus its dependencies S2, S3, S7; S4–S6 skipped — not approved)
 
 ```text
 orders-api/
 ├── AGENTS.md                                  # new: heading + CELEBRIMBOR block
 ├── .agents/skills/{sec-static-scan,sec-pentest-local}/{SKILL.md,scripts/run.sh}
+├── .agents/skills/orders-api-code-security-review/SKILL.md
 ├── .agents/agents/security-sentinel.md
-├── .claude/skills/{sec-static-scan,sec-pentest-local} -> ../../.agents/skills/<name>
+├── .claude/skills/{sec-static-scan,sec-pentest-local,orders-api-code-security-review} -> ../../.agents/skills/<name>
 └── .claude/agents/security-sentinel.md -> ../../.agents/agents/security-sentinel.md
 ```
 
@@ -159,13 +162,13 @@ exit 0
 ---
 name: security-sentinel
 description: "Runs the project's full security verification — static scans, secret scan, dependency audit, authorized local pentest — and files a severity-ranked report. Use when: 'security check', 'verificar segurança', 'pentest local'."
-skills: [sec-static-scan, sec-pentest-local]
+skills: [orders-api-code-security-review, sec-static-scan, sec-pentest-local]
 scripts: [.agents/skills/sec-static-scan/scripts/run.sh, .agents/skills/sec-pentest-local/scripts/run.sh]
 ---
 # Purpose
 Single entry point for security checks on orders-api (Gin + JWT + Postgres). Reports; never fixes.
 # Workflow
-1. Run sec-static-scan. 2. If a dev server runs on localhost and the user confirms ownership, run sec-pentest-local
+1. Follow orders-api-code-security-review: review the auth, API and database code, then run sec-static-scan. 2. If a dev server runs on localhost and the user confirms ownership, run sec-pentest-local
 with I_HAVE_AUTHORIZATION=1; otherwise stop after step 1 and say why. 3. Merge both findings.jsonl, dedupe, rank critical → info.
 # Boundaries
 Never target a non-local host · Never print secret values · Never edit code without approval.
@@ -188,6 +191,7 @@ Skills: `.agents/skills/<name>/SKILL.md`. Agents: `.agents/agents/<name>.md` —
 | 'security check', 'verificar segurança', 'pentest local' | `.agents/agents/security-sentinel.md` | agent |
 | 'varrer segredos', 'scan secrets', 'dependency audit' | `.agents/skills/sec-static-scan/SKILL.md` | skill |
 | 'testar JWT', 'JWT probes', 'local pentest' | `.agents/skills/sec-pentest-local/SKILL.md` | skill |
+| 'revisar segurança do código', 'security code review' | `.agents/skills/orders-api-code-security-review/SKILL.md` | skill |
 <!-- CELEBRIMBOR END -->
 ```
 
@@ -196,6 +200,7 @@ Skills: `.agents/skills/<name>/SKILL.md`. Agents: `.agents/agents/<name>.md` —
 ```bash
 mkdir -p .claude/skills .claude/agents && ln -s ../../.agents/skills/sec-static-scan .claude/skills/sec-static-scan
 ln -s ../../.agents/skills/sec-pentest-local .claude/skills/sec-pentest-local
+ln -s ../../.agents/skills/orders-api-code-security-review .claude/skills/orders-api-code-security-review
 ln -s ../../.agents/agents/security-sentinel.md .claude/agents/security-sentinel.md
 ```
 
@@ -203,15 +208,15 @@ Asked separately: "`CLAUDE.md` exists without `@AGENTS.md`. Append the single li
 
 ## Phase 4 — Prompt audit
 
-Use case 1 for both SKILL.md files, use case 4 for the agent; metrics are in the final report. One Major on the agent (no stop condition without a local server) was fixed by a rewrite applied after the user approved it.
+Use case 1 for the three SKILL.md files, use case 4 for the agent; metrics are in the final report. One Major on the agent (no stop condition without a local server) was fixed by a rewrite applied after the user approved it.
 
-## Phase 5 — Checklist (25/25)
+## Phase 5 — Checklist (26/26)
 
 | Section | Result |
 | --- | --- |
-| Profile · Suggestions · Generated skills · Agent role files | evidence on every field and row; all schema fields; approval `S1,S2,S3` recorded; frontmatter parses, name == dir, triggers present; no `tools:`; `skills:`/`scripts:` resolve |
+| Profile · Suggestions · Generated skills · Agent role files | evidence on every field and row; all schema fields; both `review` baseline rows present; approval `S1,S2,S3,S7` recorded; frontmatter parses, name == dir, triggers present; no `tools:`; `skills:`/`scripts:` resolve |
 | AGENTS.md block · Tool scripts | one BEGIN then one END, nothing outside the markers (`PRE_HASH` none: file created); `bash -n` clean; forbidden-token and prefix-glob greps empty; gate in sec-pentest-local; redaction; `out/` ignored |
-| Adapters · Overwrite · Prompt audit | 3 symlinks resolve; all paths new, CLAUDE.md touched only after its own yes; 3 audit lines |
+| Adapters · Overwrite · Prompt audit | 4 symlinks resolve; all paths new, CLAUDE.md touched only after its own yes; 4 audit lines |
 
 ## Final report
 
@@ -219,7 +224,7 @@ Use case 1 for both SKILL.md files, use case 4 for the agent; metrics are in the
 celebrimbor: orders-api (/home/dev/orders-api)
 Profile:
   stack:        go | gin v1.10.0 | go modules
-  surfaces:     web_api, database, auth, ci_cd, infra, tests, docs
+  surfaces:     web_api, database, auth, ci_cd, infra, docs
   agent config: AGENTS.md no | runtimes: claude | existing: 0 skills, 0 agents
   report:       CELEBRIMBOR_REPORT.md
 
@@ -228,24 +233,28 @@ Generated:
   .agents/skills/sec-static-scan/scripts/run.sh    (41 lines, wraps: gitleaks, govulncheck, trivy)
   .agents/skills/sec-pentest-local/SKILL.md        (61 lines, archetype: Procedural)
   .agents/skills/sec-pentest-local/scripts/run.sh  (79 lines, wraps: zap-baseline, curl)
-  .agents/agents/security-sentinel.md              (15 lines, skills: sec-static-scan, sec-pentest-local)
+  .agents/skills/orders-api-code-security-review/SKILL.md  (58 lines, archetype: Lifecycle)
+  .agents/agents/security-sentinel.md              (15 lines, skills: orders-api-code-security-review, sec-static-scan, sec-pentest-local)
   AGENTS.md                                        (block created)
 
 Adapters:
   .claude/skills/sec-static-scan -> ../../.agents/skills/sec-static-scan       (symlink)
   .claude/skills/sec-pentest-local -> ../../.agents/skills/sec-pentest-local   (symlink)
+  .claude/skills/orders-api-code-security-review -> ../../.agents/skills/orders-api-code-security-review   (symlink)
   .claude/agents/security-sentinel.md -> ../../.agents/agents/security-sentinel.md   (symlink)
   CLAUDE.md: @AGENTS.md added
 
 Prompt audit (@prompt-engineering):
   sec-static-scan/SKILL.md     clarity 7/8 | anti-halluc 11/12 | Δ -24 | SAFE   | blocking 0
   sec-pentest-local/SKILL.md   clarity 7/8 | anti-halluc 12/12 | Δ -18 | SAFE   | blocking 0
+  orders-api-code-security-review/SKILL.md   clarity 7/8 | anti-halluc 11/12 | Δ -12 | SAFE   | blocking 0
   security-sentinel.md         clarity 8/8 | anti-halluc 11/12 | Δ +31 | REVIEW | blocking 0
 
 Skipped:
   S4 db-migration-check — not approved
   S5 docs-sync — not approved
+  S6 code-review — not approved
 
-Checklist: 25/25 pass
+Checklist: 26/26 pass
 Next: review the diff, then commit (e.g., @github-commit).
 ```
