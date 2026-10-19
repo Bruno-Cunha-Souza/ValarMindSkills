@@ -164,6 +164,7 @@ name: security-sentinel
 description: "Runs the project's full security verification — static scans, secret scan, dependency audit, authorized local pentest — and files a severity-ranked report. Use when: 'security check', 'verificar segurança', 'pentest local'."
 skills: [orders-api-code-security-review, sec-static-scan, sec-pentest-local]
 scripts: [.agents/skills/sec-static-scan/scripts/run.sh, .agents/skills/sec-pentest-local/scripts/run.sh]
+source: celebrimbor
 ---
 # Purpose
 Single entry point for security checks on orders-api (Gin + JWT + Postgres). Reports; never fixes.
@@ -234,7 +235,7 @@ Generated:
   .agents/skills/sec-pentest-local/SKILL.md        (61 lines, archetype: Procedural)
   .agents/skills/sec-pentest-local/scripts/run.sh  (79 lines, wraps: zap-baseline, curl)
   .agents/skills/orders-api-code-security-review/SKILL.md  (58 lines, archetype: Lifecycle)
-  .agents/agents/security-sentinel.md              (15 lines, skills: orders-api-code-security-review, sec-static-scan, sec-pentest-local)
+  .agents/agents/security-sentinel.md              (16 lines, skills: orders-api-code-security-review, sec-static-scan, sec-pentest-local)
   AGENTS.md                                        (block created)
 
 Adapters:
@@ -258,3 +259,21 @@ Skipped:
 Checklist: 26/26 pass
 Next: review the diff, then commit (e.g., @github-commit).
 ```
+
+## Re-run — three months later
+
+The team added `api/openapi.yaml` and `github.com/redis/go-redis/v9`. Phase 1 now lists S1, S2, S3 and S7 in `existing_skills` / `existing_agents`, all with `source: celebrimbor`. S7's body cites `openapi.* (absent)` and no cache, so it drifted; S2 still matches the profile.
+
+| id | type | name | family | priority | evidence | depends_on | generates | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S2 | skill | sec-static-scan | security | P1 | .agents/skills/sec-static-scan/SKILL.md:4 | — | `.agents/skills/sec-static-scan/{SKILL.md,scripts/run.sh}` | skipped |
+| S7 | skill | orders-api-code-security-review | review | P1 | api/openapi.yaml:1, go.mod:11 | — | `.agents/skills/orders-api-code-security-review/SKILL.md` | proposed |
+
+```yaml
+- {id: S7, type: skill, name: orders-api-code-security-review, family: review, priority: P1, status: proposed,
+   rationale: "update: OpenAPI spec now exists (generated with openapi.* absent) and Redis is a new data store; review steps gain spec-vs-router drift and Redis auth checks.",
+   evidence: ["api/openapi.yaml:1", "go.mod:11", ".agents/skills/orders-api-code-security-review/SKILL.md:4"], # …
+   generates: [.agents/skills/orders-api-code-security-review/SKILL.md]}
+```
+
+Approving S7 shows a unified diff of the current `SKILL.md` against the regenerated one and writes it only on an explicit yes (ARTIFACT_FORMATS §7). A same-name skill without `source: celebrimbor` would be an `extend` row, `skipped`.

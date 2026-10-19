@@ -14,7 +14,7 @@ Phase 5 walks every item from the target root. A failing item blocks the report 
 - [ ] Every row has all schema fields: `id`, `type`, `name`, `family`, `priority`, `rationale`, `evidence`, `triggers`, `depends_on`, `uses_existing`, `portability`, `generates`, `status`
 - [ ] `evidence` is non-empty on every row
 - [ ] Both `review` baseline rows are present (`code-review`, `code-security-review`, or `<project>-` prefixed when an installed skill has the name), `proposed` or dedupe `skipped`
-- [ ] Dedupe applied: a `name` already in `existing_skills` / `existing_agents` is an `extend` row, `skipped` by default; overlapping artifacts under other names appear in `uses_existing` with `path:line`, never as a silent drop
+- [ ] Dedupe applied: a `name` already in `existing_skills` / `existing_agents` is an `update:` row when its frontmatter has `source: celebrimbor` (`proposed` with each profile change cited as `file:line` / `path (absent)`, else `skipped` as up to date), otherwise an `extend` row, `skipped` by default; overlapping artifacts under other names appear in `uses_existing` with `path:line`, never as a silent drop
 - [ ] The approval list the user gave (IDs) is recorded; only `approved` rows were generated
 
 ## Generated skills

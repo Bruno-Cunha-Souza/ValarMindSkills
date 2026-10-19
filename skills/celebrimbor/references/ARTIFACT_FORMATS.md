@@ -11,7 +11,7 @@ One record per suggestion; the report renders them as a table with a `status` co
 ```yaml
 - id: S1
   type: agent | skill | tool                  # `skill` may bundle its own `scripts/` tool; a separate `tool` row is only for a script shared by several skills
-  name: security-sentinel                     # kebab, ≤64, no collisions with existing_skills/agents
+  name: security-sentinel                     # kebab, ≤64, no collisions with existing_skills/agents except an `update:` row
   family: review | security | testing | ci-cd | database | api-contracts | frontend | infra | docs | release | observability | ai-llm
   priority: P1 | P2 | P3                      # P1 = gap with concrete risk; P2 = recurring chore; P3 = nice-to-have
   rationale: "<1-2 sentences>"
@@ -31,7 +31,9 @@ One record per suggestion; the report renders them as a table with a `status` co
 - `generates` lists canonical paths only; adapter paths follow from `portability` (§2).
 - `uses_existing` names optional accelerators. Generated artifacts must work when none of them is installed.
 
-**Dedupe rule.** A candidate `name` already present in `agent_config.existing_skills` / `existing_agents` → do not propose a new artifact. List it with `status: skipped`, `rationale` starting `extend:` and naming the existing path and what it already covers. The user may approve it by ID in chat, which means editing the existing artifact under §7, not creating a second one. Dedupe is by `name` only: `existing_*` records carry no `family`, and an overlapping artifact under another name goes into `uses_existing` as `<path> (overlaps: <what>)` with `path:line` evidence — the row stays `proposed`, never silently dropped.
+**Dedupe rule.** A candidate `name` already present in `agent_config.existing_skills` / `existing_agents` → do not propose a new artifact. Read the existing artifact's frontmatter at its `path`:
+- `source: celebrimbor` (a previous run generated it) → an `update:` row. Diff the evidence paths its body cites against the current profile. Each change — a new framework or surface, a removed signal, a changed version — goes into `evidence` as `file:line` or `path (absent)`; `rationale` starts `update:` and names the changes; `status: proposed`; `generates` lists the existing paths. Approval regenerates every `generates` path under §7: a unified diff per file, which also shows any hand edits the regeneration would drop, and an explicit yes. No change → `status: skipped`, `rationale: "update: none — <path> matches the profile"`, evidence the `source:` line as `path:line`.
+- No `source: celebrimbor` (user-written) → list it with `status: skipped`, `rationale` starting `extend:` and naming the existing path and what it already covers. The user may approve it by ID in chat, which means editing the existing artifact under §7, not creating a second one. Dedupe is by `name` only: `existing_*` records carry no `family`, and an overlapping artifact under another name goes into `uses_existing` as `<path> (overlaps: <what>)` with `path:line` evidence — the row stays `proposed`, never silently dropped.
 
 ## 2. Generated layout and adapters
 
@@ -84,7 +86,7 @@ source: celebrimbor
 - `description`: double-quoted, third person, states the output and the scope boundary, ≤1024 chars (aim 300-600), ends with `Triggers: '...', '/<name>'.` in PT and EN.
 - Omit runtime-specific fields (`allowed-tools`, `model`, `paths`, `hooks`, `arguments`, ...); they break portability.
 
-**Naming.** `[a-z0-9-]`, ≤64 chars, noun phrase (`db-migration-check`, not `check-the-migrations`), must equal the directory name, must not contain `claude` or `anthropic`, must not collide with `existing_skills` / `existing_agents`.
+**Naming.** `[a-z0-9-]`, ≤64 chars, noun phrase (`db-migration-check`, not `check-the-migrations`), must equal the directory name, must not contain `claude` or `anthropic`, must not collide with `existing_skills` / `existing_agents` (an `update:` row regenerates the same path, §1).
 
 **Archetype.** Pick one before writing the body.
 
@@ -113,6 +115,7 @@ name: security-sentinel
 description: "Runs the project's full security verification — static scans, secret scan, dependency audit, authorized local pentest — and files a severity-ranked report. Use when: 'security check', 'verificar segurança', 'pentest local'."
 skills: [sec-static-scan, sec-pentest-local]
 scripts: [.agents/skills/sec-static-scan/scripts/run.sh, .agents/skills/sec-pentest-local/scripts/run.sh]
+source: celebrimbor
 ---
 # Purpose            (2-3 lines)
 # Workflow           (numbered; which skill/script at each step; stop conditions)
@@ -120,7 +123,7 @@ scripts: [.agents/skills/sec-static-scan/scripts/run.sh, .agents/skills/sec-pent
 # Output             (report shape; reuse findings JSONL + one summary table)
 ```
 
-- `name` and `description` are the only fields all runtimes agree on; `skills` and `scripts` are plain lists the Workflow references.
+- `name` and `description` are the only fields all runtimes agree on; `skills` and `scripts` are plain lists the Workflow references; `source: celebrimbor` marks provenance for the §1 dedupe rule.
 - **Never** emit `tools:`. Claude Code reads it as a tool allowlist and would silently strip the agent's capabilities.
 - Every skill in `skills:` and every path in `scripts:` must exist after generation (dependency order guarantees it).
 - `Boundaries` repeats the hard rules of the skills it drives; an agent never loosens a skill's `Never`.
