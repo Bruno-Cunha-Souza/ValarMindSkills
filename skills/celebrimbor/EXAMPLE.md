@@ -41,25 +41,26 @@ secrets_hygiene: {env_examples: [.env.example], gitignore_covers_env: true}  # .
 
 ## Phase 2 — Suggestions (written to `CELEBRIMBOR_REPORT.md`)
 
-| id | type | name | family | priority | evidence | depends_on | generates | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| S1 | agent | security-sentinel | security | P1 | go.mod:6, go.mod:8 | S2, S3, S7 | `.agents/agents/security-sentinel.md` | proposed |
-| S2 | skill | sec-static-scan | security | P1 | ci.yml (no gitleaks/govulncheck/trivy), Dockerfile:1 | — | `.agents/skills/sec-static-scan/{SKILL.md,scripts/run.sh}` | proposed |
-| S3 | skill | sec-pentest-local | security | P2 | go.mod:8, internal/http/middleware/auth.go:14 | — | `.agents/skills/sec-pentest-local/{SKILL.md,scripts/run.sh}` | proposed |
-| S4 | skill | db-migration-check | database | P2 | go.mod:10, db/migrations | — | `.agents/skills/db-migration-check/SKILL.md` | proposed |
-| S5 | skill | docs-sync | docs | P3 | CONTRIBUTING.md (absent), openapi.* (absent) | — | `.agents/skills/docs-sync/SKILL.md` | proposed |
-| S6 | skill | code-review | review | P2 | go.mod:3, .github/workflows/ci.yml | — | `.agents/skills/code-review/SKILL.md` | proposed |
-| S7 | skill | orders-api-code-security-review | review | P1 | go.mod:8, internal/http/router.go:21 | — | `.agents/skills/orders-api-code-security-review/SKILL.md` | proposed |
+| id | type | name | family | priority | depth | evidence | depends_on | generates | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S1 | agent | security-sentinel | security | P1 | — | go.mod:6, go.mod:8 | S2, S3, S7 | `.agents/agents/security-sentinel.md` | proposed |
+| S2 | skill | sec-static-scan | security | P1 | T2 | ci.yml (no gitleaks/govulncheck/trivy), Dockerfile:1 | — | `.agents/skills/sec-static-scan/{SKILL.md,EXAMPLE.md,references/SCANNERS.md,scripts/run.sh}` | proposed |
+| S3 | skill | sec-pentest-local | security | P2 | T2 | go.mod:8, internal/http/middleware/auth.go:14 | — | `.agents/skills/sec-pentest-local/{SKILL.md,EXAMPLE.md,references/PROBES.md,scripts/{run.sh,jwt_probes.py}}` | proposed |
+| S4 | skill | db-migration-check | database | P2 | T2 | go.mod:10, db/migrations | — | `.agents/skills/db-migration-check/{SKILL.md,EXAMPLE.md,references/MIGRATIONS.md,scripts/run.sh}` | proposed |
+| S5 | skill | docs-sync | docs | P3 | T1 | CONTRIBUTING.md (absent), openapi.* (absent) | — | `.agents/skills/docs-sync/SKILL.md` | proposed |
+| S6 | skill | code-review | review | P2 | T3 | go.mod:3, .github/workflows/ci.yml | — | `.agents/skills/code-review/{SKILL.md,EXAMPLE.md,references/{GOLANG,SEVERITY}.md,scripts/…}` | proposed |
+| S7 | skill | orders-api-code-security-review | review | P1 | T3 | go.mod:8, internal/http/router.go:21 | — | `.agents/skills/orders-api-code-security-review/` (tree below) | proposed |
 
 ```yaml
-- {id: S2, type: skill, name: sec-static-scan, family: security, priority: P1, status: proposed, rationale: "Gin API with JWT auth, but CI runs no secret, dependency or container scan.",
+- {id: S2, type: skill, name: sec-static-scan, family: security, priority: P1, depth: T2, status: proposed, rationale: "Gin API with JWT auth, but CI runs no secret, dependency or container scan.",
    evidence: [".github/workflows/ci.yml (no gitleaks/govulncheck/trivy)", "go.mod:6", "Dockerfile:1"],
    triggers: ["varrer segredos", "scan secrets", "dependency audit", "/sec-static-scan"], depends_on: [],
    uses_existing: ["@code-security-review (optional accelerator)"], portability: [agents-md, claude-adapter],
-   generates: [.agents/skills/sec-static-scan/SKILL.md, .agents/skills/sec-static-scan/scripts/run.sh]}
+   generates: [.agents/skills/sec-static-scan/SKILL.md, .agents/skills/sec-static-scan/EXAMPLE.md,
+               .agents/skills/sec-static-scan/references/SCANNERS.md, .agents/skills/sec-static-scan/scripts/run.sh]}
 ```
 
-S6 and S7 are the `review` baseline, proposed on every run. `code-security-review` is already installed, so S7 carries the `orders-api-` prefix. S7 runs whichever of S2 and S3 get generated, so it needs no `depends_on`; S1 depends on S7, so the agent row owns the shared security triggers. Each skill bundles its own `scripts/` tool, so `type` stays `skill`. Infra rows fold into S2 (`trivy` misconfig scans the Dockerfile); ci-cd and coverage rows point to the installed `@ci-cd-generator` instead of a new skill.
+S6 and S7 are the `review` baseline, proposed on every run, both depth T3. `code-security-review` is already installed, so S7 carries the `orders-api-` prefix, and Phase 3 adapts its `references/golang/` and `scripts/` rows to this profile. S7 runs whichever static skill of S2 and S3 gets generated (S2 here; the gated S3 stays with the agent), so it needs no `depends_on`; S1 depends on S7, so the agent row owns the shared security triggers. Each skill bundles its own `scripts/` tool, so `type` stays `skill`. Infra rows fold into S2 (`trivy` misconfig scans the Dockerfile); ci-cd and coverage rows point to the installed `@ci-cd-generator` instead of a new skill.
 
 **Stop.** "Which suggestion IDs should I generate? (e.g., `S1,S2,S3`, `all P1`, `none`)"
 
@@ -70,8 +71,13 @@ S6 and S7 are the `review` baseline, proposed on every run. `code-security-revie
 ```text
 orders-api/
 ├── AGENTS.md                                  # new: heading + CELEBRIMBOR block
-├── .agents/skills/{sec-static-scan,sec-pentest-local}/{SKILL.md,scripts/run.sh}
-├── .agents/skills/orders-api-code-security-review/SKILL.md
+├── .agents/skills/sec-static-scan/{SKILL.md,EXAMPLE.md,references/SCANNERS.md,scripts/run.sh}
+├── .agents/skills/sec-pentest-local/{SKILL.md,EXAMPLE.md,references/PROBES.md,scripts/{run.sh,jwt_probes.py}}
+├── .agents/skills/orders-api-code-security-review/
+│   ├── SKILL.md                               # Lifecycle, Scope boundary
+│   ├── EXAMPLE.md                             # one run on orders-api, illustrative findings
+│   ├── references/{API,AUTH,DATABASE,SECRETS,SEVERITY}.md   # adapted from code-security-review/references/golang/*
+│   └── scripts/{run.sh,lib/common.sh,20-sinks.sh,30-authz_map.py}
 ├── .agents/agents/security-sentinel.md
 ├── .claude/skills/{sec-static-scan,sec-pentest-local,orders-api-code-security-review} -> ../../.agents/skills/<name>
 └── .claude/agents/security-sentinel.md -> ../../.agents/agents/security-sentinel.md
@@ -87,7 +93,9 @@ source: celebrimbor
 ---
 ## Goal            — one JSONL of secret, Go module (go.mod) and Dockerfile findings
 ## Inputs          — PROJECT_ROOT (default repo root) · OUT_DIR (default scripts/out) · severity floor (default low)
-## Procedure       — Step 1 run `scripts/run.sh` · Step 2 count severities with jq · Step 3 table, critical/high first
+## Procedure       — Step 1 run `scripts/run.sh` · Step 2 triage each hit with references/SCANNERS.md (false-positive rules per tool:
+                    test fixtures, `.env.example`, unreachable govulncheck symbols) · Step 3 table, critical/high first
+## Example         — EXAMPLE.md: one run on orders-api, abridged output, two illustrative findings
 ## Constraints     — Never print a secret value · Never write outside scripts/out · Never fix without approval
 ## Output format   — summary table + path to findings.jsonl; "skip: <tool>" lines listed as gaps
 ```
@@ -150,11 +158,141 @@ OUT_DIR="${OUT_DIR:-$(dirname "$0")/out}"; mkdir -p "$OUT_DIR"; printf '*\n' > "
 host="${TARGET#*://}"; host="${host%%[/?#]*}"; host="${host##*@}"
 case "$host" in '[::1]'|'[::1]:'*) host='[::1]' ;; *) host="${host%%:*}" ;; esac
 case "$host" in localhost|127.0.0.1|'[::1]'|*.localhost|*.test) ;; *) echo "refusing: TARGET is not local" >&2; exit 2 ;; esac
-# … emit() as in sec-static-scan (token values redacted in jq before emit); zap-baseline.py -t "$TARGET"; JWT alg=none/expired/missing-token probes
+# … emit() as in sec-static-scan (token values redacted in jq before emit); zap-baseline.py -t "$TARGET"
+# python3 -I "$(dirname "$0")/jwt_probes.py" — alg=none, expired, wrong-key and missing-token requests; re-checks I_HAVE_AUTHORIZATION itself
 exit 0
 ```
 
 `TARGET=http://localhost.evil.com` and `TARGET=https://staging.orders.example` both exit `2` with `refusing: TARGET is not local`; the skill points staging and production testing to `@code-security-review`.
+
+### `.agents/skills/orders-api-code-security-review/` (T3, Lifecycle)
+
+`SKILL.md` (body abridged to its headings):
+
+```markdown
+---
+name: orders-api-code-security-review
+description: "Reviews orders-api changes for security defects in the Gin routes, JWT auth, pgx queries and secrets handling, and files only findings with a CWE/OWASP class and an attacker path to scripts/out/findings.jsonl; correctness defects are handed to code-review. Use before merging auth, API or database changes, not for live-target testing. Triggers: 'revisar segurança do código', 'security code review', '/orders-api-code-security-review'."
+source: celebrimbor
+---
+## When to Use       — diff touches internal/http/**, db/**, auth config, Dockerfile or .github/workflows
+## Scope boundary    — file a finding only with a CWE/OWASP class and an attacker path: "Who is the attacker, and what do they gain?"
+                       No answer → "Handoff to code-review" (file:line, one line, no SEC- id, no severity)
+## Prerequisites     — rg, jq, python3 (stdlib only); gitleaks/govulncheck/trivy through sec-static-scan when present
+## Phase 0 Scope     — git diff --name-only <base>...HEAD → surfaces touched (API · AUTH · DATABASE · SECRETS)
+## Phase 1 Scripts   — scripts/run.sh: 20-sinks.sh (rg sweeps), 30-authz_map.py (routes outside middleware.Auth), sec-static-scan
+## Phase 2 Read      — per touched surface, walk the `manual` rows of references/<SURFACE>.md
+## Phase 3 Triage    — script hits are leads: confirm by reading, apply the Scope boundary, rate with references/SEVERITY.md
+## Phase 4 Report    — findings table, then Handoff to code-review, then skipped tools
+## Constraints       — Never print a secret value · Never send traffic (sec-pentest-local does, gated) · Never edit code
+## Output format     — id | severity | CWE/OWASP | evidence file:line | attacker path | fix
+```
+
+`references/AUTH.md` (3 of 9 rows):
+
+```markdown
+> Reference companion for the [orders-api-code-security-review](../SKILL.md) skill. Adapted from code-security-review/references/golang/MIDDLEWARE.md.
+
+| id | catches | detection | project anchor | severity rule | fix (Gin + golang-jwt v5) |
+| --- | --- | --- | --- | --- | --- |
+| AUTH-01 | route outside `middleware.Auth()` | `scripts/30-authz_map.py` | internal/http/router.go:21 | high on mutating verbs, medium on GET | register it on the authed group |
+| AUTH-02 | JWT parsed without an alg allow-list (CWE-347) | `rg -n 'jwt\.Parse\(' internal/` lacking `WithValidMethods` | internal/http/middleware/auth.go:14 | critical | `jwt.Parse(tok, kf, jwt.WithValidMethods([]string{"HS256"}))` |
+| AUTH-03 | expiry not enforced (CWE-613) | `rg -n 'WithoutClaimsValidation' internal/` | internal/http/middleware/auth.go:14 | high | drop the option; set `exp` when issuing |
+```
+
+The other six rows cover BOLA on `/api/v1/orders/:id`, the role check, the signing key source, tokens in logs, refresh reuse and CORS with credentials. `API.md`, `DATABASE.md` and `SECRETS.md` follow the same shape. `SEVERITY.md` maps CWE class × reachability to a severity.
+
+`scripts/lib/common.sh`, sourced by every shell check:
+
+```bash
+# lib/common.sh — OUT_DIR + .gitignore, ROOT, emit. Sourced by run.sh and every .sh check.
+OUT_DIR="${OUT_DIR:-$(cd "$(dirname "$0")" && pwd)/out}"; export OUT_DIR; mkdir -p "$OUT_DIR"; printf '*\n' > "$OUT_DIR/.gitignore"
+FINDINGS="$OUT_DIR/findings.jsonl"; ROOT="${PROJECT_ROOT:-$PWD}"; export PROJECT_ROOT="$ROOT"
+[ -d "$ROOT" ] || { echo "config: PROJECT_ROOT not found: $ROOT" >&2; exit 1; }
+command -v jq >/dev/null || { echo "config: jq is required" >&2; exit 1; }
+emit() { # id severity evidence impact remediation
+  jq -nc --arg id "$1" --arg severity "$2" --arg evidence "$3" --arg impact "$4" \
+    --arg remediation "$5" --arg timestamp "$(date -u +%FT%TZ)" '$ARGS.named' >> "$FINDINGS"; }
+```
+
+`scripts/run.sh`:
+
+```bash
+#!/usr/bin/env bash
+# orders-api-code-security-review — runs the check scripts, then sec-static-scan when generated. Reads: PROJECT_ROOT (default $PWD), OUT_DIR. Writes: out/findings.jsonl
+set -euo pipefail
+here="$(cd "$(dirname "$0")" && pwd)"; source "$here/lib/common.sh"; : > "$FINDINGS"
+"$here/20-sinks.sh"
+python3 -I "$here/30-authz_map.py"
+s="$here/../../sec-static-scan/scripts/run.sh"
+if [ -x "$s" ]; then OUT_DIR="$OUT_DIR/sec-static-scan" "$s"; else echo "skip: sec-static-scan not generated" >&2; fi
+exit 0
+```
+
+`scripts/20-sinks.sh` (3 of 12 sweeps):
+
+```bash
+#!/usr/bin/env bash
+# 20-sinks — rg sweeps for injection and logging sinks in the Go code. Reads: PROJECT_ROOT, OUT_DIR. Writes: out/findings.jsonl
+set -euo pipefail
+source "$(dirname "$0")/lib/common.sh"
+command -v rg >/dev/null || { echo "skip: rg not installed" >&2; exit 0; }
+sweep() { # id severity pattern impact remediation — path:line only, no excerpt (a hit may hold a secret)
+  rg -n --no-heading -g '*.go' -g '!*_test.go' -e "$3" "$ROOT" 2>/dev/null | cut -d: -f1,2 \
+    | while IFS= read -r loc; do emit "$1" "$2" "${loc#"$ROOT"/}" "$4" "$5"; done || true; }
+sweep SEC-SQ-001 high 'fmt\.Sprintf\("(SELECT|INSERT|UPDATE|DELETE)' "SQL built with Sprintf reaches pgx (CWE-89)." "Use \$1 placeholders: pool.Query(ctx, sql, args...)."
+sweep SEC-SQ-002 high '\.(Query|Exec)\(ctx, *"[^"]*" *\+' "String concatenation in a pgx query (CWE-89)." "Pass values as query arguments."
+sweep SEC-LG-001 medium 'log.*(Authorization|token|password)' "Credentials written to logs (CWE-532)." "Log the user id, never the header or token."
+exit 0
+```
+
+`scripts/30-authz_map.py`:
+
+```python
+#!/usr/bin/env python3
+# 30-authz_map — Gin routes registered outside middleware.Auth(). Reads: PROJECT_ROOT (default cwd), OUT_DIR, PUBLIC_ROUTES. Writes: out/findings.jsonl
+# Groups are tracked per file; a route on a group defined in another file is reported and confirmed by reading (Phase 3).
+import datetime, json, os, pathlib, re, sys
+
+ROOT = pathlib.Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
+OUT = pathlib.Path(os.environ.get("OUT_DIR") or pathlib.Path(__file__).parent / "out")
+PUBLIC = set(os.environ.get("PUBLIC_ROUTES", "/healthz,/api/v1/login").split(","))
+AUTH = re.compile(r"middleware\.Auth\(")  # internal/http/middleware/auth.go:14
+GROUP = re.compile(r'(\w+)\s*:?=\s*(\w+)\.Group\("([^"]*)"(.*)')
+USE = re.compile(r"(\w+)\.Use\((.*)")
+ROUTE = re.compile(r'(\w+)\.(GET|POST|PUT|PATCH|DELETE)\("([^"]*)"(.*)')
+if not ROOT.is_dir():
+    sys.exit(f"config: PROJECT_ROOT not found: {ROOT}")
+OUT.mkdir(parents=True, exist_ok=True)
+
+
+def emit(severity, evidence, impact, remediation):
+    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with open(OUT / "findings.jsonl", "a") as f:
+        f.write(json.dumps({"id": "SEC-AZ-001", "severity": severity, "evidence": evidence,
+                            "impact": impact, "remediation": remediation, "timestamp": ts}) + "\n")
+
+
+for path in sorted((ROOT / "internal/http").rglob("*.go")):
+    prefix, authed = {}, {}  # router var → path prefix / sits behind middleware.Auth()
+    for n, line in enumerate(path.read_text(errors="replace").splitlines(), 1):
+        if m := GROUP.search(line):
+            var, parent, p, rest = m.groups()
+            prefix[var] = prefix.get(parent, "") + p
+            authed[var] = authed.get(parent, False) or bool(AUTH.search(rest))
+        elif m := USE.search(line):
+            authed[m[1]] = authed.get(m[1], False) or bool(AUTH.search(m[2]))
+        elif m := ROUTE.search(line):
+            var, verb, p, rest = m.groups()
+            full = prefix.get(var, "") + p
+            if full in PUBLIC or authed.get(var) or AUTH.search(rest):
+                continue
+            emit("medium" if verb == "GET" else "high", f"{path.relative_to(ROOT)}:{n} {verb} {full}",
+                 "An unauthenticated caller reaches the handler (CWE-306, OWASP API2).",
+                 "Register it on the group that uses middleware.Auth(), or list it in PUBLIC_ROUTES if public by design.")
+```
+
+`EXAMPLE.md` runs `scripts/run.sh` on orders-api and walks two illustrative findings (`SEC-AZ-001` on `internal/http/router.go:34 DELETE /api/v1/orders/:id`, `AUTH-02` at `internal/http/middleware/auth.go:14`). It also shows the Scope boundary at work: a nil discount that zeroes an order total at `internal/orders/price.go:40` has no attacker path. It goes under **Handoff to code-review**, never into the findings table.
 
 ### `.agents/agents/security-sentinel.md`
 
@@ -211,12 +349,12 @@ Asked separately: "`CLAUDE.md` exists without `@AGENTS.md`. Append the single li
 
 Use case 1 for the three SKILL.md files, use case 4 for the agent; metrics are in the final report. One Major on the agent (no stop condition without a local server) was fixed by a rewrite applied after the user approved it.
 
-## Phase 5 — Checklist (26/26)
+## Phase 5 — Checklist (29/29)
 
 | Section | Result |
 | --- | --- |
-| Profile · Suggestions · Generated skills · Agent role files | evidence on every field and row; all schema fields; both `review` baseline rows present; approval `S1,S2,S3,S7` recorded; frontmatter parses, name == dir, triggers present; no `tools:`; `skills:`/`scripts:` resolve |
-| AGENTS.md block · Tool scripts | one BEGIN then one END, nothing outside the markers (`PRE_HASH` none: file created); `bash -n` clean; forbidden-token and prefix-glob greps empty; gate in sec-pentest-local; redaction; `out/` ignored |
+| Profile · Suggestions · Generated skills · Agent role files | evidence on every field and row; all schema fields; both `review` baseline rows present; approval `S1,S2,S3,S7` recorded; frontmatter parses, name == dir, triggers present; depth floor met (`DEPTH=orders-api-code-security-review:T3 sec-static-scan:T2 sec-pentest-local:T2`), every reference and EXAMPLE.md cites orders-api paths, Scope boundary present in S7; no `tools:`; `skills:`/`scripts:` resolve |
+| AGENTS.md block · Tool scripts | one BEGIN then one END, nothing outside the markers (`PRE_HASH` none: file created); `bash -n` and Python parse clean; forbidden-token and prefix-glob greps empty; gate in sec-pentest-local; redaction; `out/` ignored |
 | Adapters · Overwrite · Prompt audit | 4 symlinks resolve; all paths new, CLAUDE.md touched only after its own yes; 4 audit lines |
 
 ## Final report
@@ -230,11 +368,12 @@ Profile:
   report:       CELEBRIMBOR_REPORT.md
 
 Generated:
-  .agents/skills/sec-static-scan/SKILL.md          (52 lines, archetype: Procedural)
-  .agents/skills/sec-static-scan/scripts/run.sh    (41 lines, wraps: gitleaks, govulncheck, trivy)
-  .agents/skills/sec-pentest-local/SKILL.md        (61 lines, archetype: Procedural)
-  .agents/skills/sec-pentest-local/scripts/run.sh  (79 lines, wraps: zap-baseline, curl)
-  .agents/skills/orders-api-code-security-review/SKILL.md  (58 lines, archetype: Lifecycle)
+  .agents/skills/sec-static-scan/                  (T2 | SKILL.md 88 lines, archetype: Procedural | refs: SCANNERS.md | scripts: run.sh | EXAMPLE.md yes)
+  .agents/skills/sec-static-scan/scripts/run.sh    (41 lines, runs: —, wraps: gitleaks, govulncheck, trivy)
+  .agents/skills/sec-pentest-local/                (T2 | SKILL.md 104 lines, archetype: Procedural | refs: PROBES.md | scripts: run.sh, jwt_probes.py | EXAMPLE.md yes)
+  .agents/skills/sec-pentest-local/scripts/run.sh  (92 lines, runs: jwt_probes.py, wraps: zap-baseline, curl)
+  .agents/skills/orders-api-code-security-review/  (T3 | SKILL.md 186 lines, archetype: Lifecycle | refs: API, AUTH, DATABASE, SECRETS, SEVERITY | scripts: run.sh, 20-sinks.sh, 30-authz_map.py, lib/common.sh | EXAMPLE.md yes)
+  .agents/skills/orders-api-code-security-review/scripts/run.sh  (9 lines, runs: 20-sinks.sh, 30-authz_map.py, sec-static-scan)
   .agents/agents/security-sentinel.md              (16 lines, skills: orders-api-code-security-review, sec-static-scan, sec-pentest-local)
   AGENTS.md                                        (block created)
 
@@ -256,7 +395,7 @@ Skipped:
   S5 docs-sync — not approved
   S6 code-review — not approved
 
-Checklist: 26/26 pass
+Checklist: 29/29 pass
 Next: review the diff, then commit (e.g., @github-commit).
 ```
 
@@ -264,16 +403,17 @@ Next: review the diff, then commit (e.g., @github-commit).
 
 The team added `api/openapi.yaml` and `github.com/redis/go-redis/v9`. Phase 1 now lists S1, S2, S3 and S7 in `existing_skills` / `existing_agents`, all with `source: celebrimbor`. S7's body cites `openapi.* (absent)` and no cache, so it drifted; S2 still matches the profile.
 
-| id | type | name | family | priority | evidence | depends_on | generates | status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| S2 | skill | sec-static-scan | security | P1 | .agents/skills/sec-static-scan/SKILL.md:4 | — | `.agents/skills/sec-static-scan/{SKILL.md,scripts/run.sh}` | skipped |
-| S7 | skill | orders-api-code-security-review | review | P1 | api/openapi.yaml:1, go.mod:11 | — | `.agents/skills/orders-api-code-security-review/SKILL.md` | proposed |
+| id | type | name | family | priority | depth | evidence | depends_on | generates | status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S2 | skill | sec-static-scan | security | P1 | T2 | .agents/skills/sec-static-scan/SKILL.md:4 | — | `.agents/skills/sec-static-scan/` (unchanged) | skipped |
+| S7 | skill | orders-api-code-security-review | review | P1 | T3 | api/openapi.yaml:1, go.mod:11 | — | `.agents/skills/orders-api-code-security-review/{SKILL.md,references/{API,DATABASE}.md}` | proposed |
 
 ```yaml
 - {id: S7, type: skill, name: orders-api-code-security-review, family: review, priority: P1, status: proposed,
    rationale: "update: OpenAPI spec now exists (generated with openapi.* absent) and Redis is a new data store; review steps gain spec-vs-router drift and Redis auth checks.",
    evidence: ["api/openapi.yaml:1", "go.mod:11", ".agents/skills/orders-api-code-security-review/SKILL.md:4"], # …
-   generates: [.agents/skills/orders-api-code-security-review/SKILL.md]}
+   generates: [.agents/skills/orders-api-code-security-review/SKILL.md, .agents/skills/orders-api-code-security-review/references/API.md,
+               .agents/skills/orders-api-code-security-review/references/DATABASE.md]}   # spec-drift rows in API.md, Redis rows in DATABASE.md
 ```
 
-Approving S7 shows a unified diff of the current `SKILL.md` against the regenerated one and writes it only on an explicit yes (ARTIFACT_FORMATS §7). A same-name skill without `source: celebrimbor` would be an `extend` row, `skipped`.
+Approving S7 shows a unified diff of each current file against its regenerated version and writes it only on an explicit yes (ARTIFACT_FORMATS §7). A same-name skill without `source: celebrimbor` would be an `extend` row, `skipped`.

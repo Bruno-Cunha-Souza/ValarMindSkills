@@ -45,7 +45,7 @@ secrets_hygiene:                        # names only, never values
 
 ## Catalog
 
-Manifests: `go.mod`, `Cargo.toml`, `package.json`, `pyproject.toml requirements*.txt`, `pom.xml build.gradle*`, `Gemfile`, `composer.json`. `CI` = `.github/workflows/*.y*ml`. `Active target? yes` = the generated tool needs a running local `TARGET` (see ARTIFACT_FORMATS.md, tool script contract).
+Manifests: `go.mod`, `Cargo.toml`, `package.json`, `pyproject.toml requirements*.txt`, `pom.xml build.gradle*`, `Gemfile`, `composer.json`. `CI` = `.github/workflows/*.y*ml`. `Active target? yes` = the generated tool needs a running local `TARGET` (see ARTIFACT_FORMATS.md, tool script contract). Each skill's depth tier (T1–T3: references, scripts, EXAMPLE.md) follows its family per ARTIFACT_FORMATS.md §3 Depth floor; `review` is T3, `docs` and `release` T1, every other family T2.
 
 ### review (every run)
 Baseline: both rows are emitted on every run, whatever the signals or the scope filter. `code-review` evidence comes from probes 1, 2, 4 and 5 (manifests, frameworks, CI, test config); `code-security-review` evidence from probes 2, 3 and 7 (auth libs, routes and surfaces, secrets hygiene).

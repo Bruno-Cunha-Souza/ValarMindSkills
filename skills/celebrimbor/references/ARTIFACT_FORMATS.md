@@ -14,6 +14,7 @@ One record per suggestion; the report renders them as a table with a `status` co
   name: security-sentinel                     # kebab, ≤64, no collisions with existing_skills/agents except an `update:` row
   family: review | security | testing | ci-cd | database | api-contracts | frontend | infra | docs | release | observability | ai-llm
   priority: P1 | P2 | P3                      # P1 = gap with concrete risk; P2 = recurring chore; P3 = nice-to-have
+  depth: T1 | T2 | T3                         # skills only, from `family` (§3 Depth floor); agents and tools: `—`
   rationale: "<1-2 sentences>"
   evidence: [go.mod:14, .github/workflows (absent), .env.example:3]
   triggers: ["verificar segurança", "security check", "/security-sentinel"]
@@ -32,7 +33,7 @@ One record per suggestion; the report renders them as a table with a `status` co
 - `uses_existing` names optional accelerators. Generated artifacts must work when none of them is installed.
 
 **Dedupe rule.** A candidate `name` already present in `agent_config.existing_skills` / `existing_agents` → do not propose a new artifact. Read the existing artifact's frontmatter at its `path`:
-- `source: celebrimbor` (a previous run generated it) → an `update:` row. Diff the evidence paths its body cites against the current profile. Each change — a new framework or surface, a removed signal, a changed version — goes into `evidence` as `file:line` or `path (absent)`; `rationale` starts `update:` and names the changes; `status: proposed`; `generates` lists the existing paths. Approval regenerates every `generates` path under §7: a unified diff per file, which also shows any hand edits the regeneration would drop, and an explicit yes. No change → `status: skipped`, `rationale: "update: none — <path> matches the profile"`, evidence the `source:` line as `path:line`.
+- `source: celebrimbor` (a previous run generated it) → an `update:` row. Diff the evidence paths its body cites against the current profile. Each change — a new framework or surface, a removed signal, a changed version, a depth floor or Scope boundary the existing skill does not meet (§3) — goes into `evidence` as `file:line` or `path (absent)`; `rationale` starts `update:` and names the changes; `status: proposed`; `generates` lists the existing paths. Approval regenerates every `generates` path under §7: a unified diff per file, which also shows any hand edits the regeneration would drop, and an explicit yes. No change → `status: skipped`, `rationale: "update: none — <path> matches the profile"`, evidence the `source:` line as `path:line`.
 - No `source: celebrimbor` (user-written) → list it with `status: skipped`, `rationale` starting `extend:` and naming the existing path and what it already covers. The user may approve it by ID in chat, which means editing the existing artifact under §7, not creating a second one. Dedupe is by `name` only: `existing_*` records carry no `family`, and an overlapping artifact under another name goes into `uses_existing` as `<path> (overlaps: <what>)` with `path:line` evidence — the row stays `proposed`, never silently dropped.
 
 ## 2. Generated layout and adapters
@@ -44,7 +45,9 @@ One record per suggestion; the report renders them as a table with a `status` co
 ├── .agents/
 │   ├── skills/<name>/
 │   │   ├── SKILL.md                  # §3
-│   │   └── scripts/                  # tools (§6): run.sh + optional helpers, out/ git-ignored
+│   │   ├── EXAMPLE.md                # T2/T3: worked run on this project's code (§3 Depth floor)
+│   │   ├── references/<TOPIC>.md     # T2/T3: check catalogs, one file per surface or language
+│   │   └── scripts/                  # tools (§6): run.sh + check scripts (.sh/.py) + lib/, out/ git-ignored
 │   └── agents/<name>.md              # §4
 ├── .claude/skills/<name>  -> ../../.agents/skills/<name>
 ├── .claude/agents/<name>.md -> ../../.agents/agents/<name>.md
@@ -96,14 +99,32 @@ source: celebrimbor
 | Lifecycle | Multi-phase workflows an agent drives (detect → analyze → act → validate) | When to Use · Prerequisites · Phase 0..n · Constraints · Output format |
 | Reference | Docs and contract skills the agent consults (API conventions, migration rules) | Purpose · Schema / Rules tables · Examples · Source of truth links |
 
-**Progressive disclosure.** `description` is always loaded; the body only on activation; `references/` only when the body links to it. Keep `SKILL.md` lean (≤500 lines, usually far less) and push catalogs and long appendices to `references/UPPERCASE.md`, one level deep. Each reference file opens with the banner `> Reference companion for the [<name>](../SKILL.md) skill.`
+**Progressive disclosure.** `description` is always loaded; the body only on activation; `references/` and `EXAMPLE.md` only when the body links to them. `SKILL.md` holds the workflow and the decision rules (≤500 lines); check catalogs, payloads and stack detail go to `references/UPPERCASE.md`, one level deep, linked from the phase that uses them. Each reference file opens with the banner `> Reference companion for the [<name>](../SKILL.md) skill.` Depth lives in references and scripts, so a deep skill costs nothing until it is activated.
+
+**Depth floor.** A generated skill is a working tool for this project, not an outline. Depth follows the family; the floor is a minimum of substance, never a line target to pad.
+
+| Tier | Families | `SKILL.md` | `references/` | `scripts/` | `EXAMPLE.md` |
+| --- | --- | --- | --- | --- | --- |
+| T3 | `review` (`code-review`, `code-security-review`) | Lifecycle; Scope boundary section; one phase per check group | one file per present surface (security) or language (review), ≥8 check rows each, plus `SEVERITY.md` | `run.sh` orchestrator + ≥2 check scripts, `.sh` and/or `.py` (§6), shared `lib/` | required |
+| T2 | `security`, `testing`, `database`, `api-contracts`, `frontend`, `infra`, `ci-cd`, `observability`, `ai-llm` | Procedural or Lifecycle | ≥1 file, ≥5 check rows | `run.sh` + check scripts for every mechanical check | required |
+| T1 | `docs`, `release` | any archetype; checks inline as a table | optional | `run.sh` when a check is mechanical (e.g., README commands vs `Makefile`) | optional, inline section allowed |
+
+- **Check row** (in a reference table, one row per check): `id` · what it catches · detection — the exact `rg`/tool command for this stack, or `manual` with what to read · project anchor (`file:line` from the profile, or `path (absent)`) · severity rule · fix in this project's idiom (framework, ORM, middleware names). A row with no anchor in this project is dropped, not kept as generic advice.
+- **Every reference file and `EXAMPLE.md` cites project paths** (`file:line`). Text that would read the same in any repository does not belong in the skill.
+- **`EXAMPLE.md`** shows one invocation end to end on this project: the command, an abridged script output, two or three findings on real paths from the profile, and the final report. Findings in it are illustrative and say so in one line; never present them as a real audit result.
+- **Source material.** When an installed sibling covers the family (probe 8, e.g. `code-security-review`, `code-review`, `ci-cd-generator`), read its `references/` and `scripts/` and adapt them: keep the rows that match this profile's languages, frameworks and surfaces, rewrite detections and fixes to this project's paths and idioms, drop the rest. The result is a standalone copy — no runtime link to the sibling, no path into its install dir. Record each adapted file as `adapted from <sibling>/<path>` in the reference's banner line.
+
+**Scope boundary** (required section in both `review` skills, recommended for every T2 skill whose family overlaps another).
+- `code-security-review` reports a finding only when it names a security class (CWE id or OWASP category) **and** an attacker path: who controls the input or crosses which trust boundary, and what they gain. Correctness, business-logic, domain-safety (clinical, financial) and resilience defects without an attacker path are not security findings: list them under `Handoff to code-review` with `file:line` and one line each, no `SEC-` id, no severity, never in the findings table.
+- `code-review` routes the reverse: a defect with an attacker path goes under `Handoff to code-security-review` with `file:line`.
+- The section states the test as one question the reviewer asks before filing: "Who is the attacker, and what do they gain?" No answer → hand off.
 
 **Inputs vs Constraints.**
 - Every knob a caller may override (scope, target dir, severity floor) is an `Inputs` row with a default.
 - Every non-negotiable (no remote targets, no secret values, no writes outside `out/`) is a `Constraints` bullet starting with `Never`.
 - Soft words (`should`, `prefer`) yield to the user's extra prompt; `Never` survives it.
 
-**Tools.** `scripts/` inside the skill IS the tools convention: executables the skill body invokes, modelled on `skills/code-security-review/scripts` in ValarMindSkills. Prose content is English; only triggers are bilingual. No `README.md` inside the skill; `SKILL.md` documents the scripts.
+**Tools.** `scripts/` inside the skill IS the tools convention: executables the skill body invokes, modelled on `skills/code-security-review/scripts` in ValarMindSkills. Each phase that runs a script names it, its inputs and how to read its findings. Prose content is English; only triggers are bilingual. No `README.md` inside the skill; `SKILL.md` documents the scripts.
 
 ## 4. Agent role file
 
@@ -153,12 +174,13 @@ Skills: `.agents/skills/<name>/SKILL.md`. Agents: `.agents/agents/<name>.md` —
 
 ## 6. Tool script contract
 
-Applies to every generated `scripts/*.sh`. Default is a thin wrapper (~50-80 lines) around tools already installed, not a copy of the code-security-review probes.
+Applies to every generated `scripts/*.sh` and `scripts/*.py`. Layout: `run.sh` is the entry point and runs one check script per check group (`10-secrets.sh`, `20-sinks.sh`, `30-authz_map.py`, …); shared helpers (`OUT_DIR` + `.gitignore`, `emit`, redaction) live once in `scripts/lib/common.sh` and are sourced; the active-target gate never moves there. Size follows coverage, not a line cap: a check script wraps an installed scanner where one exists and otherwise carries the project's own `rg` sweeps and parsers (routes → middleware, migrations → destructive ops, spec → router drift). Python is for checks that need parsing or state (JWT decode, AST walks, cross-file maps); shell for sweeps and scanner wrappers.
 
 | Rule | Requirement |
 | --- | --- |
 | Header | `# <name> — <purpose>. Reads: <env vars + defaults>. Writes: out/findings.jsonl` |
 | Shell | `#!/usr/bin/env bash` then `set -euo pipefail`; must pass `bash -n` |
+| Python | `#!/usr/bin/env python3`, stdlib only (no `pip install`), run as `python3 -I`; must pass `python3 -m py_compile`; no `shell=True`, no `os.system`, no `eval`/`exec` on input; writes findings with `json.dumps` to the same `findings.jsonl` |
 | Output dir | `OUT_DIR="${OUT_DIR:-$(dirname "$0")/out}"`; write `*` to `$OUT_DIR/.gitignore` so results never get committed |
 | Findings | One JSON object per line in `$OUT_DIR/findings.jsonl`: `id`, `severity` (`critical`/`high`/`medium`/`low`/`info`), `evidence` (`file:line` + redacted excerpt), `impact`, `remediation`, `timestamp` (UTC ISO 8601) |
 | Exit codes | `0` ran cleanly, regardless of findings · `1` invalid config (missing env var, required helper, bad root) · `2` refused (authorization or non-local target) |
@@ -167,7 +189,7 @@ Applies to every generated `scripts/*.sh`. Default is a thin wrapper (~50-80 lin
 
 Findings are output, not errors: CI gates by counting severities with `jq` over the JSONL.
 
-**Active probes** (anything that sends traffic) additionally require `I_HAVE_AUTHORIZATION=1` **and** a local `TARGET`. Put this verbatim before the first request:
+**Active probes** (anything that sends traffic) additionally require `I_HAVE_AUTHORIZATION=1` **and** a local `TARGET`. Put this verbatim before the first request, inline in every active `.sh` (never only in `lib/`, where the CHECKLIST cannot see it per script):
 
 ```bash
 [ -n "${TARGET:-}" ] || { echo "config: TARGET is required" >&2; exit 1; }
@@ -177,7 +199,7 @@ case "$host" in '[::1]'|'[::1]:'*) host='[::1]' ;; *) host="${host%%:*}" ;; esac
 case "$host" in localhost|127.0.0.1|'[::1]'|*.localhost|*.test) ;; *) echo "refusing: TARGET is not local" >&2; exit 2 ;; esac
 ```
 
-The gate matches the exact host after stripping scheme, path/query/fragment, userinfo and port. Prefix globs like `localhost*` are forbidden: they accept `localhost.evil.com`.
+The gate matches the exact host after stripping scheme, path/query/fragment, userinfo and port. Prefix globs like `localhost*` are forbidden: they accept `localhost.evil.com`. An active Python helper is only ever called from a gated `.sh`, and re-checks on its own first lines: `if os.environ.get("I_HAVE_AUTHORIZATION") != "1": sys.exit(2)`.
 
 Non-local targets are refused outright, never "with a warning". The SKILL.md points users who need staging or production testing to `@code-security-review`, which carries its own authorization gate.
 
@@ -189,8 +211,9 @@ Non-local targets are refused outright, never "with a warning". The SKILL.md poi
 - `DROP`, `TRUNCATE` (SQL)
 - writes outside the skill directory (all output goes to `$OUT_DIR`)
 - prefix globs in the local-target gate (`localhost*`, `127.0.0.1*`, `*.test*`)
+- in Python: `shell=True`, `os.system(`, `shutil.rmtree(` outside `OUT_DIR`
 
-**Minimal skeleton** (`.agents/skills/sec-static-scan/scripts/run.sh`):
+**Scanner skeleton** — one check script; in a multi-script skill `OUT_DIR`, `emit` and the `jq` check move to `lib/common.sh` (`.agents/skills/sec-static-scan/scripts/run.sh`):
 
 ```bash
 #!/usr/bin/env bash
